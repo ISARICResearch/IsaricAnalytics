@@ -1,0 +1,54 @@
+{
+    "id": "covid_synthetic"
+    "name": "Covid-19 Synthetic data",
+    "description": "This is a synthetic dataset, generated from a CTGAN model trained on ISARIC COVID-19 report dataset.",
+    "owner": "ISARIC",
+    "email": "data@isaric.org",
+    "contributors": "TODO",
+    "date_created": "2025-11-19T11:57:01Z",
+    "source": "ISARIC ClinEpi platform"
+    "source_extraction_date": "2025-11-19T11:57:00Z",
+    "schema": "schema/metadata.json"
+    "path": "examples/datasets/covid_synthetic",
+    "files": {
+        "presentation": {
+            "filename": "presentation.csv",
+            "schema": "schema/presentation.json",
+            "encoding": "utf-8",
+            "n_subjects": 100,
+            "n_rows": 100,
+            "n_columns": 10
+        },
+        "outcome": {
+            "filename": "outcome.csv",
+            "schema": "schema/outcome.json",
+            "encoding": "utf-8",
+            "n_subjects": 100,
+            "n_rows": 100,
+            "n_columns": 10
+        },
+        "daily": {
+            "filename": "daily.csv",
+            "schema": "schema/daily.json",
+            "encoding": "utf-8",
+            "n_subjects": 90,
+            "n_rows": 1000,
+            "n_columns": 25
+        },
+        "events": {
+            "filename": "events.csv",
+            "schema": "schema/events.json",
+            "encoding": "utf-8",
+            "n_subjects": 50,
+            "n_rows": 200,
+            "n_columns": 20
+        },
+        "data_dictionary": {
+            "filename": "data_dictionary.csv",
+            "schema": "schema/data_dictionary.json",
+            "encoding": "utf-8",
+            "n_rows": 50
+        }
+    },
+    "notes": ""
+}

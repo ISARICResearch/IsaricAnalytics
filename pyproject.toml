@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "isaricanalytics"
+dynamic = ["version"]
+description = "Analysis pipeline support for clinical characterisation during outbreaks"
+authors = [
+    { name = "Esteban Garcia-Gallo", email = "" },
+    { name = "Tom Edinburgh", email = "te269.cam@outlook.com" },
+    { name = "Igor Peres", email = "" },
+    { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
+    { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "lifelines==0.30.0",
+    "numpy==1.26.4",
+    "pandas==2.2.1",
+    "scikit-learn==1.5.2",
+    "scipy==1.12.0",
+    "statsmodels==0.14.1",
+]
+
+[tool.ruff]
+
+line-length = 88
+target-version = "py311"
+
+lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import sorting
+
+# Optional: exclude certain paths
+exclude = [
+    ".venv",
+    "build",
+    "dist"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
