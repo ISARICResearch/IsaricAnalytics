@@ -1,15 +1,18 @@
 {
-    "id": "covid_synthetic"
+    "id": "project-isaric-covidsynthetic-v1.0",
     "name": "Covid-19 Synthetic data",
     "description": "This is a synthetic dataset, generated from a CTGAN model trained on ISARIC COVID-19 report dataset.",
     "owner": "ISARIC",
     "email": "data@isaric.org",
-    "contributors": "TODO",
-    "date_created": "2025-11-19T11:57:01Z",
-    "source": "ISARIC ClinEpi platform"
-    "source_extraction_date": "2025-11-19T11:57:00Z",
-    "schema": "schema/metadata.json"
-    "path": "examples/datasets/covid_synthetic",
+    "contributors": [
+        {
+            "name": "TODO",
+            "email": "todo@isaric.org"
+        }
+    ],
+    "schema": "schema/metadata.json",
+    "path": "examples/datasets/covid_synthetic/",
+    "n_subjects": 100,
     "files": {
         "presentation": {
             "filename": "presentation.csv",
@@ -36,12 +39,14 @@
             "n_columns": 25
         },
         "events": {
-            "filename": "events.csv",
-            "schema": "schema/events.json",
-            "encoding": "utf-8",
-            "n_subjects": 50,
-            "n_rows": 200,
-            "n_columns": 20
+            "medication": {
+                "filename": "events_medication.csv",
+                "schema": "schema/events.json",
+                "encoding": "utf-8",
+                "n_subjects": 50,
+                "n_rows": 200,
+                "n_columns": 20
+            }
         },
         "data_dictionary": {
             "filename": "data_dictionary.csv",
@@ -50,5 +55,27 @@
             "n_rows": 50
         }
     },
+    "date_created": "2025-11-19T11:57:01Z",
+    "date_modified": "2025-11-24T11:57:01Z",
+    "source": [
+        {
+            "source_name": "ISARIC ClinEpi platform",
+            "dataset_name": "Covid-19 Synthetic data",
+            "dataset_id": "data-isaric-covidsynthetic-v1.0",
+            "dataset_doi": "doi.org/10.0001/fakedoi",
+            "dataset_disease": "covid19",
+            "source_extraction_date": "2025-11-19T11:57:00Z",
+            "source_files": [
+                {
+                    "filename": "core.parquet",
+                    "schema": "https://github.com/ISARICResearch/.../isaric-core.json"
+                },
+                {
+                    "filename": "long.parquet",
+                    "schema": "https://github.com/ISARICResearch/.../isaric-long.json"
+                }
+            ]
+        }
+    ],
     "notes": ""
 }
