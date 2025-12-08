@@ -20,6 +20,7 @@ import json
 from typing import Dict, Any, Optional
 import pandas as pd
 from pathlib import Path
+import logging
 
 from isaricanalytics.data import IsaricData
 from isaricanalytics.logger import setup_logger
@@ -50,27 +51,19 @@ class Loader:
         FileNotFoundError: If ``path`` does not exist or is not a directory.
     """
     def __init__(self, path: str, encoding: str = "utf-8") -> None:
+        if not isinstance(path, str):
+            raise TypeError("path must be string-valued")
+        if not isinstance(encoding, str):
+            raise TypeError("encoding must be string-valued")
         self.path = Path(path)
         self.encoding = encoding
 
-        if not self.path.isdir():
+        if not self.path.is_dir():
             raise FileNotFoundError(self.path)
 
         self.metadata: Optional[Dict[str, Any]] = None
         self.data_dictionary: Optional[pd.DataFrame] = None
         logger.info("Set project path to %s", path)
-
-    def set_path(self, path: str) -> None:
-        """Overwrite :attr:`path` set when the `Loader` instance was created. Reset
-        :attr:`metadata` and :attr:`data dictionary` to None.
-
-        Args:
-            path: Directory that contains project files (at least ``metadata.json``).
-        """
-        self.path = Path(path)
-        self.metadata = None
-        self.data_dictionary = None
-        logger.info("Set project path to %s. Reset metadata and data dictionary to empty.", path)
 
     def load_metadata(self) -> Dict[str, Any]:
         """Load and parse ``metadata.json``.
@@ -90,6 +83,10 @@ class Loader:
             self.metadata = json.load(json_data)
             logger.info("Loaded project metadata.")
 
+        # Get path specified in metadata, must be the same as path specified on init if present
+        path_from_metadata = self.metadata.get("path", None)
+        if path_from_metadata and Path(path_from_metadata).resolve() != self.path.resolve():
+            raise ValueError("metadata field `path` must equal :attr:`path`")
         return self.metadata
 
     def load_data_dictionary(self) -> pd.DataFrame:
@@ -108,18 +105,6 @@ class Loader:
         if self.metadata is None:
             raise ValueError("metadata must be loaded first (using :method:`load_metadata`)")
 
-        # Get path specified in metadata, default to path specified on init if not present
-        path_from_metadata = self.metadata.get("path", None)
-        if path_from_metadata is not None and not isinstance(path_from_metadata, str):
-            raise TypeError("metadata key 'path' must be string-valued")
-
-        data_dictionary_dir = Path(path_from_metadata) if path_from_metadata else self.path
-        if data_dictionary_dir != self.path:
-            logger.warning(
-                "metadata field 'path' does not match :attr:`path`. "
-                "Using 'path' specified in metadata to load files."
-            )
-
         filename = self.metadata.get("files", {}).get("data_dictionary", {}).get("filename", "data_dictionary.csv")
         if not isinstance(filename, str):
             raise TypeError("metadata key 'files.data_dictionary.filename' must be string-valued if it exists")
@@ -128,15 +113,17 @@ class Loader:
         if not isinstance(encoding, str):
             raise TypeError("metadata key 'files.data_dictionary.encoding' must be string-valued if it exists")
 
-        data_dictionary_path = data_dictionary_dir / filename
+        data_dictionary_path = self.path / filename
         if not data_dictionary_path.exists():
             raise FileNotFoundError(data_dictionary_path)
 
-        self.data_dictionary = pd.read_csv(
+        data_dictionary = pd.read_csv(
             data_dictionary_path,
             dtype=str,
             encoding=encoding,
         )
+
+        self.data_dictionary = data_dictionary
 
         # TODO: validate data_dictionary?
         logger.info("Loaded project data_dictionary.")
@@ -170,38 +157,29 @@ class Loader:
         if self.data_dictionary is None:
             raise ValueError("data dictionary must be loaded first (using :method:`load_data_dictionary`)")
 
-        if name not in list(self.metadata.get("files", {}).keys()):
-            logger.warning("dataframe %s is not listed as a file in metadata.json", name)
+        file_metadata = self.metadata.get("files", {}).get(name, {})
+        # If an events dataframe, then need to go one level deeper in the metadata
+        if not file_metadata:
+            file_metadata = self.metadata.get("files", {}).get("events", {}).get(name, {})
+
+        if not file_metadata:
+            logger.warning("dataframe %s is not listed as a file in metadata.json or has no metadata", name)
             return
 
-        # Get path specified in metadata, default to path specified on init if not present
-        path_from_metadata = self.metadata.get("path", None)
-        if path_from_metadata is not None and not isinstance(path_from_metadata, str):
-            raise TypeError("metadata key 'path' must be string-valued")
-
-        data_dir = Path(path_from_metadata) if path_from_metadata else self.path
-        if data_dir != self.path:
-            logger.warning(
-                "metadata field 'path' does not match :attr:`path`. "
-                "Using 'path' specified in metadata to load files."
-            )
-
-        filename = self.metadata.get("files", {}).get(name, {}).get("filename", None)
-        if filename is None:
-            filename = f"{name}.csv"
+        filename = file_metadata.get("filename", f"{name}.csv")
         if not isinstance(filename, str):
             raise TypeError("metadata key 'files.%s.filename' must be string-valued if it exists", name)
 
-        encoding = self.metadata.get("files", {}).get(name, {}).get("encoding", self.encoding)
+        encoding = file_metadata.get("encoding", self.encoding)
         if not isinstance(encoding, str):
             raise TypeError("metadata key 'files.%s.encoding' must be string-valued if it exists", name)
 
-        data_path = data_dir / filename
+        data_path = self.path / filename
         if not data_path.exists():
             raise FileNotFoundError(data_path)
 
         str_mask = (
-            (self.data_dictionary["dataframe_name"] == name) &
+            (self.data_dictionary["table_name"] == name) &
             (self.data_dictionary["field_type"].isin(["freetext", "categorical"]))
         )
         str_variables = self.data_dictionary.loc[str_mask, "field_name"].tolist()
@@ -218,7 +196,7 @@ class Loader:
 
         # Convert datetime variables
         date_mask = (
-            (self.data_dictionary["dataframe_name"] == name) &
+            (self.data_dictionary["table_name"] == name) &
             (self.data_dictionary["field_type"] == "datetime")
         )
         date_variables = self.data_dictionary.loc[date_mask, "field_name"].tolist()
@@ -241,7 +219,7 @@ def load_data_from_file(path: str, validate: bool = True) -> IsaricData:
 
     Examples:
         >>> from isaricanalytics.loader import load_data_from_file
-        >>> data = load_data_from_file("examples/datasets/covid_synthetic")
+        >>> data = load_data_from_file("examples/datasets/h5nx_synthetic")
         >>> data.presentation.head()
     """
     loader = Loader(path=path)
@@ -251,7 +229,10 @@ def load_data_from_file(path: str, validate: bool = True) -> IsaricData:
     presentation = loader.load_df(name="presentation")
     outcome = loader.load_df(name="outcome")
     daily = loader.load_df(name="daily")  # may return None if not present in metadata
-    events = loader.load_df(name="events")  # may return None if not present in metadata
+
+    events_metadata = metadata.get("files", {}).get("events", {})
+    if events_metadata:  # i.e. a non-empty dict
+        events = {name: loader.load_df(name=name) for name in events_metadata.keys()}
 
     data = IsaricData(
         metadata=metadata,
@@ -259,9 +240,6 @@ def load_data_from_file(path: str, validate: bool = True) -> IsaricData:
         presentation=presentation,
         outcome=outcome,
         daily=daily,
-        events=events,
+        events=events if events_metadata else None,
     )
-
-    if validate:
-        data.validate()
     return data

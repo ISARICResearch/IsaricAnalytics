@@ -11,6 +11,8 @@ The `IsaricData` class has methods to:
 """
 
 __author__ = "Tom Edinburgh"
+
+import json
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
 import pandas as pd
@@ -27,37 +29,68 @@ class IsaricData:
 
     # Optional fields
     daily: Optional[pd.DataFrame]
-    events: Optional[pd.DataFrame]
+    events: Optional[Dict[str, pd.DataFrame]]
 
     def __post_init__(self) -> None:
-        """Basic structural validation of required fields."""
+        """Validation of all data."""
+        self.validate_metadata()
+        self.validate_data_dictionary()
+        for table_name in ("presentation", "outcome"):
+            self.validate_table(table_name)
+
+    def validate_metadata(self) -> None:
+        """Validation of metadata.
+
+        Raises:
+            TypeError: If metadata is not a dictionary
+        """
         if not isinstance(self.metadata, dict):
             raise TypeError("metadata must be a dictionary")
-        for name in ("data_dictionary", "presentation", "outcome"):
-            value = getattr(self, name)
-            if not isinstance(value, pd.DataFrame):
-                raise TypeError(f"{name} must be a pandas DataFrame")
 
-    def validate(self) -> None:
-        return
+    def validate_data_dictionary(self) -> None:
+        """Validation of data_dictionary.
+
+        Raises:
+            TypeError: If data_dictionary is not a pandas DataFrame.
+        """
+        if not isinstance(self.data_dictionary, pd.DataFrame):
+            raise TypeError("data_dictionary must be a pandas DataFrame")
+
+    def validate_table(self, table_name: str) -> None:
+        """Validation of a named table.
+
+        Raises:
+            TypeError: If the table is not a pandas DataFrame.
+        """
+        table = getattr(self, table_name)
+        if not isinstance(table, pd.DataFrame):
+            raise TypeError("%s must be a pandas DataFrame", table_name)
 
     def describe(self) -> str:
+        """Print a summary of the instance. TODO."""
         return
 
-    def get_subject(self, subjid: str, dataframe: str) -> pd.DataFrame:
+    def get_field_options(self, field_name: str) -> List[Any]:
+        """Currently field options stored as a JSON-string inside a pandas dataframe. TODO."""
+        mask = self.data_dictionary['field_name'] == field_name
+        s = self.data_dictionary.loc[mask, 'field_options'].item()
+        field_options = json.loads(s) if pd.notna(s) and s.strip() else []
+        return field_options
+
+    def get_subject(self, subjid: str, table_name: str) -> pd.DataFrame:
         return
 
-    def get_variables(self, variables: List[str], dataframe: str) -> pd.DataFrame:
+    def get_fields(self, field_names: List[str], table_name: str) -> pd.DataFrame:
         return
 
-    def get_dtypes(self, dtypes: List[str], dataframe: str) -> pd.DataFrame:
+    def get_type(self, field_type: str, table_name: str) -> pd.DataFrame:
         return
 
-    def add_derived_variable(self, variable: str, dataframe: str, **kwargs) -> pd.DataFrame:
+    def add_derived_field(self, field_name: str, table_name: str, **kwargs) -> pd.DataFrame:
         return
 
-    def add_custom_variable(self, new_variable, dataframe: str, field_name: str, **kwargs) -> pd.DataFrame:
+    def add_custom_field(self, new_field_name: str, table_name: str, **kwargs) -> pd.DataFrame:
         return
 
-    def remove_variable(self, variable: str, dataframe: str) -> pd.DataFrame:
+    def remove_field(self, field_name: str, table_name: str) -> pd.DataFrame:
         return
