@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "IsaricAnalytics presentation schema",
+    "description": "Flexible schema for clinical data collected at patient presentation",
+    "type": "object",
+    "properties": {
+        "subjid": {
+            "type": "string",
+            "description": "Patient Identification Number (PIN). May not uniquely identify a patient."
+        },
+        "siteid": {
+            "type": "string",
+            "description": "Site ID that collected the data for the patient."
+        },
+        "source_dataset_id": {
+            "type": "string",
+            "description": "Study ID that patient belongs to. This should be listed in the metadata file. Can be null if only one source."
+        },
+        "source_dataset_disease": {
+            "type": "string",
+            "description": "Identifying disease for the source dataset. This should be listed in the metadata file. Can be null if only one source."
+        },
+        "demog_sex": {
+            "type": "string",
+            "enum": [
+                "Male",
+                "Female",
+                "Other",
+                "Unknown"
+            ],
+            "description": "Sex at birth."
+        },
+        "demog_age_years": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Age in years. If more granularity (e.g. age in months) is required, include in an optional separate variable e.g. `demog_age_months`"
+        },
+        "demog_country_iso3": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 3166-1 alpha-3 country code"
+        },
+        "pres_adm": {
+            "type": "string",
+            "enum": [
+                "Yes",
+                "No",
+                "Unknown"
+            ],
+            "description": "Admitted to hospital"
+        },
+        "pres_date": {
+            "type": "string",
+            "anyOf": [{ "format": "date-time" }, { "format": "date" }],
+            "description": "Most recent presentation/admission date at this facility"
+        },
+        "additionalProperties": true
+    },
+    "required": [
+        "subjid",
+        "siteid",
+        "demog_sex",
+        "demog_age_years",
+        "demog_country_iso3",
+        "pres_adm",
+        "pres_date"
+    ]
+}

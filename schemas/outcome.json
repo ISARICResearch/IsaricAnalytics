@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "IsaricAnalytics outcome schema",
+    "description": "Flexible schema for clinical data collected once at outcome (could be study end, hospital discharge or death).",
+    "type": "object",
+    "properties": {
+        "subjid": {
+            "type": "string",
+            "description": "Patient Identification Number (PIN). May not uniquely identify a patient."
+        },
+        "outco_date": {
+            "type": "string",
+            "anyOf": [{ "format": "date-time" }, { "format": "date" }],
+            "description": "Outcome date."
+        },
+        "reldate_adm": {
+            "type": "integer",
+            "description": "Relative days since presentation date."
+        },
+        "outco_outcome": {
+            "type": "string",
+            "enum": [
+                "Discharged alive",
+                "Still hospitalised",
+                "Transfer to other facility",
+                "Death",
+                "Palliative care",
+                "Discharged against medical advice",
+                "Alive not admitted"
+            ],
+            "description": "Outcome."
+        }
+    },
+    "additionalProperties": true,
+    "required": [
+        "subjid",
+        "outco_date",
+        "outco_outcome"
+    ]
+}

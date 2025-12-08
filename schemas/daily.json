@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "IsaricAnalytics daily schema",
+    "description": "Flexible schema for clinical data collected daily during any point in the patient trajectory (at most once per day).",
+    "type": "object",
+    "properties": {
+        "subjid": {
+            "type": "string",
+            "description": "Patient Identification Number (PIN). May not uniquely identify a patient."
+        },
+        "date": {
+            "type": "string",
+            "anyOf": [{ "format": "date-time" }, { "format": "date" }],
+            "description": "Date of observation."
+        },
+        "reldate_adm": {
+            "type": "integer",
+            "description": "Relative days since presentation date."
+        },
+        "phase": {
+            "type": "string",
+            "enum": [
+                "pre_observation",
+                "during_observation",
+                "followup"
+            ],
+            "description": "Healthcare encounter phase."
+        }
+    },
+    "additionalProperties": true,
+    "required": [
+        "subjid",
+        "date",
+        "phase"
+    ]
+}

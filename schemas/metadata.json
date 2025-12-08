@@ -1,0 +1,180 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IsaricAnalytics metadata schema",
+    "description": "Project metadata for IsaricAnalytics clinical data",
+    "type": "object",
+    "definitions": {
+        "fileEntry": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._/-]+\.csv$",
+                    "description": "CSV filename (relative to metadata.path or absolute path).",
+                    "examples": ["presentation.csv", "../data/outcome.csv", "/PATH/daily.csv"]
+                },
+                "schema": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._/-]+\.json$",
+                    "description": "JSON schema filename (relative to repository root or absolute path)."
+                    "examples": ["presentation.json", "../schemas/outcome.json", "/PATH/daily.json"]
+                },
+                "encoding": { "type": "string", "enum": ["utf-8", "latin1"] },
+                "n_subjects": { "type": "integer" },
+                "n_rows": { "type": "integer" },
+                "n_columns": { "type": "integer" }
+            },
+            "required": ["filename", "schema", "n_subjects", "n_rows", "n_columns"],
+            "additionalProperties": false
+        }
+    },
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^project-[a-z0-9.]+-[a-z0-9.]+-v[0-9]+\\.[0-9]+(\\.[0-9]+)?$",
+            "description": "Project identifier: project-{owner}-{name}-vX.Y(.Z).",
+            "examples": ["project-isaric-covid19synthetic-v1.0"]
+        },
+        "name": { "type": "string", "description": "Short name of the project." },
+        "description": { "type": "string", "description": "Summary of the project." },
+        "owner": { "type": "string", "description": "Owner of the project." },
+        "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Project owner email."
+        },
+        "contributors": {
+            "type": "array",
+            "description": "List of contributors to the project with name and email",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "email": { "type": "string", "format": "email" }
+                },
+                "required": ["name", "email"]
+            },
+            "uniqueItems": true
+        },
+        "schema": { "type": "string", "description": "Path to the metadata schema, can be absolute or relative." },
+        "path": { "type": "string", "description": "Path from the root directory to the directory data files (at a minimum, the metadata)." },
+        "n_subjects": { "type": "integer", "description": "Number of unique subject IDs in the project." },
+        "files": {
+            "type": "object",
+            "description": "Project data files.",
+            "properties": {
+                "presentation": {
+                    "description": "Data collected during patient presentation (same for hospitalised patients or outpatients). Unique for subjid.",
+                    "allOf": [{ "$ref": "#/definitions/fileEntry" }]
+                },
+                "outcome": {
+                    "description": "Data collected during patient outcome (including study end, hospital discharge or death). Can include summary of complications that occurred during observation. Unique for subjid.",
+                    "allOf": [{ "$ref": "#/definitions/fileEntry" }]
+                },
+                "data_dictionary": {
+                    "type": "object",
+                    "description": "Data dictionary contains information about all variables in the data.",
+                    "properties": {
+                        "filename": {
+                            "type": "string",
+                            "pattern": "^([a-zA-Z0-9_\\-/]+)\\.csv$",
+                            "description": "Path from metadata.path to CSV data_dictionary file."
+                        },
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^([a-zA-Z0-9_\\-/]+)\\.json$",
+                            "description": "Path from root directory to JSON data_dictionary schema file."
+                        },
+                        "encoding": {
+                            "type": "string",
+                            "enum": ["utf-8", "latin1"],
+                            "description": "Encoding for CSV data_dictionary file."
+                        },
+                        "n_rows": { "type": "integer" }
+                    },
+                    "required": ["filename", "schema", "n_rows"],
+                    "additionalProperties": false
+                },
+                "daily": {
+                    "description": "Data collected once per day for each patient. Can include follow-up or pre-observation daily data. Unique for subjid and daily_date. Data that collected on an ad-hoc basis should instead be in events.",
+                    "allOf": [{ "$ref": "#/definitions/fileEntry" }]
+                },
+                "events": {
+                    "description": "Data that is collected at any point in time for a discrete event, e.g. imaging results, medications. Not unique for subjid and date.",
+                    "type": "object",
+                    "patternProperties": {
+                        "[A-Za-z0-9_]+$": {
+                            "description": "Single events table.",
+                            "allOf": [{ "$ref": "#/definitions/fileEntry" }]
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "presentation",
+                "outcome",
+                "data_dictionary"
+            ]
+        },
+        "date_created": { "type": "string", "format": "date-time", "description": "Date of project creation." },
+        "date_modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date of last modification to the project files (including analysis outputs)."
+        },
+        "source": {
+            "type": "array",
+            "description": "Metadata about source data and extraction.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "source_name": { "type": "string", "description": "Name of the data source." },
+                    "dataset_name": { "type": "string", "description": "Name of the dataset at the data source." },
+                    "dataset_id": { "type": "string", "description": "Identifier of the dataset at the data source." },
+                    "dataset_doi": { "type": "string", "description": "DOI for the source dataset." },
+                    "dataset_disease": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9\\-]+$",
+                        "description": "Identifying disease for the dataset (i.e. purpose of data collection, not necessarily final diagnoses)."
+                    },
+                    "source_extraction_date": { "type": "string", "format": "date-time", "description": "Date of last data extraction from source." },
+                    "source_files": {
+                        "type": "array",
+                        "description": "List of source data files.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "filename": { "type": "string", "description": "Source file name." },
+                                "schema": { "type": "string", "description": "Source file schema name." }
+                            },
+                            "required": ["filename"]
+                        },
+                        "minItems": 0
+                    }
+                },
+                "additionalProperties": true,
+                "required": [
+                    "source_name",
+                    "dataset_name",
+                    "dataset_id",
+                    "source_extraction_date",
+                    "source_files"
+                ]
+            }
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "owner",
+        "email",
+        "schema",
+        "path",
+        "n_subjects",
+        "files",
+        "date_created",
+        "source"
+    ]
+}

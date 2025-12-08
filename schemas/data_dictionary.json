@@ -1,0 +1,89 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "IsaricAnalytics data dictionary schema",
+    "description": "Project data dictionary for IsaricAnalytics clinical data",
+    "type": "object",
+    "properties": {
+        "field_name": {
+            "type": "string",
+            "pattern": "^[A-Za-z][a-zA-Z0-9_]*$",
+            "description": "Variable name. This should match (unit-specific) variable names in ARC as much as appropriate.",
+            "examples": ["demog_age", "demog_sex", "outco_outcome"]
+        },
+        "field_label": { "type": "string", "description": "Variable label. Will be used in outputs." },
+        "field_type": {
+            "type": "string",
+            "enum": [
+                "string",
+                "text",
+                "integer",
+                "number",
+                "boolean",
+                "datetime",
+                "categorical",
+                "categorical_ynu",
+                "checkbox",
+                "section"
+            ],
+            "description": "Variable type. Used in loading, validation and data processing. All field types will be nullable."
+        },
+        "field_unit": { "type": "string", "description": "Variable unit, if applicable." },
+        "field_options": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } },
+                {
+                    "type": "object",
+                    "properties": { "code": { "type": ["string", "number"] }, "value": { "type": "string" } },
+                    "required": ["code", "value"],
+                    "additionalProperties": false
+                }
+            ],
+            "description": "Answer options, either as a JSON-encoded string, an array or key-value pair object. Default: assume array with values. Must use double-quotations.",
+        },
+        "field_skip_logic": {
+            "type": "string",
+            "description": "Skip logic syntax should be simple. TODO: think about parsing and execution.",
+            "examples": [
+                "adm_date IS NOT NULL",
+                "inclu_consent != \"Yes\"",
+                "demog_age < 18 OR demog_sex == \"Male\""
+            ]
+        },
+        "parent_field_name": { "type": "string", "description": "Name of the 'parent' variable, e.g. `comor_diabetes_type` has parent `comor_diabetes`." },
+        "section": {
+            "type": "string",
+            "description": "High-level grouping of variables, similar to ARC.",
+            "examples": ["demog", "comor"]
+        },
+        "table_name": {
+            "type": "string",
+            "enum": [
+                "presentation",
+                "outcome",
+                "daily",
+                "events"
+            ],
+            "description": "The IsaricData object table that the variable belongs to."
+        },
+        "phase": {
+            "type": "string",
+            "enum": [
+                "pre_observation",
+                "presentation",
+                "during_observation",
+                "outcome",
+                "followup"
+            ],
+            "description": "Healthcare encounter phase."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "field_name",
+        "field_label",
+        "field_type",
+        "table",
+        "phase"
+    ]
+}

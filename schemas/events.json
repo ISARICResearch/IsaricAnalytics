@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "IsaricAnalytics events schema",
+    "description": "Flexible schema for clinical data collected at any point in the patient trajectory. May not be unique for subjid and date, as multiple events of the same type can occur on the same date. Each type of event may have a different set of attributes associated with this.",
+    "type": "object",
+    "properties": {
+        "subjid": {
+            "type": "string",
+            "description": "Patient Identification Number (PIN). May not uniquely identify a patient."
+        },
+        "date": {
+            "type": "string",
+            "anyOf": [{ "format": "date-time" }, { "format": "date" }],
+            "description": "Date of observation."
+        },
+        "reldate_adm": {
+            "type": "integer",
+            "description": "Relative days since presentation date."
+        },
+        "phase": {
+            "type": "string",
+            "enum": [
+                "pre_observation",
+                "during_observation",
+                "followup"
+            ],
+            "description": "Healthcare encounter phase."
+        }
+    },
+    "additionalProperties": true,
+    "required": [
+        "subjid",
+        "date",
+        "phase"
+    ]
+}
