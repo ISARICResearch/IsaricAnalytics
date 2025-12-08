@@ -1,0 +1,81 @@
+{
+    "id": "project-isaric-h5nx.synthetic-v1.0",
+    "name": "H5Nx Synthetic data",
+    "description": "This is a low-fidelity synthetic dataset, generated directly from a REDCap data dictionary with ARC variables.",
+    "owner": "ISARIC",
+    "email": "data@isaric.org",
+    "contributors": [
+        {
+            "name": "TODO",
+            "email": "todo@isaric.org"
+        }
+    ],
+    "schema": "schema/metadata.json",
+    "path": "examples/datasets/h5nx_synthetic/",
+    "n_subjects": 1000,
+    "files": {
+        "presentation": {
+            "filename": "presentation.csv",
+            "schema": "schema/presentation.json",
+            "encoding": "utf-8",
+            "n_subjects": 1000,
+            "n_rows": 1000,
+            "n_columns": 21
+        },
+        "outcome": {
+            "filename": "outcome.csv",
+            "schema": "schema/outcome.json",
+            "encoding": "utf-8",
+            "n_subjects": 1000,
+            "n_rows": 1000,
+            "n_columns": 11
+        },
+        "daily": {
+            "filename": "daily.csv",
+            "schema": "schema/daily.json",
+            "encoding": "utf-8",
+            "n_subjects": 1000,
+            "n_rows": 2967,
+            "n_columns": 15
+        },
+        "events": {
+            "medication": {
+                "filename": "events_medication.csv",
+                "schema": "schema/events.json",
+                "encoding": "utf-8",
+                "n_subjects": 990,
+                "n_rows": 5385,
+                "n_columns": 12
+            }
+        },
+        "data_dictionary": {
+            "filename": "data_dictionary.csv",
+            "schema": "schema/data_dictionary.json",
+            "encoding": "utf-8",
+            "n_rows": 65
+        }
+    },
+    "date_created": "2025-12-03T11:57:01Z",
+    "date_modified": "2025-12-03T11:57:01Z",
+    "source": [
+        {
+            "source_name": "ISARIC ClinEpi platform",
+            "dataset_name": "H5Nx Synthetic data",
+            "dataset_id": "data-isaric-h5nx.synthetic-v1.0",
+            "dataset_doi": "doi.org/10.0000/fakedoi",
+            "dataset_disease": "h5nx",
+            "source_extraction_date": "2025-12-03T11:57:00Z",
+            "source_files": [
+                {
+                    "filename": "core.parquet",
+                    "schema": "https://github.com/ISARICResearch/.../isaric-core.json"
+                },
+                {
+                    "filename": "long.parquet",
+                    "schema": "https://github.com/ISARICResearch/.../isaric-long.json"
+                }
+            ]
+        }
+    ],
+    "notes": ""
+}

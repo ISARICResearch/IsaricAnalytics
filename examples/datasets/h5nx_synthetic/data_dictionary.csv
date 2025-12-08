@@ -1,0 +1,66 @@
+field_name,field_label,field_type,field_unit,field_options,field_skip_logic,parent_field_name,section,table_name,phase
+subjid,Participant Identification Number (PIN),string,,,,,,"presentation,outcome,daily,events_medication",
+phase,Healthcare encounter phase,categorical,,"[""pre_observation"", ""presentation"", ""during_observation"", ""outcome"", ""followup""]",,,,"daily,events_medication",
+date,Date of observation,datetime,,,,,,"daily,events_medication",
+reldate_adm,Relative days since presentation date,integer,,,,,,"outcome,daily,events_medication",
+siteid,Site ID that collected the data,string,,,,,,presentation,
+source_dataset_id,Source dataset ID. Further details are included in the project metadata.,categorical,,"[""data-isaric-h5nx.synthetic-v1.0""]",,,,presentation,
+source_dataset_disease,Source dataset disease. Further details are included in the project metadata.,categorical,,"[""h5nx""]",,,,presentation,
+pres,ONSET & PRESENTATION,section,,,,,pres,presentation,presentation
+pres_date,Date of hospital admission,datetime,,,,pres,pres,presentation,presentation
+pres_adm,Admitted to hospital,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,pres,pres,presentation,presentation
+pres_onsetdate,Onset date of first / earliest symptom,datetime,,,,pres,pres,presentation,presentation
+pres_enrolmentdate,Date of enrolment / start of data collection,datetime,,,,pres,pres,presentation,presentation
+demog,DEMOGRAPHICS,section,,,,,demog,presentation,presentation
+demog_sex,Sex at birth,categorical,,"[""Male"", ""Female"", ""Other"", ""Unknown""]",,demog,demog,presentation,presentation
+demog_age_years,Age in years,integer,,,,demog,demog,presentation,presentation
+demog_country_iso3,Country ISO Code,categorical,,"[""GBR"", ""COL"", ""BRA"", ""CAN""]",,demog,demog,presentation,presentation
+demog_healthcare,Employed as a healthcare worker,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,demog,demog,presentation,presentation
+comor,CO-MORBIDITIES AND RISK FACTORS,section,,,,,comor,presentation,presentation
+comor_hypertensi,Hypertension (physician diagnosed),categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+comor_chrkidney,Chronic kidney disease,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+comor_chrkidney_stag,Stage of chronic kidney disease,categorical,,"[""Stage 1"", ""Stage 2"", ""Stage 3a"", ""Stage 3b"", ""Stage 4"", ""Stage 5""]","comor_chrkidney == ""Yes""",comor_chrkidney,comor,presentation,presentation
+comor_liverdisease,Liver disease,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+comor_liverdisease_type,Type of liver disease,categorical,,"[""Mild"", ""Moderate or severe""]","comor_liverdisease == ""Yes""",comor_liverdisease,comor,presentation,presentation
+comor_obesity,Obesity,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+comor_diabetes_yn,Diabetes mellitus,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+comor_smoking_yn,Ever smoked,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,comor,comor,presentation,presentation
+vacci,VACCINATION,section,,,,,vacci,presentation,pre_observation
+vacci_influenza_yn,Vaccinated for seasonal influenza (ever),categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,vacci,vacci,presentation,pre_observation
+adsym,SIGNS AND SYMPTOMS ON ADMISSION,section,,,,,adsym,presentation,pre_observation
+adsym_fever,Fever,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,adsym,adsym,presentation,pre_observation
+adsym_headache,Headache,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,adsym,adsym,presentation,pre_observation
+outco,OUTCOME,section,,,,,outco,outcome,outcome
+outco_date,Outcome date,datetime,,,,outco,outco,outcome,outcome
+outco_outcome,Outcome,categorical,,"[""Discharged alive"", ""Still hospitalised"", ""Transfer to other facility"", ""Death"", ""Palliative care"", ""Discharged against medical advice"", ""Alive not admitted""]",,outco,outco,outcome,outcome
+compl,COMPLICATIONS,section,,,,,compl,outcome,outcome
+compl_severeliver,Severe liver disease (new onset),categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,compl,compl,outcome,outcome
+compl_acuterenal,Acute renal injury / acute renal failure,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,compl,compl,outcome,outcome
+compl_ards,Acute Respiratory Distress Syndrome (ARDS),categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,compl,compl,outcome,outcome
+inter,INTERVENTIONS,section,,,,,inter,outcome,outcome
+inter_suppleo2,Any supplemental oxygen?,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,inter,inter,outcome,outcome
+inter_o2support_type,If yes: Select all types of respiratory support the patient received,checkbox,,"[""High flow nasal oxygen"", ""Non-invasive ventilation"", ""Invasive ventilation"", ""Unknown""]","inter_o2support == ""Yes""",inter_suppleo2,inter,outcome,outcome
+vital,VITAL SIGNS & ASSESSMENTS,section,,,,,vital,daily,during_observation
+vital_highesttem_c,Highest temperature (°C),number,°C,,,vital,vital,daily,during_observation
+vital_hr,HR,number,bpm,,,vital,vital,daily,during_observation
+vital_rr,RR,number,breaths/min,,,vital,vital,daily,during_observation
+vital_meanbp,Mean arterial blood pressure,number,mmHg,,,vital,vital,daily,during_observation
+vital_gcs,Glasgow Coma Score (GCS / 15),number,,,,vital,vital,daily,during_observation
+sympt,SIGNS AND SYMPTOMS,section,,,,,sympt,daily,during_observation
+sympt_fever,Fever,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,sympt,sympt,daily,during_observation
+sympt_headache,Headache,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,sympt,sympt,daily,during_observation
+treat,TREATMENTS & INTERVENTIONS,section,,,,,treat,daily,during_observation
+treat_o2supp_suppleo2,Supplemental oxygen,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,treat,treat,daily,during_observation
+labs,LABORATORY RESULTS,section,,,,,labs,daily,during_observation
+labs_platelets_103ul,Platelets,number,10^3/uL,,,labs,labs,daily,during_observation
+labs_bilirubin_mgdl,Total bilirubin,number,mg/dL,,,labs,labs,daily,during_observation
+labs_creatinine_mgdl,Creatinine,number,mg/dL,,,labs,labs,daily,during_observation
+medi,MEDICATION,section,,,,,medi,events_medication,during_observation
+medi_antiviralagent,Antiviral,categorical,,"[""Oseltamivir (Tamiflu)"", ""Peramivir"", ""Zanamivir (Relenza)""]",,medi,medi,events_medication,during_observation
+medi_medtype,Select agents administered while hospitalised or at discharge,categorical,,"[""Antiviral""]",,medi,medi,events_medication,during_observation
+medi_treat,Is this medication treating the disease?,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,medi,medi,events_medication,during_observation
+medi_medstartdate,Date medication started / first dose,datetime,,,,medi,medi,events_medication,during_observation
+medi_medenddate,Date medication stopped / last dose,datetime,,,,medi,medi,events_medication,during_observation
+medi_numdays,Total number of days treatment given,integer,,,,medi,medi,events_medication,during_observation
+medi_dose,Dose,number,,,,medi,medi,events_medication,during_observation
+medi_units,Units,string,,,,medi,medi,events_medication,during_observation
