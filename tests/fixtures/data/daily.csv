@@ -1,0 +1,9 @@
+subjid,date,reldate_adm,phase,labs_platelets_103ul,sympt_fever
+00000-00001,2025-03-29,4,during_observation,1.555,Yes
+00000-00002,2025-01-26,0,during_observation,3.536,No
+00000-00002,2025-01-27,1,during_observation,3.344,No
+00000-00002,2025-01-29,3,during_observation,3.245,No
+00000-00004,2025-03-06,0,during_observation,2.137,Yes
+00000-00004,2025-03-07,1,during_observation,2.25,Yes
+00000-00004,2025-03-09,3,during_observation,2.314,Yes
+00000-00005,2025-01-15,1,during_observation,2.835,No

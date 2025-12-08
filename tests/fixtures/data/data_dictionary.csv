@@ -1,0 +1,18 @@
+field_name,field_label,field_type,field_unit,field_options,field_skip_logic,parent_field_name,section,table_name,phase
+subjid,Participant Identification Number (PIN),string,,,,,,"presentation,outcome,daily,events_medication",
+phase,Healthcare encounter phase,categorical,,"[""pre_observation"", ""presentation"", ""during_observation"", ""outcome"", ""followup""]",,,,"daily,events_medication",
+date,Date of observation,datetime,,,,,,"daily,events_medication",
+reldate_adm,Relative days since presentation date,integer,,,,,,"outcome,daily,events_medication",
+siteid,Site ID that collected the data,string,,,,,,presentation,
+source_dataset_id,Source dataset ID. Further details are included in the project metadata.,categorical,,"[""data-fixtures-test-v1.0""]",,,,presentation,
+source_dataset_disease,Source dataset disease. Further details are included in the project metadata.,categorical,,"[""test""]",,,,presentation,
+pres_date,Date of hospital admission,datetime,,,,,pres,presentation,presentation
+pres_adm,Admitted to hospital,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,,pres,presentation,presentation
+demog_sex,Sex at birth,categorical,,"[""Male"", ""Female"", ""Other"", ""Unknown""]",,,demog,presentation,presentation
+demog_age_years,Age in years,integer,,,,,demog,presentation,presentation
+demog_country_iso3,Country ISO Code,categorical,,"[""GBR""]",,,demog,presentation,presentation
+outco_date,Outcome date,datetime,,,,,outco,outcome,outcome
+outco_outcome,Outcome,categorical,,"[""Discharged alive"", ""Still hospitalised"", ""Transfer to other facility"", ""Death"", ""Palliative care"", ""Discharged against medical advice"", ""Alive not admitted""]",,,outco,outcome,outcome
+sympt_fever,Fever,categorical_ynu,,"[""Yes"", ""No"", ""Unknown""]",,,sympt,daily,during_observation
+labs_platelets_103ul,Platelets,number,10^3/uL,,,,labs,daily,during_observation
+medi_antiviralagent,Antiviral,categorical,,"[""Oseltamivir (Tamiflu)"", ""Peramivir""]",,,medi,events_medication,during_observation

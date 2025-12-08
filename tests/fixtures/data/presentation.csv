@@ -1,0 +1,6 @@
+subjid,siteid,source_dataset_id,source_dataset_disease,demog_sex,demog_age_years,demog_country_iso3,pres_adm,pres_date
+00000-00001,00000-GBR-s1,data-fixtures-test-v1.0,test,Male,19.0,GBR,Yes,2025-03-25
+00000-00002,00000-GBR-s1,data-fixtures-test-v1.0,test,Male,26.0,GBR,Yes,2025-01-26
+00000-00003,00000-GBR-s1,data-fixtures-test-v1.0,test,Male,55.0,GBR,Yes,2025-01-14
+00000-00004,00000-GBR-s1,data-fixtures-test-v1.0,test,Female,25.0,GBR,Yes,2025-03-06
+00000-00005,00001-GBR-s2,data-fixtures-test-v1.0,test,Male,35.0,GBR,Yes,2025-01-14

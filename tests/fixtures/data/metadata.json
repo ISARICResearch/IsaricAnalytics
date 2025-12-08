@@ -1,0 +1,72 @@
+{
+    "id": "project-fixture-test-v1.0",
+    "name": "Test",
+    "description": "This is a test dataset.",
+    "owner": "ISARIC",
+    "email": "data@isaric.org",
+    "contributors": [
+        {
+            "name": "TODO",
+            "email": "todo@isaric.org"
+        }
+    ],
+    "schema": "schema/metadata.json",
+    "path": "tests/fixtures/data/",
+    "n_subjects": 5,
+    "files": {
+        "presentation": {
+            "filename": "presentation.csv",
+            "schema": "schema/presentation.json",
+            "encoding": "utf-8",
+            "n_subjects": 5,
+            "n_rows": 5,
+            "n_columns": 9
+        },
+        "outcome": {
+            "filename": "outcome.csv",
+            "schema": "schema/outcome.json",
+            "encoding": "utf-8",
+            "n_subjects": 5,
+            "n_rows": 5,
+            "n_columns": 4
+        },
+        "daily": {
+            "filename": "daily.csv",
+            "schema": "schema/daily.json",
+            "encoding": "utf-8",
+            "n_subjects": 4,
+            "n_rows": 8,
+            "n_columns": 6
+        },
+        "events": {
+            "medication": {
+                "filename": "events_medication.csv",
+                "schema": "schema/events.json",
+                "encoding": "utf-8",
+                "n_subjects": 3,
+                "n_rows": 6,
+                "n_columns": 5
+            }
+        },
+        "data_dictionary": {
+            "filename": "data_dictionary.csv",
+            "schema": "schema/data_dictionary.json",
+            "encoding": "utf-8",
+            "n_rows": 17
+        }
+    },
+    "date_created": "2025-12-04T11:57:01Z",
+    "date_modified": "2025-12-04T11:57:01Z",
+    "source": [
+        {
+            "source_name": "ISARIC",
+            "dataset_name": "Test source",
+            "dataset_id": "data-fixtures-test-v1.0",
+            "dataset_doi": null,
+            "dataset_disease": "test",
+            "source_extraction_date": "2025-12-04T11:57:00Z",
+            "source_files": []
+        }
+    ],
+    "notes": ""
+}
