@@ -32,7 +32,7 @@ jobs:
         run: |
           python --version
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install isaricanalytics
+          python -m pip install .
 
       - name: run tests
         run: |
