@@ -7,9 +7,10 @@ name = "isaricanalytics"
 dynamic = ["version"]
 description = "Analysis pipeline support for clinical characterisation during outbreaks"
 authors = [
-    { name = "Esteban Garcia-Gallo", email = "" },
-    { name = "Tom Edinburgh", email = "te269.cam@outlook.com" },
-    { name = "Igor Peres", email = "" },
+    { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
+    { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
+    { name = "Igor Peres", email = "igor.peres@puc-rio.br" },
+    { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" }, 
     { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
 ]
