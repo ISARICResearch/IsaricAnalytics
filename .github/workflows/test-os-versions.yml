@@ -32,8 +32,10 @@ jobs:
         run: |
           python --version
           python -m pip install --upgrade pip setuptools wheel
+          python -m pip install numpy
+          python -m pip install --prefer-binary scipy
           python -m pip install .
 
       - name: run tests
         run: |
-          python3 -m pytest --cov=isaricanalytics --cov-report=xml
+          python -m pytest --cov=isaricanalytics --cov-report=xml
