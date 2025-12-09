@@ -10,7 +10,7 @@ authors = [
     { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
     { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
     { name = "Igor Peres", email = "igor.peres@puc-rio.br" },
-    { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" }, 
+    { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
     { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
 ]
@@ -27,7 +27,7 @@ dependencies = [
     "pytest-cov==7.0.0"
 ]
 
- 
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["isaricanalytics*"]
