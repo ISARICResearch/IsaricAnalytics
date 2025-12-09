@@ -27,13 +27,16 @@ dependencies = [
     "pytest-cov==7.0.0"
 ]
 
-[tool.ruff]
+ 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["isaricanalytics*"]
+exclude = ["tests*", "examples*", "schemas*"]
 
+[tool.ruff]
 line-length = 88
 target-version = "py311"
-
 lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import sorting
-
 # Optional: exclude certain paths
 exclude = [
     ".venv",

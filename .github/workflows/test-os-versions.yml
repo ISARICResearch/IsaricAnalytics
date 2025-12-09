@@ -28,11 +28,11 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: install pints
+      - name: install
         run: |
           python --version
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install .
+          python -m pip install isaricanalytics
 
       - name: run tests
         run: |

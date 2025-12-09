@@ -36,6 +36,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install .
 
-      - name: run unit tests (todo: upload to Codecov)
+      - name: "run unit tests (todo: upload to Codecov)"
         run: |
           python -m pytest --cov=isaricanalytics --cov-report=xml
