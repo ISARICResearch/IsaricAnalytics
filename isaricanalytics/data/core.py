@@ -4,7 +4,8 @@ core.py: Creates `IsaricData` dataclass.
 
 The `IsaricData` class has methods to:
 
-- Validate the data according to the data schema and the project metadata and data dictionary.
+- Validate the data according to the data schema and the project metadata and data
+  dictionary.
 - Describes the data.
 - Return views of the data for subsets of subjects and variables.
 - Add and remove variables.
@@ -14,13 +15,13 @@ __author__ = "Tom Edinburgh"
 
 import json
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
 
 
 @dataclass
 class IsaricData:
-
     # Required fields
     metadata: Dict[str, Any]
     data_dictionary: pd.DataFrame
@@ -71,9 +72,10 @@ class IsaricData:
         return
 
     def get_field_options(self, field_name: str) -> List[Any]:
-        """Currently field options stored as a JSON-string inside a pandas dataframe. TODO."""
-        mask = self.data_dictionary['field_name'] == field_name
-        s = self.data_dictionary.loc[mask, 'field_options'].item()
+        """Currently field options stored as a JSON-string inside a pandas dataframe.
+        TODO."""
+        mask = self.data_dictionary["field_name"] == field_name
+        s = self.data_dictionary.loc[mask, "field_options"].item()
         field_options = json.loads(s) if pd.notna(s) and s.strip() else []
         return field_options
 
@@ -86,10 +88,14 @@ class IsaricData:
     def get_type(self, field_type: str, table_name: str) -> pd.DataFrame:
         return
 
-    def add_derived_field(self, field_name: str, table_name: str, **kwargs) -> pd.DataFrame:
+    def add_derived_field(
+        self, field_name: str, table_name: str, **kwargs
+    ) -> pd.DataFrame:
         return
 
-    def add_custom_field(self, new_field_name: str, table_name: str, **kwargs) -> pd.DataFrame:
+    def add_custom_field(
+        self, new_field_name: str, table_name: str, **kwargs
+    ) -> pd.DataFrame:
         return
 
     def remove_field(self, field_name: str, table_name: str) -> pd.DataFrame:
