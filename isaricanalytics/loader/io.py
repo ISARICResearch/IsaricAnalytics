@@ -14,8 +14,6 @@ creates a `Loader` object, reads the required files into an `IsaricData`
 object and runs the validation method of `IsaricData` dataclass.
 """
 
-__author__ = "Tom Edinburgh"
-
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -204,15 +202,15 @@ class Loader:
         filename = file_metadata.get("filename", f"{name}.csv")
         if not isinstance(filename, str):
             raise TypeError(
-                "metadata key 'files.%s.filename' must be string-valued if it exists",
-                name,
+                f"metadata key 'files.{name}.filename' must be string-valued if it "
+                "exists"
             )
 
         encoding = file_metadata.get("encoding", self.encoding)
         if not isinstance(encoding, str):
             raise TypeError(
-                "metadata key 'files.%s.encoding' must be string-valued if it exists",
-                name,
+                f"metadata key 'files.{name}.encoding' must be string-valued if it "
+                "exists"
             )
 
         data_path = self.path / filename
