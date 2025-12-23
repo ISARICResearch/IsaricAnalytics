@@ -135,12 +135,11 @@ class IsaricData:
         new = self.__class__.__new__(self.__class__)
 
         for name, value in self.__dict__.items():
-            if isinstance(value, pd.DataFrame):
-                if table_names is None or name in table_names:
-                    new.__dict__[name] = value.copy(deep=True)
-                else:
-                    # keep as reference to original DataFrame if not included in table_names
-                    new.__dict__[name] = value
+            if (
+                isinstance(value, pd.DataFrame)
+                and table_names is None or name in table_names
+            ):
+                new.__dict__[name] = value.copy(deep=True)
 
             elif isinstance(value, dict):
                 new.__dict__[name] = deepcopy(value)
