@@ -6,7 +6,7 @@
     "properties": {
         "field_name": {
             "type": "string",
-            "pattern": "^[A-Za-z][a-zA-Z0-9_]*$",
+            "pattern": "^[a-z][a-z0-9_]*$",
             "description": "Variable name. This should match (unit-specific) variable names in ARC as much as appropriate.",
             "examples": ["demog_age", "demog_sex", "outco_outcome"]
         },

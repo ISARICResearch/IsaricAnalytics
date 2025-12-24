@@ -30,7 +30,7 @@ Please be as detailed as possible, and include where possible:
 You can contribute code to the project through pull requests. To submit a pull
 request, you need to
 
-- [Fork the rapids repository]
+- [Fork the repository]
 - Clone it to your local machine
 - Implement your code and test it
 - Push it to your GitHub repository
@@ -40,7 +40,7 @@ If you are contributing a new method within one of the modules, please include a
 one unit test. If you are contributing a new analysis pipeline, please include an
 integration test. Please run the pre-commit hook before making your pull request.
 
-[Fork the rapids repository]: https://github.com/IsaricResearch/IsaricAnalytics/fork
+[Fork the repository]: https://github.com/IsaricResearch/IsaricAnalytics/fork
 
 [Create a pull request]: https://github.com/IsaricResearch/IsaricAnalytics/pulls
 

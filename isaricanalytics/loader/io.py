@@ -14,13 +14,11 @@ creates a `Loader` object, reads the required files into an `IsaricData`
 object and runs the validation method of `IsaricData` dataclass.
 """
 
-__author__ = "Tom Edinburgh"
-
 import json
-from typing import Dict, Any, Optional
-import pandas as pd
 from pathlib import Path
-import logging
+from typing import Any, Dict, Optional
+
+import pandas as pd
 
 from isaricanalytics.data import IsaricData
 from isaricanalytics.logger import setup_logger
@@ -43,13 +41,16 @@ class Loader:
     Attributes:
         path: Path object for the specified path
         encoding: As above
-        metadata: Project metadata, empty on initialisation. Loaded using :method:`load_metadata`.
+        metadata:
+          Project metadata, empty on initialisation. Loaded using
+          :method:`load_metadata`.
         data_dictionary: Project data_dictionary, empty on initialisation.
           Loaded using :method:`load_data_dictionary`.
 
     Raises:
         FileNotFoundError: If ``path`` does not exist or is not a directory.
     """
+
     def __init__(self, path: str, encoding: str = "utf-8") -> None:
         if not isinstance(path, str):
             raise TypeError("path must be string-valued")
@@ -83,9 +84,12 @@ class Loader:
             self.metadata = json.load(json_data)
             logger.info("Loaded project metadata.")
 
-        # Get path specified in metadata, must be the same as path specified on init if present
+        # Get path specified in metadata, must match path specified on init if present
         path_from_metadata = self.metadata.get("path", None)
-        if path_from_metadata and Path(path_from_metadata).resolve() != self.path.resolve():
+        if (
+            path_from_metadata
+            and Path(path_from_metadata).resolve() != self.path.resolve()
+        ):
             raise ValueError("metadata field `path` must equal :attr:`path`")
         return self.metadata
 
@@ -97,21 +101,38 @@ class Loader:
 
         Raises:
             ValueError: If metadata is missing.
-            TypeError: If relevant metadata keys are not string-valued
-              ('path', 'files.data_dictionary.filename', 'files.data_dictionary.encoding').
+            TypeError:
+              If relevant metadata keys are not string-valued: 'path',
+              'files.data_dictionary.filename', 'files.data_dictionary.encoding'
             FileNotFoundError: If data dictionary file is not found.
         """
 
         if self.metadata is None:
-            raise ValueError("metadata must be loaded first (using :method:`load_metadata`)")
+            raise ValueError(
+                "metadata must be loaded first (using :method:`load_metadata`)"
+            )
 
-        filename = self.metadata.get("files", {}).get("data_dictionary", {}).get("filename", "data_dictionary.csv")
+        filename = (
+            self.metadata.get("files", {})
+            .get("data_dictionary", {})
+            .get("filename", "data_dictionary.csv")
+        )
         if not isinstance(filename, str):
-            raise TypeError("metadata key 'files.data_dictionary.filename' must be string-valued if it exists")
+            raise TypeError(
+                "metadata key 'files.data_dictionary.filename' must be string-valued "
+                "if it exists"
+            )
 
-        encoding = self.metadata.get("files", {}).get("data_dictionary", {}).get("encoding", self.encoding)
+        encoding = (
+            self.metadata.get("files", {})
+            .get("data_dictionary", {})
+            .get("encoding", self.encoding)
+        )
         if not isinstance(encoding, str):
-            raise TypeError("metadata key 'files.data_dictionary.encoding' must be string-valued if it exists")
+            raise TypeError(
+                "metadata key 'files.data_dictionary.encoding' must be string-valued "
+                "if it exists"
+            )
 
         data_dictionary_path = self.path / filename
         if not data_dictionary_path.exists():
@@ -146,41 +167,58 @@ class Loader:
 
         Raises:
             ValueError: If metadata or data_dictionary is missing.
-            TypeError: If relevant metadata keys are not string-valued
-              ('path', 'files.data_dictionary.filename', 'files.data_dictionary.encoding').
+            TypeError:
+              If relevant metadata keys are not string-valued e.g. 'path'
+              'files.data_dictionary.filename', 'files.data_dictionary.encoding'
             FileNotFoundError: If data file is not found.
         """
 
         if self.metadata is None:
-            raise ValueError("metadata must be loaded first (using :method:`load_metadata`)")
+            raise ValueError(
+                "metadata must be loaded first (using :method:`load_metadata`)"
+            )
 
         if self.data_dictionary is None:
-            raise ValueError("data dictionary must be loaded first (using :method:`load_data_dictionary`)")
+            raise ValueError(
+                "data dictionary must be loaded first "
+                "(using :method:`load_data_dictionary`)"
+            )
 
         file_metadata = self.metadata.get("files", {}).get(name, {})
         # If an events dataframe, then need to go one level deeper in the metadata
         if not file_metadata:
-            file_metadata = self.metadata.get("files", {}).get("events", {}).get(name, {})
+            file_metadata = (
+                self.metadata.get("files", {}).get("events", {}).get(name, {})
+            )
 
         if not file_metadata:
-            logger.warning("dataframe %s is not listed as a file in metadata.json or has no metadata", name)
+            logger.warning(
+                "dataframe %s is not listed as a file in metadata.json "
+                "or has no metadata",
+                name,
+            )
             return
 
         filename = file_metadata.get("filename", f"{name}.csv")
         if not isinstance(filename, str):
-            raise TypeError("metadata key 'files.%s.filename' must be string-valued if it exists", name)
+            raise TypeError(
+                f"metadata key 'files.{name}.filename' must be string-valued if it "
+                "exists"
+            )
 
         encoding = file_metadata.get("encoding", self.encoding)
         if not isinstance(encoding, str):
-            raise TypeError("metadata key 'files.%s.encoding' must be string-valued if it exists", name)
+            raise TypeError(
+                f"metadata key 'files.{name}.encoding' must be string-valued if it "
+                "exists"
+            )
 
         data_path = self.path / filename
         if not data_path.exists():
             raise FileNotFoundError(data_path)
 
-        str_mask = (
-            (self.data_dictionary["table_name"] == name) &
-            (self.data_dictionary["field_type"].isin(["freetext", "categorical"]))
+        str_mask = (self.data_dictionary["table_name"] == name) & (
+            self.data_dictionary["field_type"].isin(["freetext", "categorical"])
         )
         str_variables = self.data_dictionary.loc[str_mask, "field_name"].tolist()
         dtype_dict = {x: str for x in str_variables}
@@ -195,13 +233,13 @@ class Loader:
         )
 
         # Convert datetime variables
-        date_mask = (
-            (self.data_dictionary["table_name"] == name) &
-            (self.data_dictionary["field_type"] == "datetime")
+        date_mask = (self.data_dictionary["table_name"] == name) & (
+            self.data_dictionary["field_type"] == "datetime"
         )
         date_variables = self.data_dictionary.loc[date_mask, "field_name"].tolist()
         df[date_variables] = df[date_variables].apply(
-            lambda x: pd.to_datetime(x, errors="coerce"))
+            lambda x: pd.to_datetime(x, errors="coerce")
+        )
 
         logger.info("Loaded project dataframe: %s.", name)
         return df

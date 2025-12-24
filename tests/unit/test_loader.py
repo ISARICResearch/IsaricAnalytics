@@ -1,13 +1,12 @@
+import json
+import tempfile
 from pathlib import Path
 
 import pandas as pd
 import pytest
-import json
-import tempfile
 
-from isaricanalytics.loader.io import Loader, load_data_from_file
 from isaricanalytics.data.core import IsaricData
-
+from isaricanalytics.loader.io import Loader, load_data_from_file
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "data"
 
@@ -20,7 +19,7 @@ def test_loader_init():
     assert loader.metadata is None
     assert loader.data_dictionary is None
 
-    alt_encoding = 'latin-1'
+    alt_encoding = "latin-1"
     loader = Loader(path=str(FIXTURES), encoding=alt_encoding)
     assert loader.encoding == alt_encoding
 
@@ -43,7 +42,7 @@ def test_loader_metadata():
     assert isinstance(loader.metadata, dict)
     expected_files = ("presentation", "outcome", "data_dictionary", "daily", "events")
     assert all(file in loader.metadata["files"] for file in expected_files)
-    expected_event_files = ("medication")
+    expected_event_files = "medication"
     assert expected_event_files in loader.metadata["files"]["events"]
 
 
@@ -85,8 +84,10 @@ def test_loader_metadata_encoding():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpfile = Path(tmpdir) / "metadata.json"
         tmp_metadata = {"name": "test français"}
-        tmpfile.write_text(json.dumps(tmp_metadata, ensure_ascii=False), encoding="latin-1")
-        loader = Loader(str(tmpdir), encoding='utf-8')
+        tmpfile.write_text(
+            json.dumps(tmp_metadata, ensure_ascii=False), encoding="latin-1"
+        )
+        loader = Loader(str(tmpdir), encoding="utf-8")
         with pytest.raises(UnicodeDecodeError):
             loader.load_metadata()
 
@@ -97,7 +98,9 @@ def test_loader_metadata_encoding():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpfile = Path(tmpdir) / "metadata.json"
         tmp_metadata = {"name": "test français"}
-        tmpfile.write_text(json.dumps(tmp_metadata, ensure_ascii=False), encoding="utf-8")
+        tmpfile.write_text(
+            json.dumps(tmp_metadata, ensure_ascii=False), encoding="utf-8"
+        )
 
         loader = Loader(str(tmpdir), encoding="utf-8")
         loader.load_metadata()
@@ -117,7 +120,8 @@ def test_loader_data_dictionary():
         loader.load_data_dictionary()  # metadata must be loaded first
 
     loader.load_metadata()
-    assert loader.metadata["files"]["data_dictionary"]["filename"] == "data_dictionary.csv"
+    metadata_dd_filename = loader.metadata["files"]["data_dictionary"]["filename"]
+    assert metadata_dd_filename == "data_dictionary.csv"
     assert loader.metadata["files"]["data_dictionary"]["encoding"] == "utf-8"
     data_dictionary = loader.load_data_dictionary()
     assert isinstance(loader.data_dictionary, pd.DataFrame)
@@ -147,7 +151,8 @@ def test_loader_df():
     loader = Loader(path=str(FIXTURES))
 
     with pytest.raises(ValueError):
-        loader.load_df("presentation")  # metadata and data_dictionary must be loaded first
+        # metadata and data_dictionary must be loaded first
+        loader.load_df("presentation")
 
     loader.load_metadata()
     with pytest.raises(ValueError):
@@ -207,4 +212,6 @@ def test_loader_wrapper():
     assert not data.outcome.empty
     assert hasattr(data, "daily") and isinstance(data.daily, pd.DataFrame)
     assert hasattr(data, "events") and isinstance(data.events, dict)
-    assert "medication" in data.events and isinstance(data.events["medication"], pd.DataFrame)
+    assert "medication" in data.events and isinstance(
+        data.events["medication"], pd.DataFrame
+    )
