@@ -4,6 +4,7 @@ utils.py: General helper functions.
 """
 
 import re
+
 import pandas as pd
 
 
@@ -18,8 +19,8 @@ def sanitise_string(string: str) -> str:
         Modified string.
     """
     s = str(string).strip().lower()
-    s = re.sub(r'\s+', '_', s)
-    s = re.sub(r'[^0-9a-z_]', '', s)
+    s = re.sub(r"\s+", "_", s)
+    s = re.sub(r"[^0-9a-z_]", "", s)
     return s
 
 
@@ -36,7 +37,7 @@ def sanitise_field(field: pd.Series) -> pd.Series:
     mapping_df = pd.DataFrame.from_dict(
         {value: sanitise_string(value) for value in field},
         orient="index",
-        columns=["clean"]
+        columns=["clean"],
     ).reset_index()
 
     # Make sure sanitised strings are unique by adding an incremental suffix

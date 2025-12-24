@@ -12,10 +12,10 @@ The `IsaricData` class has methods to:
 """
 
 import json
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from copy import deepcopy
 import pandas as pd
 
 from isaricanalytics.utils import sanitise_string
@@ -61,12 +61,12 @@ class IsaricData:
         if not isinstance(self.data_dictionary, pd.DataFrame):
             raise TypeError("data_dictionary must be a pandas DataFrame")
 
-        field_name_check = self.data_dictionary['field_name'].apply(
+        field_name_check = self.data_dictionary["field_name"].apply(
             lambda x: x != sanitise_string(x) or not str(x)[0].isalpha()
         )
         if field_name_check.any():
             field_names = ", ".join(
-                self.data_dictionary.loc[field_name_check, 'field_name']
+                self.data_dictionary.loc[field_name_check, "field_name"]
             )
             raise ValueError(f"field_names ({field_names}) don't conform to schema")
 
@@ -98,12 +98,13 @@ class IsaricData:
     def get_fields(self, field_names: List[str], table_name: str) -> pd.DataFrame:
         return
 
-    def get_field_names(self, field_types: List[str], table_names: List[str]) -> List[str]:
+    def get_field_names(
+        self, field_types: List[str], table_names: List[str]
+    ) -> List[str]:
         """Get field names by field types and/or table names. TODO properly"""
-        mask = (
-            self.data_dictionary["field_type"].isin(field_types)
-            & self.data_dictionary["table_name"].isin(table_names)
-        )
+        mask = self.data_dictionary["field_type"].isin(
+            field_types
+        ) & self.data_dictionary["table_name"].isin(table_names)
         return self.data_dictionary.loc[mask, "field_name"].tolist()
 
     def add_derived_field(
@@ -137,7 +138,8 @@ class IsaricData:
         for name, value in self.__dict__.items():
             if (
                 isinstance(value, pd.DataFrame)
-                and table_names is None or name in table_names
+                and table_names is None
+                or name in table_names
             ):
                 new.__dict__[name] = value.copy(deep=True)
 
