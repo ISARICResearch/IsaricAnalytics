@@ -15,6 +15,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from copy import deepcopy
 import pandas as pd
 
 from isaricanalytics.utils import sanitise_string
@@ -117,3 +118,33 @@ class IsaricData:
 
     def remove_field(self, field_name: str, table_name: str) -> pd.DataFrame:
         return
+
+    def copy(self, table_names: Optional[List[str]] = None) -> "IsaricData":
+        """
+        Return a deep copy of this IsaricData instance.
+
+        Args:
+            table_names:
+                Optional list of attribute names that correspond to pandas DataFrames.
+                If None, deep copy all attributes that are pandas DataFrames.
+
+        Returns:
+            A new IsaricData instance with copied attributes.
+        """
+        # create a new empty instance, avoid re-running __init__
+        new = self.__class__.__new__(self.__class__)
+
+        for name, value in self.__dict__.items():
+            if (
+                isinstance(value, pd.DataFrame)
+                and table_names is None or name in table_names
+            ):
+                new.__dict__[name] = value.copy(deep=True)
+
+            elif isinstance(value, dict):
+                new.__dict__[name] = deepcopy(value)
+
+            else:
+                new.__dict__[name] = value
+
+        return new
