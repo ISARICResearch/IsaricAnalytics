@@ -1,0 +1,15 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 0%
+        flags:
+          - unit
+        paths:
+          - "isaricanalytics"
+        branches:
+          - main
+        if_ci_failed: error
+        informational: false
+        only_pulls: false

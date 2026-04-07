@@ -1,3 +1,9 @@
+# logs
+app.log*
+
+#public project dir
+projects/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -50,6 +56,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test-results/
 
 # Translations
 *.mo
@@ -162,3 +169,5 @@ cython_debug/
 # Ignore Mac DS_Store files
 .DS_Store
 **/.DS_Store
+
+docs/_build
