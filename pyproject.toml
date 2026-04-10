@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "isaricanalytics"
 dynamic = ["version"]
-description = "Analysis pipeline support for clinical characterisation during outbreaks"
+description = "Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks."
 authors = [
     { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
     { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
@@ -13,18 +13,46 @@ authors = [
     { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
     { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
+    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" }
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+keywords = [
+    "isaric",
+    "disease-outbreaks",
+    "clinical-data",
+    "data-analysis",
+    "data-analytics",
+]
+requires-python = ">=3.11"
 dependencies = [
     "lifelines==0.30.0",
     "numpy==1.26.4",
     "pandas==2.2.1",
+    "plotly==6.1.1",
+    "requests>=2.32.4",
     "scikit-learn==1.5.2",
     "scipy==1.12.0",
     "statsmodels==0.14.1",
+]
+
+[project.optional-dependencies]
+test = [
     "pytest==8.4.2",
     "pytest-cov==7.0.0"
+]
+
+docs = [
+    "Sphinx",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-gallery",
+    "sphinx-design",
+    "myst-parser",
+    "pylint",
+    "furo",
+    "numpydoc",
+    "nb2plots",
+    "jupyter-sphinx"
 ]
 
 
@@ -32,6 +60,9 @@ dependencies = [
 where = ["."]
 include = ["isaricanalytics*"]
 exclude = ["tests*", "examples*", "schemas*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "isaricanalytics.__version__"}
 
 [tool.ruff]
 line-length = 88
