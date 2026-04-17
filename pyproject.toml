@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "isaricanalytics"
 dynamic = ["version"]
 description = "Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks."
+
+# Contributors list includes VERTEX contributors of the code migrated from
+# VERTEX (`getREDCapData`, `IsaricAnalytics`, `IsaricDraw`)
 authors = [
     { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
     { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
@@ -15,9 +18,16 @@ authors = [
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
     { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" }
 ]
+
+maintainers = [
+    { name = "Alasdair Wilson", email = "alasdair.wilson@dtc.ox.ac.uk" },
+    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" }
+]
+
 readme = "README.md"
 keywords = [
     "isaric",
+    "infectious-diseases",
     "disease-outbreaks",
     "clinical-data",
     "data-analysis",
@@ -36,9 +46,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pre-commit = [
+    "pre-commit",
+]
+
 test = [
-    "pytest==8.4.2",
-    "pytest-cov==7.0.0"
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0"
 ]
 
 docs = [
