@@ -18,13 +18,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@94a823180e06fcde4ad29308721954a521c96ed0
+      - name: Install build dependencies
+        run: |
+          pip install -U pip build
 
       - name: Build package artifacts and install wheel
         run: |
-          pdm build -v
-          pdm add ./dist/isaricanalytics*.whl
+          python -m build
+          pip install dist/isaricanalytics*.whl
 
       - name: Test wheel import
         run: |
