@@ -20,8 +20,8 @@ authors = [
 ]
 
 maintainers = [
+    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
     { name = "Alasdair Wilson", email = "alasdair.wilson@dtc.ox.ac.uk" },
-    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" }
 ]
 
 readme = "README.md"
