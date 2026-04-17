@@ -1,13 +1,18 @@
 name: build
 
 on:
+  workflow_run:
+    workflows: Tests and Coverage
+    types:
+      - completed
   push:
-    branches: [main]
+    branches: main
   pull_request:
 
 jobs:
-  pre-commit:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -16,8 +21,11 @@ jobs:
       - name: Setup PDM
         uses: pdm-project/setup-pdm@94a823180e06fcde4ad29308721954a521c96ed0
 
-      - name: Build artifacts
+      - name: Build package artifacts and install wheel
         run: |
           pdm build -v
           pdm add ./dist/isaricanalytics*.whl
+
+      - name: Test wheel import
+        run: |
           python -c "import isaricanalytics; print(isaricanalytics.__version__)"
