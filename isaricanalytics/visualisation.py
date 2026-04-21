@@ -1,56 +1,40 @@
-import json
-import os
-import sys
+__all__ = [
+    "fig_bar_chart",
+    "fig_bar_line_chart",
+    "fig_count_chart",
+    "fig_dual_stack_pyramid",
+    "fig_flowchart",
+    "fig_forest_plot",
+    "fig_frequency_chart",
+    "fig_heatmaps",
+    "fig_kaplan_meier",
+    "fig_line_chart",
+    "fig_pie",
+    "fig_placeholder",
+    "fig_sankey",
+    "fig_sunburst",
+    "fig_table",
+    "fig_text",
+    "fig_timelines",
+    "fig_upset",
+    "hex_to_rgb",
+    "hex_to_rgba",
+    "rgb_to_rgba",
+]
 
+# -- IMPORTS --
+
+# -- Standard libraries --
+import typing
+
+# -- 3rd party libraries --
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
-
-def get_graph_id(suffix, frame=1):
-    fig_name = sys._getframe(frame).f_code.co_name
-    graph_id = suffix + "/" + fig_name
-    return graph_id
-
-
-def save_inputs_to_file(local_args):
-    fig_name = sys._getframe(1).f_code.co_name
-    # Create and use a copy
-    _local_args = dict(local_args)
-    data = _local_args.pop("data")
-    # Convert to list (if not already)
-    data = data if isinstance(data, tuple) else (data,)
-    path = _local_args["filepath"]
-    suffix = _local_args["suffix"]
-
-    if _local_args["graph_id"] is None:
-        graph_id = get_graph_id(_local_args["suffix"], frame=2)
-    else:
-        graph_id = suffix + "/" + _local_args["graph_id"]
-
-    fig_data = [graph_id + "_data___" + str(ii) + ".csv" for ii in range(len(data))]
-    _local_args["graph_id"] = None
-    _local_args["filepath"] = ""
-    _local_args["save_inputs"] = False
-    metadata = {
-        "fig_id": graph_id,
-        "fig_name": fig_name,
-        "fig_arguments": _local_args,
-        "fig_data": fig_data,
-    }
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    metadata_json_file = os.path.join(path, graph_id + "_metadata.json")
-    with open(metadata_json_file, "w") as file:
-        json.dump(metadata, file, indent=4)
-        file.write("\n")
-    for ii in range(len(data)):
-        data[ii].to_csv(
-            os.path.join(path, graph_id + "_data___" + str(ii) + ".csv"), index=False
-        )
-    return data, metadata
-
+# -- Internal libraries --
 
 ############################################
 ############################################
@@ -60,29 +44,36 @@ def save_inputs_to_file(local_args):
 
 
 def fig_placeholder(
-    data,
-    title="Placeholder scatter plot",
-    xlabel="",
-    ylabel="",
-    height=450,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Placeholder scatter plot",
+    xlabel: str = "",
+    ylabel: str = "",
+    height: int = 450,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a placeholder scatter plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Placeholder scatter plot"
+        Figure title.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    height : int, default=450
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     if data is None:
         x = [1, 2, 3, 4, 5]
         y = np.random.uniform(low=10, high=15, size=5)
@@ -105,38 +96,51 @@ def fig_placeholder(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_pie(
-    data,
-    title="Pie chart",
-    xlabel="",
-    ylabel="",
-    base_color_map=None,
-    names="",
-    values="",
-    height=450,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
+    data: pd.DataFrame,
+    title: str = "Pie chart",
+    xlabel: str = "",
+    ylabel: str = "",
+    base_color_map: dict[str, str] | None = None,
+    names: str | int | pd.Series | typing.Iterable = "",
+    values: str | int | pd.Series | typing.Iterable = "",
+    height: int = 450,
 ):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    """:py:class:`go.Figure` : Returns a pie chart figure.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Placeholder scatter plot"
+        Figure title.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    base_color_map : dict
+        Map of sector values/marks and colours.
+
+    names : str, int, pd.Series, typing.Iterable, default=""
+        Sector label(s).
+
+    values : str, int, pd.Series, typing.Iterable, default=""
+
+    height : int, default=450
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     fig = px.pie(
@@ -156,40 +160,60 @@ def fig_pie(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_timelines(
-    data,
-    title="Timeline",
-    label_col="",
-    group_col="",
-    start_date="start_date",
-    end_date="end_date",
-    size_col=None,
-    min_width=2,
-    max_width=10,
-    height=500,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Timeline",
+    label_col: str = "",
+    group_col: str = "",
+    start_date: str = "start_date",
+    end_date: str = "end_date",
+    size_col: str | None = None,
+    min_width: int = 2,
+    max_width: int = 10,
+    height: int = 500,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a timeline figure.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Timeline"
+        Figure title.
+
+    label_col : str, default=""
+        Label column.
+
+    group_col : str, default=""
+        Group column.
+
+    start_date : str, default="start_date"
+        Start date column.
+
+    end_date : str, default="end_date"
+        End date column.
+
+    size_col : str, None, default=None
+        Size column.
+
+    min_width : int, default=2
+        Figure minimum width.
+
+    max_width : int, default=10
+        Figure maximum width.
+
+    height : int, default=500
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
     df[start_date] = pd.to_datetime(df[start_date])
     df[end_date] = pd.to_datetime(df[end_date])
@@ -260,36 +284,45 @@ def fig_timelines(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_sunburst(
-    data,
-    title="Sunburst Chart",
-    path=["level0", "level1"],
-    values="values",
-    base_color_map=None,
-    height=430,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Sunburst Chart",
+    path: list[str | int] | pd.Series | typing.Iterable | None = ["level0", "level1"],
+    values: str | int | pd.Series | typing.Iterable = "values",
+    base_color_map: dict[str, str] | None = None,
+    height: int = 430,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a sunburst plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Sunburst Chart"
+        Figure title.
+
+    path : str, int, pd.Series, typing.Iterable, None, default=["level0", "level1"]
+        Column names defining a hierarhy of sectors, from root to leaves.
+
+    values : str, int, pd.Series, typing.Iterable, default="values"
+        A column name in the data defining sector values, or a Pandas Series
+        or an iterable containing sector values.
+
+    base_color_map : dict, default=None
+        Map of sector values/marks and colours.
+
+    height : int, default=430
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     fig = px.sunburst(
@@ -312,39 +345,58 @@ def fig_sunburst(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_bar_chart(
-    data,
-    title="Bar Chart",
-    xlabel="",
-    ylabel="",
-    index_column="index",
-    barmode="stack",
-    xaxis_tickformat="%m-%Y",
-    base_color_map=None,
-    height=340,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Bar Chart",
+    xlabel: str = "",
+    ylabel: str = "",
+    index_column: str = "index",
+    barmode: str = "stack",
+    xaxis_tickformat: str = "%m-%Y",
+    base_color_map: dict[str, str] | None = None,
+    height: int = 340,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a bar chart
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Bar Chart"
+        Figure title.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    index_column : str, default="index"
+        Index column.
+
+    barmode : str, default="stack"
+        How bars with the same location coordinate are displayed: possible
+        values are `"stack"`, `"relative"`, `"group"`, `"overlay"``. For
+        reference see the `Plotly documentation <https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html>`_.
+
+    xaxis_tickformat : str, default="%m-%Y"
+        x-axis tick format.
+
+    base_color_map : dict, default=None
+        Map of bar values and colours.
+
+    height : int, default=340
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     df = df.set_index(index_column)
@@ -397,33 +449,32 @@ def fig_bar_chart(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_upset(
-    data,
-    title="Upset Plot",
-    height=480,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Upset Plot",
+    height: int = 480,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns an upset plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Upset Plot"
+        Figure title.
+
+    height : int, default=480
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     counts = data[0].copy()
     intersections = data[1].copy()
 
@@ -582,36 +633,44 @@ def fig_upset(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_count_chart(
-    data,
-    title="Count Chart",
-    xlabel="Count",
-    ylabel="Variable",
-    base_color_map=None,
-    height=350,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Count Chart",
+    xlabel: str = "Count",
+    ylabel: str = "Variable",
+    base_color_map: dict[str, str] | None = None,
+    height: int = 350,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a count chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Count Chart"
+        Figure title.
+
+    xlabel : str, default="Count"
+        Figure x-axis label.
+
+    ylabel : str, default="Variable"
+        Figure y-axis label.
+
+    base_color_map : dict, default=None
+        Map of bar values and colours.
+
+    height : int, default=350
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
     column_names = ["label", "count", "short_label"]
 
@@ -676,36 +735,44 @@ def fig_count_chart(
 
     fig = go.Figure(data=traces, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_frequency_chart(
-    data,
-    title="Frequency Chart",
-    xlabel="Proportion",
-    ylabel="Variable",
-    base_color_map=None,
-    height=350,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Frequency Chart",
+    xlabel: str = "Proportion",
+    ylabel: str = "Variable",
+    base_color_map: dict[str, str] | None = None,
+    height: int = 350,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a frequency chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Frequency Chart"
+        Figure title.
+
+    xlabel : str, default="Proportion"
+        Figure x-axis label.
+
+    ylabel : str, default="Variable"
+        Figure y-axis label.
+
+    base_color_map : dict
+        Map of bar values and colours.
+
+    height : int, default=350
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     column_names = ["label", "proportion", "short_label"]
@@ -794,34 +861,33 @@ def fig_frequency_chart(
 
     fig = go.Figure(data=traces, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_table(
-    data,
-    table_key="",
-    columnwidth=None,
-    height=500,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    table_key: str = "",
+    columnwidth: int | None = None,
+    height: int = 500,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a table figure.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    table_key : str, default=""
+        Table key.
+
+    height : int, default=500
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     bf_columns = ["<b>" + x + "</b>" for x in df.columns]
@@ -863,36 +929,44 @@ def fig_table(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_dual_stack_pyramid(
-    data,
-    title="Dual-Sided Stacked Pyramid Chart",
-    xlabel="Count",
-    ylabel="Category",
-    base_color_map=None,
-    height=430,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: go.Figure,
+    title: str = "Dual-Sided Stacked Pyramid Chart",
+    xlabel: str = "Count",
+    ylabel: str = "Category",
+    base_color_map: dict[str, str] | None = None,
+    height: int = 430,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a dual-sided stacked pyramid chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Dual-Sided Stacked Pyramid Chart"
+        Figure title.
+
+    xlabel : str, default="Count"
+        Figure x-axis label.
+
+    ylabel : str, default="Category"
+        Figure y-axis label.
+
+    base_color_map : dict, default=None
+        Map of bar values and colours.
+
+    height : int, default=430
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     # Error Handling
@@ -1029,32 +1103,28 @@ def fig_dual_stack_pyramid(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_flowchart(
-    data,
-    height=430,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    height: int = 430,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a flowchart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    height : int, default=430
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     arrows = []
@@ -1115,39 +1185,56 @@ def fig_flowchart(
 
     fig = go.Figure(layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_forest_plot(
-    data,
-    title="Forest Plot",
-    xlabel="Odds Ratio (95% CI)",
-    ylabel="",
-    reorder=True,
-    labels=["Variable", "OddsRatio", "LowerCI", "UpperCI"],
-    marker=None,
-    noeffect_line=True,
-    height=600,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Forest Plot",
+    xlabel: str = "Odds Ratio (95% CI)",
+    ylabel: str = "",
+    reorder: bool = True,
+    labels: typing.Iterable[str] = ["Variable", "OddsRatio", "LowerCI", "UpperCI"],
+    marker: dict[str, typing.Any] | None = None,
+    noeffect_line: bool = True,
+    height: int = 600,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a forest plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Forest Plot"
+        Figure title.
+
+    xlabel : str, default="Odds Ratio (95% CI)"
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    reorder : bool, default=True
+        Sort values.
+
+    labels : typing.Iterable, default=["Variable", "OddsRatio", "LowerCI", "UpperCI"]
+        Column of labels.
+
+    marker : dict, default=None
+        Marker properties dict.
+
+    no_effect_line : bool, default=True
+        Add no effect line.
+
+    height : int, default=600
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     # Ordering Values -> Descending Order
@@ -1228,32 +1315,28 @@ def fig_forest_plot(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_text(
-    data,
-    height=430,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    height: int = 430,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a figure with an annotation.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    height : int, default=430
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     fig = go.Figure()
 
     text = "<br>".join(data["paragraphs"].values)
@@ -1269,40 +1352,60 @@ def fig_text(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_kaplan_meier(
-    data,
-    title="Kaplan-Meier Plot",
-    xlabel="Time (days)",
-    ylabel="Survival Probability",
-    groups=None,
-    index_column="index",
-    base_color_map=None,
-    xlim=None,
-    p_value=None,
-    height=800,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Kaplan-Meier Plot",
+    xlabel: str = "Time (days)",
+    ylabel: str = "Survival Probability",
+    height: int = 480,
+    groups: typing.Iterable[str] | None = None,
+    index_column: str = "index",
+    base_color_map: dict[str, str] | None = None,
+    xlim: typing.Iterable[float | int] | None = None,
+    p_value: float | None = None,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a Kaplan-Meier plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Kaplan-Meier Plot"
+        Figure title.
+
+    xlabel : str, default="Time (days)"
+        Figure x-axis label.
+
+    ylabel : str, default="Survival Probability"
+        Figure y-axis label.
+
+    height : int, default=480
+        Figure height.
+
+    groups : typing.Iterable, default=None
+        Groups.
+
+    index_column : str, default="index"
+        Index column.
+
+    base_color_map : dict, default=None
+        Colour map.
+
+    xlim : typing.Iterable, default=None
+        xlim.
+
+    p_value : float, default=None
+        p-value.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df_km = data[0].copy()
     risk_table = data[1].copy()
 
@@ -1504,40 +1607,60 @@ def fig_kaplan_meier(
         minreducedwidth=500,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_line_chart(
-    data,
-    title="Line chart",
-    xlabel="",
-    ylabel="",
-    line_column="",
-    index_column="index",
-    lower_column=None,
-    upper_column=None,
-    line_color=None,
-    height=340,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Line chart",
+    xlabel: str = "",
+    ylabel: str = "",
+    height: int = 480,
+    line_column: str = "",
+    index_column: str = "index",
+    lower_column: str | None = None,
+    upper_column: str | None = None,
+    line_color: str | None = None,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a line chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Line chart"
+        Figure title.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    height : int, default=480
+        Figure height.
+
+    line_column : str, default=""
+        Line column.
+
+    index_column : str, default="index"
+        Index column.
+
+    lower_column : str, default=None
+        Lower column.
+
+    upper_column : str, default=None
+        Upper column.
+
+    line_color : str, default=None
+        Line colour.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     # Ensure correct index
@@ -1592,43 +1715,69 @@ def fig_line_chart(
 
     fig = go.Figure(data=data, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_bar_line_chart(
-    data,
-    title="Combined bar line chart",
-    xlabel="",
-    ylabel_left="",
-    ylabel_right="",
-    bar_column="",
-    line_column="",
-    index_column="index",
-    lower_column=None,
-    upper_column=None,
-    bar_color=None,
-    line_color=None,
-    height=500,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "Combined bar line chart",
+    xlabel: str = "",
+    ylabel_left: str = "",
+    ylabel_right: str = "",
+    bar_column: str = "",
+    line_column: str = "",
+    index_column: str = "index",
+    lower_column: str | None = None,
+    upper_column: str | None = None,
+    bar_color: str | None = None,
+    line_color: str | None = None,
+    height: int = 500,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a bar-line chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default="Combined bar line chart"
+        Figure title.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    bar_column : str, default=""
+        Bar column.
+
+    line_column : str, default=""
+        Line column.
+
+    index_column : str, default="index"
+        Index column.
+
+    lower_column : str, default=None
+        Lower column.
+
+    upper_column : str, default=None
+        Upper column.
+
+    bar_color : str, default=None
+        Bar colour.
+
+    line_color : str, default=None
+        Line colour.
+
+    height : int, default=500
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     df = data.copy()
 
     # Ensure correct index
@@ -1705,42 +1854,68 @@ def fig_bar_line_chart(
     )
     fig = go.Figure(data=data, layout=layout)
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_heatmaps(
-    data,
-    title="",
-    subplot_titles=None,
-    ylabel="",
-    xlabel="",
-    colorbar_label="",
-    index_column="index",
-    zmin=None,
-    zmax=None,
-    include_annotations=False,
-    base_color_map=None,
-    height=750,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id=None,
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    title: str = "",
+    subplot_titles: list[str] | None = None,
+    ylabel: str = "",
+    xlabel: str = "",
+    colorbar_label: str = "",
+    index_column: str = "index",
+    zmin: float | None = None,
+    zmax: float | None = None,
+    include_annotations: bool = False,
+    base_color_map: dict[str, str] | None = None,
+    height: int = 750,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a heatmaps chart.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    title : str, default=""
+        Figure title.
+
+    subplot_titles : list, default=None
+        Subplot titles.
+
+    xlabel : str, default=""
+        Figure x-axis label.
+
+    ylabel : str, default=""
+        Figure y-axis label.
+
+    colorbar_label : str, default=""
+        Colour bar label.
+
+    index_column : str, default="index"
+        Index column.
+
+    zmin : float, default=None
+        zmin.
+
+    zmax : float, default=None
+        zmax.
+
+    include_annotations : bool, default=False
+        Include annotations.
+
+    base_color_map : dict, default=None
+        Colour map.
+
+    height : int, default=750
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     if isinstance(data, tuple) is False:
         data = (data,)
 
@@ -1809,32 +1984,28 @@ def fig_heatmaps(
         col=1,
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 def fig_sankey(
-    data,
-    height=500,
-    suffix="",
-    filepath="",
-    save_inputs=False,
-    graph_id="sankey",
-    graph_label="",
-    graph_about="",
-):
-    # ----
-    # Every figure must start with this
-    if save_inputs:
-        inputs = save_inputs_to_file(locals())
+    data: pd.DataFrame,
+    height: int = 500,
+) -> go.Figure:
+    """:py:class:`go.Figure` : Returns a Sankey plot.
 
-    if graph_id is None:
-        graph_id = get_graph_id(suffix)
-    else:
-        graph_id = suffix + "/" + graph_id
-    # ----
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Incoming data.
 
+    height : int, default=500
+        Figure height.
+
+    Returns
+    -------
+    go.Figure
+        The figure.
+    """
     node = data[0].copy()
     link = data[1].copy()
     annotations = data[2].copy()
@@ -1866,9 +2037,7 @@ def fig_sankey(
         ),
     )
 
-    # ----
-    # Every figure must return the same outputs
-    return fig, graph_id, graph_label, graph_about
+    return fig
 
 
 ############################################
@@ -1878,14 +2047,42 @@ def fig_sankey(
 ############################################
 
 
-def hex_to_rgb(hex_color):
-    """Convert a hex color to an RGB tuple."""
+def hex_to_rgb(hex_color: str) -> tuple[int]:
+    """:py:class:`tuple` : Converts a hex colour to an RGB colour tuple.
+
+    Parameters
+    ----------
+    hex_color : str
+        Hex colour string.
+
+    Returns
+    -------
+    tuple
+        RGB int tuple.
+    """
     hex_color = hex_color.lstrip("#")
     rgb_color = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
     return rgb_color
 
 
-def hex_to_rgba(hex_color, opacity):
+def hex_to_rgba(hex_color: str, opacity: float) -> str:
+    """:py:class:`str` : Converts a hex colour to an RGBA (red-green-blue-alpha)
+    colour string.
+
+    Parameters
+    ----------
+    hex_color : str
+        Hex colour string.
+
+    opacity : float
+        Opacity/transparency, a value between 0.0 (fully transparent) and
+        1.0 (fully opaque).
+
+    Returns
+    -------
+    str
+        An RGBA colour string (RGB + opacity/transparency).
+    """
     hex_color = hex_color.lstrip("#")
     hlen = len(hex_color)
     rgba_color = "rgba(" + ", ".join(
@@ -1895,12 +2092,22 @@ def hex_to_rgba(hex_color, opacity):
     return rgba_color
 
 
-def rgb_to_rgba(rgb_value, alpha):
-    """
-    Adds the alpha channel to an RGB Value and returns it as an RGBA Value
-    :param rgb_value: Input RGB Value
-    :param alpha: Alpha Value to add in range [0,1]
-    :return: RGBA Value
-    """
+def rgb_to_rgba(rgb_value: tuple[int], alpha: float) -> str:
+    """:py:class:`str` : Converts an RGB colour tuple and alpha value to an RGBA colour string.
+
+    Parameters
+    ----------
+    rgb_value : tuple
+        RGB int tuple.
+
+    alpha : float
+        Opacity/transparency value between 0.0 (fully transparent) and 1.0
+        (fully opaque).
+
+    Returns
+    -------
+    str
+        RGBA colour string.
+    """  # noqa: E501
     rgba_color = f"rgba{rgb_value[3:-1]}, {alpha})"
     return rgba_color
