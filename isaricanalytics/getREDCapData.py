@@ -1,7 +1,5 @@
 import io
-import os
 import time
-
 from pathlib import Path
 
 import numpy as np
@@ -567,20 +565,24 @@ def load_conversion_table() -> pd.DataFrame:
     """
     try:
         # Lookup table in an `assets` subfolder of the current folder
-        return pd.read_csv(Path(__file__).parent.joinpath("assets", "conversion_table.csv"))
+        return pd.read_csv(
+            Path(__file__).parent.joinpath("assets", "conversion_table.csv")
+        )
     except FileNotFoundError:
         try:
             # Lookup table in an `assets` subfolder of the parent folder
-            return pd.read_csv(Path(__file__).parent.parent.joinpath("assets", "conversion_table.csv"))
+            return pd.read_csv(
+                Path(__file__).parent.parent.joinpath("assets", "conversion_table.csv")
+            )
         except FileNotFoundError:
             # Otherwise just get it from VERTEX assets on GitHub
             return pd.read_csv(
-                'https://raw.githubusercontent.com/ISARICResearch/'
-                'VERTEX/refs/heads/main/assets/conversion_table.csv'
+                "https://raw.githubusercontent.com/ISARICResearch/"
+                "VERTEX/refs/heads/main/assets/conversion_table.csv"
             )
 
 
-def load_countries(encoding='latin-1') -> pd.DataFrame:
+def load_countries(encoding="latin-1") -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Loads countries from a CSV.
 
     Returns
@@ -590,17 +592,22 @@ def load_countries(encoding='latin-1') -> pd.DataFrame:
     """
     try:
         # Lookup table in an `assets` subfolder of the current folder
-        return pd.read_csv(Path(__file__).parent.joinpath("assets", "countries.csv"), encoding=encoding)
+        return pd.read_csv(
+            Path(__file__).parent.joinpath("assets", "countries.csv"), encoding=encoding
+        )
     except FileNotFoundError:
         try:
             # Lookup table in an `assets` subfolder of the parent folder
-            return pd.read_csv(Path(__file__).parent.parent.joinpath("assets", "countries.csv"), encoding=encoding)
+            return pd.read_csv(
+                Path(__file__).parent.parent.joinpath("assets", "countries.csv"),
+                encoding=encoding,
+            )
         except FileNotFoundError:
             # Otherwise just get it from VERTEX assets on GitHub
             return pd.read_csv(
-                'https://raw.githubusercontent.com/ISARICResearch/'
-                'VERTEX/refs/heads/main/assets/countries.csv',
-                encoding=encoding
+                "https://raw.githubusercontent.com/ISARICResearch/"
+                "VERTEX/refs/heads/main/assets/countries.csv",
+                encoding=encoding,
             )
 
 
