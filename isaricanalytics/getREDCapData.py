@@ -2,6 +2,8 @@ import io
 import os
 import time
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import requests
@@ -9,6 +11,7 @@ import requests
 from isaricanalytics.logging.logger import setup_logger
 
 logger = setup_logger(__name__)
+
 
 ############################################
 # Functions that call to the API
@@ -554,6 +557,29 @@ def map_variable(variable, mapping_dict, other_value_str="Other / Unknown"):
     return variable
 
 
+def load_conversion_table() -> pd.DataFrame:
+    """:py:class:`pandas.DataFrame` : Loads the conversion table from a CSV.
+
+    Returns
+    -------
+    pd.DataFrame
+        The conversion table.
+    """
+    try:
+        # Lookup table in an `assets` subfolder of the current folder
+        return pd.read_csv(Path(__file__).parent.joinpath("assets", "conversion_table.csv"))
+    except FileNotFoundError:
+        try:
+            # Lookup table in an `assets` subfolder of the parent folder
+            return pd.read_csv(Path(__file__).parent.parent.joinpath("assets", "conversion_table.csv"))
+        except FileNotFoundError:
+            # Otherwise just get it from VERTEX assets on GitHub
+            return pd.read_csv(
+                'https://raw.githubusercontent.com/ISARICResearch/'
+                'VERTEX/refs/heads/main/assets/conversion_table.csv'
+            )
+
+
 def homogenise_variables(df, dictionary):
     """
     Converts variables in a DataFrame based on a conversion table.
@@ -566,7 +592,7 @@ def homogenise_variables(df, dictionary):
     pd.DataFrame: DataFrame with all specified values converted to the
     desired units.
     """
-    conversion_table = pd.read_csv(os.path.join("assets", "conversion_table.csv"))
+    conversion_table = load_conversion_table()
     for index, row in conversion_table.iterrows():
         from_unit = row["from_unit"]
         to_unit = row["to_unit"]
