@@ -580,6 +580,30 @@ def load_conversion_table() -> pd.DataFrame:
             )
 
 
+def load_countries(encoding='latin-1') -> pd.DataFrame:
+    """:py:class:`pandas.DataFrame` : Loads countries from a CSV.
+
+    Returns
+    -------
+    pd.DataFrame
+        The conversion table.
+    """
+    try:
+        # Lookup table in an `assets` subfolder of the current folder
+        return pd.read_csv(Path(__file__).parent.joinpath("assets", "countries.csv"), encoding=encoding)
+    except FileNotFoundError:
+        try:
+            # Lookup table in an `assets` subfolder of the parent folder
+            return pd.read_csv(Path(__file__).parent.parent.joinpath("assets", "countries.csv"), encoding=encoding)
+        except FileNotFoundError:
+            # Otherwise just get it from VERTEX assets on GitHub
+            return pd.read_csv(
+                'https://raw.githubusercontent.com/ISARICResearch/'
+                'VERTEX/refs/heads/main/assets/countries.csv',
+                encoding=encoding
+            )
+
+
 def homogenise_variables(df, dictionary):
     """
     Converts variables in a DataFrame based on a conversion table.
@@ -923,7 +947,7 @@ def get_redcap_data(
     )
 
     if "demog_country" in dictionary["field_name"].values:
-        countries = pd.read_csv("assets/countries.csv", encoding="latin-1")
+        countries = load_countries(encoding="latin-1")
         df_map["country_iso"] = df_map["demog_country"].replace(
             dict(zip(countries["Country"], countries["Code"]))
         )
