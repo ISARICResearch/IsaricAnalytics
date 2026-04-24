@@ -126,12 +126,13 @@ def fig_pie(
         Figure y-axis label.
 
     base_color_map : dict
-        Map of sector values/marks and colours.
+        Map of sector values and colours.
 
     names : str, int, pd.Series, typing.Iterable, default=""
-        Sector label(s).
+        Sector name(s)/label(s).
 
     values : str, int, pd.Series, typing.Iterable, default=""
+        Sector values.
 
     height : int, default=450
         Figure height.
@@ -359,7 +360,7 @@ def fig_bar_chart(
     base_color_map: dict[str, str] | None = None,
     height: int = 340,
 ) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a bar chart
+    """:py:class:`go.Figure` : Returns a bar chart.
 
     Parameters
     ----------
@@ -453,7 +454,7 @@ def fig_bar_chart(
 
 
 def fig_upset(
-    data: pd.DataFrame,
+    data: tuple[pd.DataFrame],
     title: str = "Upset Plot",
     height: int = 480,
 ) -> go.Figure:
@@ -461,8 +462,9 @@ def fig_upset(
 
     Parameters
     ----------
-    data : pd.DataFrame
-        Incoming data.
+    data : tuple
+        Incoming data as two Pandas dataframes, the first for counts, and the
+        second for intersections.
 
     title : str, default="Upset Plot"
         Figure title.
@@ -867,7 +869,7 @@ def fig_frequency_chart(
 def fig_table(
     data: pd.DataFrame,
     table_key: str = "",
-    columnwidth: int | None = None,
+    columnwidth: typing.Iterable[int | float] | None = None,
     height: int = 500,
 ) -> go.Figure:
     """:py:class:`go.Figure` : Returns a table figure.
@@ -879,6 +881,9 @@ def fig_table(
 
     table_key : str, default=""
         Table key.
+
+    columnwidth : typing.Iterable, default=None
+        An iterable of column widths.
 
     height : int, default=500
         Figure height.
@@ -933,7 +938,7 @@ def fig_table(
 
 
 def fig_dual_stack_pyramid(
-    data: go.Figure,
+    data: pd.DataFrame,
     title: str = "Dual-Sided Stacked Pyramid Chart",
     xlabel: str = "Count",
     ylabel: str = "Category",
@@ -1356,23 +1361,24 @@ def fig_text(
 
 
 def fig_kaplan_meier(
-    data: pd.DataFrame,
+    data: tuple[pd.DataFrame],
     title: str = "Kaplan-Meier Plot",
     xlabel: str = "Time (days)",
     ylabel: str = "Survival Probability",
-    height: int = 480,
     groups: typing.Iterable[str] | None = None,
     index_column: str = "index",
     base_color_map: dict[str, str] | None = None,
     xlim: typing.Iterable[float | int] | None = None,
     p_value: float | None = None,
+    height: int = 480,
 ) -> go.Figure:
     """:py:class:`go.Figure` : Returns a Kaplan-Meier plot.
 
     Parameters
     ----------
-    data : pd.DataFrame
-        Incoming data.
+    data : tuple
+        Incoming data as two Pandas dataframes, the first for the plot, and the
+        second for the risk table.
 
     title : str, default="Kaplan-Meier Plot"
         Figure title.
@@ -1382,9 +1388,6 @@ def fig_kaplan_meier(
 
     ylabel : str, default="Survival Probability"
         Figure y-axis label.
-
-    height : int, default=480
-        Figure height.
 
     groups : typing.Iterable, default=None
         Groups.
@@ -1400,6 +1403,9 @@ def fig_kaplan_meier(
 
     p_value : float, default=None
         p-value.
+
+    height : int, default=480
+        Figure height.
 
     Returns
     -------
@@ -2058,7 +2064,7 @@ def hex_to_rgb(hex_color: str) -> tuple[int]:
     Returns
     -------
     tuple
-        RGB int tuple.
+        RGB colour tuple.
     """
     hex_color = hex_color.lstrip("#")
     rgb_color = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
@@ -2092,13 +2098,13 @@ def hex_to_rgba(hex_color: str, opacity: float) -> str:
     return rgba_color
 
 
-def rgb_to_rgba(rgb_value: tuple[int], alpha: float) -> str:
+def rgb_to_rgba(rgb_color: tuple[int], alpha: float) -> str:
     """:py:class:`str` : Converts an RGB colour tuple and alpha value to an RGBA colour string.
 
     Parameters
     ----------
-    rgb_value : tuple
-        RGB int tuple.
+    rgb_color : tuple
+        RGB color tuple.
 
     alpha : float
         Opacity/transparency value between 0.0 (fully transparent) and 1.0
@@ -2109,5 +2115,5 @@ def rgb_to_rgba(rgb_value: tuple[int], alpha: float) -> str:
     str
         RGBA colour string.
     """  # noqa: E501
-    rgba_color = f"rgba{rgb_value[3:-1]}, {alpha})"
+    rgba_color = f"rgba({rgb_color[0]}, {rgb_color[1]}, {rgb_color[2]}, {alpha})"
     return rgba_color

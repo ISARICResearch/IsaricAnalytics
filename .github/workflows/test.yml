@@ -40,7 +40,8 @@ jobs:
                     -p pytest_cov \
                     --cov=isaricanalytics \
                     --cov-report=term-missing \
-                    --cov-report=xml
+                    --cov-report=xml \
+                    --cov-report=html
 
       - name: Upload coverage.xml artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
