@@ -1,22 +1,84 @@
+from __future__ import annotations
+
+__all__ = [
+    "add_answer_dict",
+    "add_onehot_variables",
+    "combine_unlisted_variables",
+    "convert_dictionary_field_type",
+    "convert_onehot_to_binary",
+    "get_branching_logic_variables",
+    "get_data_dictionary",
+    "get_df_forms",
+    "get_df_map",
+    "get_events_and_forms_info",
+    "get_form_event",
+    "get_label",
+    "get_labels",
+    "get_missing_data_codes",
+    "get_records",
+    "get_redcap_data",
+    "get_section_prefix",
+    "get_value",
+    "get_values",
+    "harmonise_age",
+    "homogenise_variables",
+    "initial_data_processing",
+    "is_unlisted_item",
+    "is_yesno",
+    "is_yesno_question",
+    "list_categorical_onehot_columns",
+    "list_checkbox_onehot_columns",
+    "load_countries_table",
+    "load_units_conversion_table",
+    "map_variable",
+    "rename_checkbox_variables",
+    "replace_with_nan_for_missing_code_checkbox",
+    "resolve_checkbox_branching_logic",
+    "user_assigned_to_dag",
+]
+
+
+# -- IMPORTS --
+
+# -- Standard libraries --
 import io
 import time
+import typing
+import warnings
 from pathlib import Path
 
+# -- 3rd party libraries --
 import numpy as np
 import pandas as pd
 import requests
 
+# -- Internal libraries --
 from isaricanalytics.logging.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
 ############################################
-# Functions that call to the API
+# API-calling functions
 ############################################
 
 
-def user_assigned_to_dag(redcap_url, redcap_api_key):
+def user_assigned_to_dag(redcap_url: str, redcap_api_key: str) -> bool:
+    """:py:class:`bool` : Whether the user is assigned to a data access group (DAG).
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    Returns
+    -------
+    bool
+        Whether the user is assigned to a REDCap DAG.
+    """
     conex = {
         "token": redcap_api_key,
         "content": "dag",
@@ -24,15 +86,39 @@ def user_assigned_to_dag(redcap_url, redcap_api_key):
         "returnFormat": "json",
     }
     response = requests.post(redcap_url, data=conex)
-    output = response.status_code == 403
-    return output
+
+    return response.status_code == 403
 
 
 def get_records(
-    redcap_url, redcap_api_key, data_access_groups=None, user_assigned_to_dag=False
-):
-    """Fetch records from the REDCap API"""
+    redcap_url: str,
+    redcap_api_key: str,
+    data_access_groups: typing.Iterable[str] | None = None,
+    user_assigned_to_dag: bool = False,
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns a dataframe of records from the REDCap API.
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    data_access_groups : typing.Iterable, default=None
+        An iterable of data access group names.
+
+    user_assigned_to_dag : bool, default=False
+        Whether the user is assigned to a data access group (DAG).
+
+    Returns
+    -------
+    pd.DataFrame
+        Records from the REDCap API data.
+    """
     started = time.perf_counter()
+
     if (data_access_groups is None) or (user_assigned_to_dag is False):
         logger.info("REDCap records export: requesting all records")
         conex = {
@@ -51,18 +137,19 @@ def get_records(
         }
         response = requests.post(redcap_url, data=conex)
         logger.debug("HTTP Status: " + str(response.status_code))
-        df = pd.read_csv(
+        data = pd.read_csv(
             io.StringIO(response.text), dtype={"subjid": "str"}, keep_default_na=False
         )
         if data_access_groups is not None:
-            ind = df["redcap_data_access_group"].isin(data_access_groups)
-            df = df.loc[ind].reset_index(drop=True)
+            ind = data["redcap_data_access_group"].isin(data_access_groups)
+            data = data.loc[ind].reset_index(drop=True)
     else:
         logger.info(
             "REDCap records export: requesting DAG-scoped records for "
             f"{len(data_access_groups)} DAG(s)"
         )
         df_list = []
+
         for dag in data_access_groups:
             unique_group = dag.replace("-", "").replace(" ", "_").lower()[:18]
             conex = {
@@ -75,8 +162,8 @@ def get_records(
             response = requests.post(redcap_url, data=conex)
             if response.text != "1":
                 logger.warning(
-                    f"Data access group ID: {dag}. Warning: Could not \
-switch DAG to unique group name: {unique_group}"
+                    f"Data access group ID: {dag}. Warning: Could not"
+                    f"switch DAG to unique group name: {unique_group}"
                 )
                 continue
             conex = {
@@ -114,19 +201,35 @@ switch DAG to unique group name: {unique_group}"
                 )
                 continue
         if len(df_list) > 0:
-            df = pd.concat(df_list, axis=0)
+            data = pd.concat(df_list, axis=0)
         else:
-            df = None
+            data = None
+
     elapsed = time.perf_counter() - started
-    row_count = 0 if df is None else len(df)
+    row_count = 0 if data is None else len(data)
     logger.info(
         f"REDCap records export complete in {elapsed:.1f}s " f"(rows={row_count})"
     )
-    return df
+
+    return data
 
 
-def get_data_dictionary(redcap_url, redcap_api_key):
-    """Fetch the data dictionary from the REDCap API"""
+def get_data_dictionary(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns a data dictionary from the REDCap API.
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    Returns
+    -------
+    pd.DataFrame
+        Data dictionary from the REDCap API.
+    """
     conex = {
         "token": redcap_api_key,
         "content": "metadata",
@@ -135,13 +238,26 @@ def get_data_dictionary(redcap_url, redcap_api_key):
     }
     # Make the API request
     response = requests.post(redcap_url, data=conex)
-    df = pd.read_csv(io.StringIO(response.text), keep_default_na=False)
-    return df
+
+    return pd.read_csv(io.StringIO(response.text), keep_default_na=False)
 
 
-def get_form_event(redcap_url, redcap_api_key):
-    """Get events, forms and their mapppings from the REDCap API and merge
-    into a single dataframe."""
+def get_events_and_forms_info(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    Returns
+    -------
+    pd.DataFrame
+        Events, forms and their mapppings from the REDCap API.
+    """  # noqa: E501
     conex = {
         "token": redcap_api_key,
         "content": "event",
@@ -163,6 +279,7 @@ def get_form_event(redcap_url, redcap_api_key):
         "format": "csv",
         "returnFormat": "json",
     }
+
     # Make the API request
     response = requests.post(redcap_url, data=conex)
     if response.status_code == 200:
@@ -180,6 +297,7 @@ def get_form_event(redcap_url, redcap_api_key):
         "format": "csv",
         "returnFormat": "json",
     }
+
     # Make the API request
     response = requests.post(redcap_url, data=conex)
     if response.status_code == 200:
@@ -199,50 +317,195 @@ def get_form_event(redcap_url, redcap_api_key):
     form_event = pd.merge(
         form_event, event, on=["unique_event_name", "arm_num"], how="left"
     )
+
     return form, form_event
 
 
-def get_missing_data_codes(redcap_url, redcap_api_key):
-    """Get missing data codes from REDCAP API, using the project metadata"""
+def get_form_event(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
+
+    .. warning::
+
+       DEPRECATED.
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    Returns
+    -------
+    pd.DataFrame
+        Events, forms and their mapppings from the REDCap API.
+    """  # noqa: E501
+    warnings.warn(
+        (
+            "`redcap_data.get_form_event` is deprecated; "
+            "use `redcap_data.get_events_and_forms_info` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_events_and_forms_info(redcap_url, redcap_api_key)
+
+
+def get_missing_data_codes(redcap_url: str, redcap_api_key: str) -> dict[str, str]:
+    """:py:class:`dict` : Returns missing data codes from the REDCAP API, using the project metadata.
+
+    Parameters
+    ----------
+    redcap_url : str
+        REDCap URL.
+
+    redcap_api_key : str
+        REDCap API key.
+
+    Returns
+    -------
+    dict
+        A dict of missing data codes from the REDCap API, using the project
+        metadata. An empty dict is returned in the case there are no missing
+        data codes.
+
+    """  # noqa: E501
     conex = {
         "token": redcap_api_key,
         "content": "project",
         "format": "csv",
         "returnFormat": "json",
     }
+
     response = requests.post(redcap_url, data=conex)
-    df = pd.read_csv(io.StringIO(response.text), keep_default_na=False)
-    if df["missing_data_codes"].isna().all():
-        missing_data_codes = dict()
+
+    data = pd.read_csv(io.StringIO(response.text), keep_default_na=False)
+
+    if data["missing_data_codes"].isna().all():
+        return dict()
     else:
-        missing_data_codes = df["missing_data_codes"].values[0]
-        missing_data_codes = dict(
+        missing_data_codes = data["missing_data_codes"].values[0]
+        return dict(
             zip(
                 [x.split(",")[1].strip() for x in missing_data_codes.split("|")],
                 [x.split(",")[0].strip() for x in missing_data_codes.split("|")],
             )
         )
-    return missing_data_codes
 
 
-############################################
-# Functions for processing the data dictionary
-############################################
+##########################################################
+# Functions related to the data dictionary
+##########################################################
 
 
-def get_value(x):
-    values = [y.split(",")[0] for y in x]
-    return values
+def get_values(x: typing.Iterable[str]) -> list[str]:
+    """:py:class:`list` : Returns a list of values.
+
+    Parameters
+    ----------
+    x : typing.Iterable
+        An iterable of value tuples.
+
+    Returns
+    -------
+    list
+        A list of values.
+    """
+    return [y.split(",")[0] for y in x]
 
 
-def get_label(x):
-    labels = [",".join(y.split(",")[1:]).strip() for y in x]
-    return labels
+def get_value(x: typing.Iterable[str]) -> list[str]:
+    """:py:class:`list` : Returns a list of values.
+
+    .. warning::
+
+       DEPRECATED.
+
+    Parameters
+    ----------
+    x : typing.Iterable
+        An iterable of value tuples.
+
+    Returns
+    -------
+    list
+        A list of values.
+    """
+    warnings.warn(
+        (
+            "`redcap_data.get_value` is deprecated; "
+            "use `redcap_data.get_values` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_values(x)
 
 
-def add_answer_dict(dictionary):
-    """Add a lookup dict of labels/values to the dictionary from REDCap schema.
-    By default, ignore Yes/No/Unknown radio variables."""
+def get_labels(x: typing.Iterable[str]) -> list[str]:
+    """:py:class:`list` : Returns a list of labels.
+
+    Parameters
+    ----------
+    x : typing.Iterable
+        An iterable of label tuples.
+
+    Returns
+    -------
+    list
+        A list of labels.
+    """
+    return [",".join(y.split(",")[1:]).strip() for y in x]
+
+
+def get_label(x: typing.Iterable[str]) -> list[str]:
+    """:py:class:`list` : Returns a list of labels.
+
+    .. warning::
+
+       DEPRECATED.
+
+    Parameters
+    ----------
+    x : typing.Iterable
+        An iterable of label tuples.
+
+    Returns
+    -------
+    list
+        A list of labels.
+    """
+    warnings.warn(
+        (
+            "`redcap_data.get_label` is deprecated; "
+            "use `redcap_data.get_labels` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_labels(x)
+
+
+def add_answer_dict(dictionary: pd.DataFrame) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns the REDCap schema data dictionary with a lookup dict of labels and values.
+
+    By default, ignores Yes/No/Unknown radio variables.
+
+    Parameters
+    ----------
+    dictionary : pd.DataFrame
+        REDCap schema data dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+         An updated REDCap schema data dictionary with a lookup dict of labels
+         and values.
+    """  # noqa: E501
     new_dictionary = dictionary.copy()
     # Get categories from dictionary
     answers = new_dictionary["select_choices_or_calculations"].copy()
@@ -262,34 +525,107 @@ def add_answer_dict(dictionary):
     answers = answers.apply(lambda x: dict(zip(get_label(x), get_value(x))))
     answers.name = "answer_dict"
     new_dictionary = pd.concat([new_dictionary, answers], axis=1)
+
     return new_dictionary
 
 
-def list_categorical_onehot_columns(dictionary_row, data, sep="___"):
+def list_categorical_onehot_columns(
+    dictionary_row: dict[str, typing.Any], data: pd.DataFrame, sep: str = "___"
+) -> list[str]:
+    """:py:class:`list` Returns a list of categorical onehot-encoded columns in the given dataframe.
+
+    Parameters
+    ----------
+    dictionary_row : dict
+        A row of the data dictionary.
+
+    data : pd.DataFrame
+        The incoming data.
+
+    sep : str, default="___"
+        Separator of field/variable name and value in the list.
+
+    Returns
+    -------
+    list
+        A list of categorical onehot-encoded columns in the given dataframe.
+    """  # noqa: E501
     variable = dictionary_row["field_name"]
     answers = dictionary_row["answer_dict"].keys()
-    output = [variable + sep + y for y in answers if y in data[variable].values]
-    return output
+
+    return [variable + sep + y for y in answers if y in data[variable].values]
 
 
-def list_checkbox_onehot_columns(dictionary_row, data, sep="___"):
+def list_checkbox_onehot_columns(
+    dictionary_row: dict[str, typing.Any], data: pd.DataFrame, sep: str = "___"
+) -> list[str]:
+    """:py:class:`list` Returns a list of checkbox onehot-encoded columns in the given dataframe.
+
+    Parameters
+    ----------
+    dictionary_row : dict
+        A row of the data dictionary.
+
+    data : pd.DataFrame
+        The incoming data.
+
+    sep : str, default="___"
+        Optional separator of field/variable name and value in the list.
+
+    Returns
+    -------
+    list
+        A list of checkbox onehot-encoded columns in the given dataframe.
+    """  # noqa: E501
     variable = dictionary_row["field_name"]
     answers = dictionary_row["answer_dict"].keys()
     columns = [variable + sep + x for x in answers]
-    output = [col for col in columns if col in data.columns]
-    return output
+
+    return [col for col in columns if col in data.columns]
 
 
-def get_section_prefix(x):
-    output = x.split("_data")[-1] if x.startswith("daily") else x.split("_")[0]
-    return output
+def get_section_prefix(x: str) -> str:
+    """:py:class:`str` : Returns the section prefix.
+
+    Parameters
+    ----------
+    x : str
+        Section name/value.
+
+    Returns
+    -------
+    str
+        The section prefix.
+    """
+    return x.split("_data")[-1] if x.startswith("daily") else x.split("_")[0]
 
 
-def add_onehot_variables(data, dictionary, sep="___"):
-    """Add new rows to the dictionary for onehot-encoded categorical variables,
+def add_onehot_variables(
+    data: pd.DataFrame, dictionary: pd.DataFrame, sep: str = "___"
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Returns the data dictionary with rows for onehot-encoded categorical variables.
+
+    Add new rows to the dictionary for onehot-encoded categorical variables,
     using only the answers that exist within the data, e.g. if checkbox columns
     exist (after removing columns with only 'Unchecked') or if radio column
-    answers are present for at least one subjid."""
+    answers are present for at least one subjid.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    dictionary : pd.DataFrame
+        The data dictionary.
+
+    sep : str, default="___"
+        Optional separator of field/variable names and values.
+
+    Returns
+    -------
+    pd.DataFrame
+        The data dictionary with rows for onehot-encoded categorical variables.
+    """  # noqa: E501
     new_dictionary = dictionary.copy()
     new_dictionary["parent"] = ""
     ind = new_dictionary["field_name"].str.contains("_")
@@ -356,19 +692,76 @@ def add_onehot_variables(data, dictionary, sep="___"):
     sections.index -= 0.5
     new_dictionary = pd.concat([new_dictionary, sections], axis=0)
     new_dictionary = new_dictionary.sort_index().reset_index(drop=True)
+
     return new_dictionary
 
 
-def is_yesno(x):
-    """Check if a Yes/No/Unknown question. Remove spaces in case of different
-    versions of the same string."""
-    output = x.replace(" ", "") in ("1,Yes|0,No|99,Unknown", "1,Yes|0,No")
-    # output = output.isin(['1,Yes|0,No|99,Unknown', '1,Yes|0,No'])
-    return output
+def is_yesno_question(x: str) -> str:
+    """:py:class:`str` : Returns a cleaned version of a Yes/No/Unknown question string.
+
+    Checks if the string is a Yes/No/Unknown question, and removes spaces in
+    case there are variations in the same string.
+
+    Parameters
+    ----------
+    x : str
+        A question string.
+
+    Returns
+    -------
+    str
+        A cleaned version of the string if it is a Yes/No/Unknown question.
+        Otherwise the original is returned.
+    """
+    return x.replace(" ", "") in ("1,Yes|0,No|99,Unknown", "1,Yes|0,No")
 
 
-def convert_dictionary_field_type(dictionary):
-    """Get a dictionary of variable types, based on REDCAP structure"""
+def is_yesno(x: str) -> str:
+    """:py:class:`str` : Returns a cleaned version of a Yes/No/Unknown question string.
+
+    .. warning::
+
+       DEPRECATED.
+
+    Checks if the string is a Yes/No/Unknown question, and removes spaces in
+    case there are variations in the same string.
+
+    Parameters
+    ----------
+    x : str
+        A question string.
+
+    Returns
+    -------
+    str
+        A cleaned version of the string if it is a Yes/No/Unknown question.
+        Otherwise the original is returned.
+    """
+    warnings.warn(
+        (
+            "`redcap_data.is_yesno` is deprecated; "
+            "use `redcap_data.is_yesno_question` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return is_yesno_question(x)
+
+
+def convert_dictionary_field_type(dictionary: pd.DataFrame) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Return a dictionary of variable types, based on REDCAP structure.
+
+    Parameters
+    ----------
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+        a dictionary of variable types, based on REDCAP structure.
+    """  # noqa : E501
     new_dictionary = dictionary.copy()
     val_column = "text_validation_type_or_show_slider_number"
 
@@ -401,65 +794,116 @@ def convert_dictionary_field_type(dictionary):
     return new_dictionary
 
 
-def replace_with_nan_for_missing_code_checkbox(df, missing_data_codes):
-    """Convert checkbox values to NaN when a missing code checkbox is 'Checked'"""
+def replace_with_nan_for_missing_code_checkbox(
+    data: pd.DataFrame, missing_data_codes: dict[str, typing.Any]
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Return the input dataframe with missing code checkbox values converted to NaN.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    missing_data_codes : dict
+        A dict of missing code keys and values.
+
+    Returns
+    -------
+    pd.DataFrame
+        The input dataframe with missing code checkbox values converted to NaN.
+    """  # noqa : E501
     missing_data_values = [x.lower() for x in missing_data_codes.values()]
     missing_columns = [
-        col for col in df.columns if col.split("___")[-1] in missing_data_values
+        col for col in data.columns if col.split("___")[-1] in missing_data_values
     ]
 
-    nan_mask = (df[missing_columns] == "Checked").T.reset_index()
+    nan_mask = (data[missing_columns] == "Checked").T.reset_index()
     nan_mask["index"] = nan_mask["index"].apply(lambda x: x.split("___")[0])
     nan_mask = nan_mask.groupby("index").any()
 
-    columns = [col for col in df.columns if col.split("___")[0] in nan_mask.index]
+    columns = [col for col in data.columns if col.split("___")[0] in nan_mask.index]
     nan_mask = nan_mask.loc[[col.split("___")[0] for col in columns]]
     nan_mask["column"] = columns
     nan_mask = nan_mask.set_index("column").T
 
-    df[nan_mask] = np.nan
-    return df
+    data[nan_mask] = np.nan
+
+    return data
 
 
 ############################################
-# Functions for processing the data
+# Data transformations
 ############################################
 
 
-def is_unlisted_item(x):
-    output = "".join([y for y in x if y.isdigit() is False]).endswith("unlisted_item")
-    return output
+def is_unlisted_item(x: typing.Iterable[str]) -> str:
+    """:py:class:`str` :
+
+    Parameters
+    ---------
+    x : typing.Iterable
+        An iterable of strings.
+
+    Returns
+    -------
+    str
+        -
+    """
+    return "".join([y for y in x if y.isdigit() is False]).endswith("unlisted_item")
 
 
-def combine_unlisted_variables(df, dictionary, sep="___"):
-    """Combine variables that exist in repeated versions of the same question
+def combine_unlisted_variables(
+    data: pd.DataFrame, dictionary: pd.DataFrame, sep: str = "___"
+) -> tuple[pd.DataFrame]:
+    """:py:class:`tuple` : Combine variables in repetitions of a question.
+
+    Combine variables that exist in repeated versions of the same question
     (e.g. additional dropdown questions asked after Yes/No/Unknown questions
-    for established variables)
+    for established variables).
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    sep : str, default="___"
+        Optional value separator.
+
+    Returns
+    -------
+    tuple
+        The update data and data dictionary.
     """
     unlisted_ind = dictionary["field_name"].str.endswith("unlisted")
     unlisted_columns = dictionary.loc[unlisted_ind, "field_name"]
     unlisted_item_ind = dictionary["field_name"].apply(is_unlisted_item)
     unlisted_item_columns = dictionary.loc[unlisted_item_ind, "field_name"]
-    unlisted_item_columns = [col for col in unlisted_item_columns if col in df.columns]
+    unlisted_item_columns = [
+        col for col in unlisted_item_columns if col in data.columns
+    ]
 
     unlisted_columns_dict = {
         k: [v for v in unlisted_item_columns if k in v] for k in unlisted_columns
     }
 
     new_dictionary_list = []
+
     for ind in unlisted_columns.index:
         column = dictionary.loc[ind, "field_name"]
-        values = df[unlisted_columns_dict[column]].stack().unique()
+        values = data[unlisted_columns_dict[column]].stack().unique()
         values = [val for val in values if val not in (np.nan, "", "Other")]
-        new_df = pd.DataFrame(
-            index=df.index, columns=[column + "_item" + sep + x for x in values]
+        new_data = pd.DataFrame(
+            index=data.index, columns=[column + "_item" + sep + x for x in values]
         )
         for value in values:  # it's too slow...
-            yes_ind = (df[unlisted_columns_dict[column]] == value).any(axis=1)
-            new_df.loc[yes_ind, column + "_item" + sep + value] = True
-        column_loc = df.columns.get_loc(column)
-        df = pd.concat(
-            [df.iloc[:, :column_loc], new_df, df.iloc[:, column_loc:]], axis=1
+            yes_ind = (data[unlisted_columns_dict[column]] == value).any(axis=1)
+            new_data.loc[yes_ind, column + "_item" + sep + value] = True
+        column_loc = data.columns.get_loc(column)
+        data = pd.concat(
+            [data.iloc[:, :column_loc], new_data, data.iloc[:, column_loc:]], axis=1
         )
         new_dictionary_index = ind + np.linspace(0.1, 0.9, len(values))
         new_dictionary = pd.DataFrame(
@@ -474,14 +918,33 @@ def combine_unlisted_variables(df, dictionary, sep="___"):
         new_dictionary["form_name"] = dictionary.loc[ind, "form_name"]
         new_dictionary["branching_logic"] = dictionary.loc[ind, "branching_logic"]
         new_dictionary_list.append(new_dictionary)
+
     dictionary = pd.concat([dictionary] + new_dictionary_list, axis=0)
     dictionary = dictionary.sort_index().reset_index(drop=True)
-    return df, dictionary
+
+    return data, dictionary
 
 
-def rename_checkbox_variables(df, dictionary):
-    """Rename checkbox variable columns. By default the suffix is their answer
-    option value. Convert this answer option value to the answer option name.
+def rename_checkbox_variables(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Rename checkbox variable columns.
+
+    By default the suffix is their answer option value. Convert this answer
+    option value to the answer option name.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+        The updated data.
     """
     checkbox_ind = dictionary["field_type"] == "checkbox"
     answer_dict = dictionary.loc[checkbox_ind, "answer_dict"]
@@ -495,63 +958,146 @@ def rename_checkbox_variables(df, dictionary):
     # value codes, if they exist
     name_values = [x + "___" + y.lower() for x, y in zip(names, values)]
     name_labels = [x + "___" + y for x, y in zip(names, labels)]
-    df.rename(columns=dict(zip(name_values, name_labels)), inplace=True)
-    return df
+    data.rename(columns=dict(zip(name_values, name_labels)), inplace=True)
+
+    return data
 
 
-def get_branching_logic_variables(branching_logic):
-    """Get all variables included in the branching logic
-    (including checkboxes variables)"""
-    var_names = [x.split("]")[0] for x in branching_logic.split("[")[1:]]
-    # Change any checkbox variable from bracket form to its one-hot column name
-    var_names = [x.replace("(", "___").replace(")", "") for x in var_names]
-    return var_names
+def get_branching_logic_variables(branching_logic: str) -> list[str]:
+    """:py:class:`list` : Return all variables included in the branching logic (including checkboxes variables).
+
+    Parameters
+    ----------
+    branching_logic : str
+        THe branching logic string.
+
+    Returns
+    -------
+    list
+        The list of all variables included in the branching logic.
+    """  # noqa : E501
+    return [
+        x.split("]")[0].replace("(", "___").replace(")", "")
+        for x in branching_logic.split("[")[1:]
+    ]
 
 
-def resolve_checkbox_branching_logic(df, dictionary):
-    """By default, a cell is marked as 'Unchecked' in the absence of the
+def resolve_checkbox_branching_logic(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Resolves checkbox logic.
+
+    By default, a cell is marked as 'Unchecked' in the absence of the
     positive, even if the question was not asked to the subjid. If the question
     was not asked to the subjid because of the branching logic, then set this
     to be NaN instead. This does not completely check the branching logic,
-    which is a data quality issue!"""
+    which is a data quality issue!.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+        The data with the checkbox branching logic resolved.
+    """
     checkbox_ind = dictionary.loc[(dictionary["field_type"] == "checkbox")]
     branching_logic_variables = dictionary["branching_logic"].apply(
         get_branching_logic_variables
     )
+
     for ind in checkbox_ind.index:
         branching_logic_columns = [
-            col for col in df.columns if col in branching_logic_variables.loc[ind]
+            col for col in data.columns if col in branching_logic_variables.loc[ind]
         ]
-        remove_ind = df[branching_logic_columns].isna().any(axis=1)
+        remove_ind = data[branching_logic_columns].isna().any(axis=1)
         checkbox_columns = [
             col
-            for col in df.columns
+            for col in data.columns
             if (col.split("___")[0] == dictionary.loc[ind, "field_name"])
         ]
-        df.loc[remove_ind, checkbox_columns] = np.nan
-    return df
+        data.loc[remove_ind, checkbox_columns] = np.nan
+
+    return data
 
 
-def harmonise_age(df, age_columns=["demog_age", "demog_age_units"]):
-    """Deprecated, age should now be included in conversion_table.csv.
-    Convert age from any units into age in years."""
-    df = df.rename(columns=dict(zip(age_columns, ["demog_age", "demog_age_units"])))
-    df.loc[:, "demog_age"] = pd.to_numeric(df["demog_age"], errors="coerce")
-    df.loc[:, "demog_age"] = df["demog_age"].astype(float)
-    df.loc[(df["demog_age_units"] == "Months"), "demog_age"] *= 1 / 12
-    df.loc[(df["demog_age_units"] == "Days"), "demog_age"] *= 1 / 365
+def harmonise_age(
+    data: pd.DataFrame,
+    age_columns: typing.Iterable[str] = ["demog_age", "demog_age_units"],
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : The data with ages harmonised.
+
+    .. warning::
+
+       DEPRECATED. Age should now be included in `conversion_table.csv`.
+       Convert age from any units into age in years.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    age_columns : typing.Iterable, default=["demog_age", "demog_age_units"]
+        An iterable (e.g. list) of age columns.
+
+    Returns
+    -------
+    pd.DataFrame
+        The data with ages harmonised.
+    """
+    warnings.warn(
+        (
+            "`redcap_data.harmonise_age` is deprecated. "
+            "Age should now be included in `conversion_table.csv`. "
+            "Convert age from any units into age in years."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    data = data.rename(columns=dict(zip(age_columns, ["demog_age", "demog_age_units"])))
+    data.loc[:, "demog_age"] = pd.to_numeric(data["demog_age"], errors="coerce")
+    data.loc[:, "demog_age"] = data["demog_age"].astype(float)
+    data.loc[(data["demog_age_units"] == "Months"), "demog_age"] *= 1 / 12
+    data.loc[(data["demog_age_units"] == "Days"), "demog_age"] *= 1 / 365
     unit_list = ["Days", "Months", "Years"]
     # Standardize the units to 'Years'
-    df.loc[df["demog_age_units"].isin(unit_list), "demog_age_units"] = "Years"
-    return df
+    data.loc[data["demog_age_units"].isin(unit_list), "demog_age_units"] = "Years"
+
+    return data
 
 
-def map_variable(variable, mapping_dict, other_value_str="Other / Unknown"):
-    """Map a variable according to a dict. Any non-NaN value not in the dict
-    keys is converted to other_value_str."""
-    other_value_ind = (variable.isin(mapping_dict.keys()) == 0) & variable.notna()
+def map_variable(
+    variable: pd.Series,
+    mapping_dict: dict[str, typing.Any],
+    non_nan_value: str = "Other / Unknown",
+) -> pd.Series:
+    """:py:class:`pd.Series` : Map a variable column using a dict.
+
+    Any non-NaN value not in the dict keys is converted to the value specified
+    by ``other_value_str``.
+
+    Parameters
+    ----------
+    variable : pd.Series
+        The variable column to map.
+
+    mapping_dict : dict
+        The mapping dict.
+
+    non_nan_value : str, default="Other / Unknown"
+        Optional value with which to replace non-NaN values not in the dict
+        keys.
+    """
+    non_nan_value_ind = (variable.isin(mapping_dict.keys()) == 0) & variable.notna()
     variable = variable.map(mapping_dict)
-    variable.loc[other_value_ind] = other_value_str
+    variable.loc[non_nan_value_ind] = non_nan_value
+
     return variable
 
 
@@ -605,19 +1151,26 @@ def load_countries_table(encoding: str = "latin-1") -> pd.DataFrame:
         )
 
 
-def homogenise_variables(df, dictionary):
-    """
-    Converts variables in a DataFrame based on a conversion table.
+def homogenise_variables(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> tuple[pd.DataFrame]:
+    """:py:class:`pd.DataFrame` : Converts variables in given units in the data based on a conversion table.
 
-    Parameters:
-    df: DataFrame containing values and their units.
-    conversion_table: DataFrame containing conversion specifications.
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
 
-    Returns:
-    pd.DataFrame: DataFrame with all specified values converted to the
-    desired units.
-    """
+    dictionary : pd.DataFrame
+        Conversion table/dictionary, as a Pandas dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        The data with unit conversions applied.
+    """  # noqa : E501
     conversion_table = load_units_conversion_table()
+
     for index, row in conversion_table.iterrows():
         from_unit = row["from_unit"]
         to_unit = row["to_unit"]
@@ -627,7 +1180,7 @@ def homogenise_variables(df, dictionary):
 
         try:
             # Ensure that the value column is numeric
-            df.loc[:, value_col] = pd.to_numeric(df[value_col], errors="coerce")
+            data.loc[:, value_col] = pd.to_numeric(data[value_col], errors="coerce")
 
             # Check if the variable is labs_lymphocyte or labs_neutrophil
             check_ind = (
@@ -638,51 +1191,71 @@ def homogenise_variables(df, dictionary):
             if check_ind:
                 # Convert absolute count to percentage using total WBC count
                 total_wbc_col = "labs_wbccount"
-                if total_wbc_col in df.columns:
+                if total_wbc_col in data.columns:
                     # Ensure the total WBC count column is numeric
-                    df.loc[:, total_wbc_col] = pd.to_numeric(
-                        df[total_wbc_col], errors="coerce"
+                    data.loc[:, total_wbc_col] = pd.to_numeric(
+                        data[total_wbc_col], errors="coerce"
                     )
                     # Apply conversion only to non-empty values
                     mask = (
-                        (df[unit_col] == from_unit)
-                        & df[value_col].notna()
-                        & df[total_wbc_col].notna()
+                        (data[unit_col] == from_unit)
+                        & data[value_col].notna()
+                        & data[total_wbc_col].notna()
                     )
-                    df.loc[mask, value_col] = 100 * (
-                        df.loc[mask, value_col] / df.loc[mask, total_wbc_col]
+                    data.loc[mask, value_col] = 100 * (
+                        data.loc[mask, value_col] / data.loc[mask, total_wbc_col]
                     )
-                    df.loc[mask, unit_col] = to_unit
+                    data.loc[mask, unit_col] = to_unit
                 continue
 
             # Only apply the conversion if the factor is not NaN and the
             # value_col is not empty
             if not pd.isna(conversion_factor):
-                mask = (df[unit_col] == from_unit) & df[value_col].notna()
+                mask = (data[unit_col] == from_unit) & data[value_col].notna()
                 # Apply the conversion
-                df.loc[mask, value_col] *= conversion_factor
+                data.loc[mask, value_col] *= conversion_factor
 
             # Set all units to the target unit
-            df.loc[df[unit_col] == from_unit, unit_col] = to_unit
+            data.loc[data[unit_col] == from_unit, unit_col] = to_unit
 
             dictionary_ind = dictionary["field_name"] == value_col
             dictionary.loc[dictionary_ind, "field_label"] += f" ({to_unit})"
         except Exception:
             pass
+
     if "demog_age" not in conversion_table["variable"]:
         try:
-            df = harmonise_age(df)
+            data = harmonise_age(data)
         except Exception:
             pass
-    return df, dictionary
+
+    return data, dictionary
 
 
-def convert_onehot_to_binary(df, dictionary):
-    """Convert onehot-encoded columns to True/False/NaN and discard answers
-    from the data dictionary, if they exist."""
+def convert_onehot_to_binary(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> pd.DataFrame:
+    """:py:class:`pd.DataFrame` : Converts onehot-encoded columns in the data.
+
+    The conversions will be True/False/NaN values, and answers from the data
+    dictionary discarded if they exist.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming data.
+
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    Returns
+    -------
+    pd.DataFrame
+        The data with the one-hot columns appropriately converted.
+    """
     binary_ind = dictionary["field_type"] == "binary"
     binary_columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    binary_columns = [col for col in binary_columns if col in df.columns]
+    binary_columns = [col for col in binary_columns if col in data.columns]
     mapping_dict = {
         "Yes": True,
         "Checked": True,
@@ -691,20 +1264,43 @@ def convert_onehot_to_binary(df, dictionary):
         "Unknown": np.nan,
     }
     with pd.option_context("future.no_silent_downcasting", True):
-        df.loc[:, binary_columns] = df[binary_columns].replace(mapping_dict)
-    return df
+        data.loc[:, binary_columns] = data[binary_columns].replace(mapping_dict)
+
+    return data
 
 
 ############################################
-# Main functions
+# Initial data processing
 ############################################
 
 
-def initial_data_processing(data, dictionary, missing_data_codes):
-    """Initial processing of complete pandas dataframe, after REDCAP API call"""
+def initial_data_processing(
+    data: pd.DataFrame,
+    dictionary: pd.DataFrame,
+    missing_data_codes: dict[str, typing.Any],
+) -> tuple[pd.DataFrame]:
+    """:py:class:`tuple` : Initial processing function invoked after the REDCap API call.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming REDCap data.
+
+    dictionary : pd.DataFrame
+        The REDCap data dictionary.
+
+    missing_data_codes : dict
+        The dict of missing code keys and values.
+
+    Returns
+    -------
+    tuple
+        A tuple consisting of the updated data and data dictionary dataframes.
+    """  # noqa : E501
     # Replace empty cells or 'Unknown' with NaN
     with pd.option_context("future.no_silent_downcasting", True):
         data = data.replace(["", "Unknown", "unknown"], np.nan)
+
     # Replace missing data codes with NaN
     if missing_data_codes is not None:
         with pd.option_context("future.no_silent_downcasting", True):
@@ -791,8 +1387,25 @@ def initial_data_processing(data, dictionary, missing_data_codes):
     return data, new_dictionary
 
 
-def get_df_map(data, dictionary):
-    """Convert single-event rows into one row per patient."""
+def get_df_map(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> tuple[pd.DataFrame | dict[str, typing.Any]]:
+    """:py:class:`pd.DataFrame` : Returns a dataframe with single-event rows converted to a format with one row per patient.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming REDCap data.
+
+    dictionary : pd.DataFrame
+        The REDCap data.
+
+    Returns
+    -------
+    tuple
+        Three dataframes, consisting of the transformed data. the data
+        dictionary, and the quality report.
+    """  # noqa : E501
     df_map = data.copy()
     forms = ["presentation", "daily", "outcome"]
     columns = dictionary.loc[dictionary["form_name"].isin(forms), "field_name"].tolist()
@@ -850,12 +1463,31 @@ def get_df_map(data, dictionary):
     dictionary = pd.concat([dictionary, pd.DataFrame.from_dict(outcome_dict)], axis=0)
     dictionary = dictionary.reset_index(drop=True)
     logger.debug(f"Data contains {df_map.shape[0]} patients")
+
     return df_map, dictionary, quality_report
 
 
-def get_df_forms(data, dictionary):
+def get_df_forms(
+    data: pd.DataFrame, dictionary: pd.DataFrame
+) -> dict[str, pd.DataFrame]:
+    """:py:class:`dict` : Returns a dict of clinical form names and associated dataframes.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The incoming REDCap data.
+
+    dictionary : pd.DataFrame
+        The data dictionary.
+
+    Returns
+    -------
+    dict
+        The dict of clinical form names and associated dataframes.
+    """  # noqa : E501
     forms = dictionary["form_name"].unique()
     df_forms_dict = {}
+
     for form in forms:
         columns = dictionary.loc[dictionary["form_name"] == form, "field_name"].tolist()
         columns = [col for col in columns if col in data.columns]
@@ -863,17 +1495,36 @@ def get_df_forms(data, dictionary):
             columns = ["subjid"] + columns
         ind = data["form_name"].apply(lambda x: form in x.split(","))
         df_forms_dict[form] = data.loc[ind, columns].reset_index(drop=True)
+
     return df_forms_dict
 
 
 def get_redcap_data(
-    redcap_url,
-    redcap_api_key,
-    data_access_groups=None,
-    user_assigned_to_dag=False,
-    country_mapping=None,
-):
-    """Get data from REDCap API and transform into analysis-ready dataframes"""
+    redcap_url: str,
+    redcap_api_key: str,
+    data_access_groups: typing.Iterable[str] | None = None,
+    user_assigned_to_dag: bool | None = False,
+    country_mapping: dict | None = None,
+) -> tuple[pd.DataFrame | dict[str, pd.DataFrame] | dict[str, typing.Any]]:
+    """:py:class:`tuple` : Returns data from REDCap API and transforms them into analysis-ready dataframes.
+
+    Parameters
+    ----------
+    redcap_url : str
+        The REDCap database URL.
+
+    redcap_api_key : str
+        The REDCap API key.
+
+    data_access_groups : typing.Iterable, default=None
+        Optional iterable of data access group (DAG) names.
+
+    user_assigned_to_dag : bool, default=None
+        Whether the user is assigned to a DAG.
+
+    country_mapping : dict
+        The countries table.
+    """  # noqa : E501
     total_started = time.perf_counter()
     logger.info("REDCap data pipeline start")
 

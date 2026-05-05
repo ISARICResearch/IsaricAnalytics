@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __all__ = [
     "fig_bar_chart",
     "fig_bar_line_chart",
