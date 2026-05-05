@@ -17,7 +17,7 @@ Install with :program:`pip` directly from `GitHub <https://github.com/ISARICRese
 
    pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics
 
-This will install the default ``main`` branch of the repo - if you want a specific branch, tag or commit SHA use
+This will install the default ``main`` branch of the repo, including all package dependencies (and sub-dependencies) - if you want a specific branch, tag or commit SHA use
 
 .. code:: shell
 
@@ -28,13 +28,15 @@ The minimum required Python version is 3.12.
 Documentation
 -------------
 
+The documentation is currently limited to an API reference for all the core public libraries, but user tutorials and additional documentation may be added in the future.
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   The documentation is currently limited to an API reference for all the core public libraries, but user tutorials and additional documentation may be added in the future.
-
    sources/api-reference
+   sources/visualisation
+   sources/contributing
 
 Indices and tables
 ==================
