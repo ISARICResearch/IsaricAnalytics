@@ -1,16 +1,44 @@
-.. isaricanalytics documentation master file, created by
-   sphinx-quickstart on Wed Apr  8 09:51:09 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+===============
+isaricanalytics
+===============
 
-isaricanalytics documentation
-=============================
+ISARIC Analytics library for users requiring or interested in:
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+- REDCap data extraction
+- ISARIC data analytics
+- ISARIC data visualisation
 
+Installation
+------------
+
+Install with :program:`pip` directly from `GitHub <https://github.com/ISARICResearch/IsaricAnalytics/>`_ using:
+
+.. code:: shell
+
+   pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics
+
+This will install the default ``main`` branch of the repo - if you want a specific branch, tag or commit SHA use
+
+.. code:: shell
+
+   pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics@<branch name or tag or commit SHA>
+
+The minimum required Python version is 3.12.
+
+Documentation
+-------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
+
+   The documentation is currently limited to an API reference for all the core public libraries, but user tutorials and additional documentation may be added in the future.
+
+   sources/api-reference
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
