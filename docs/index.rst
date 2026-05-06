@@ -1,8 +1,8 @@
-===============
-isaricanalytics
-===============
+================
+ISARIC Analytics
+================
 
-ISARIC Analytics library for users requiring or interested in:
+The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
 - REDCap data extraction
 - ISARIC data analytics
@@ -11,7 +11,7 @@ ISARIC Analytics library for users requiring or interested in:
 Installation
 ------------
 
-Install with :program:`pip` directly from `GitHub <https://github.com/ISARICResearch/IsaricAnalytics/>`_ using:
+Install with :program:`pip` directly from GitHub using:
 
 .. code:: shell
 
@@ -28,7 +28,7 @@ The minimum required Python version is 3.12.
 Documentation
 -------------
 
-The documentation is currently limited to an API reference for all the core public libraries, but user tutorials and additional documentation may be added in the future.
+The documentation is currently limited to an API reference for all the core public libraries, but user tutorials, a visualisation gallery and additional documentation will be added in the future.
 
 .. toctree::
    :maxdepth: 1

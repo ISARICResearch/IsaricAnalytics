@@ -150,7 +150,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+# pygments_style = "sphinx"
 
 # A list of prefixes that are ignored when creating the module index.
 # (new in Sphinx 0.6)
@@ -193,7 +193,61 @@ html_context = {
 
 # HTML theme options
 html_theme = "furo"
-html_theme_options = {}
+html_theme_options = {
+    # Since Furo doesn't allow us to disable dark mode, we make dark mode
+    # equivalent to light mode by overriding all colors back to their light value.
+    # See: https://github.com/pradyunsg/furo/issues/28
+    'dark_css_variables': {
+        # Taken from: https://github.com/pradyunsg/furo/blob/c682d5d3502f3fa713c909eebbf9f3afa0f469d9/src/furo/assets/styles/variables/_colors.scss
+        'color-problematic': '#b30000',
+
+        # Base Colors
+        'color-foreground-primary': 'black', # for main text and headings
+        'color-foreground-secondary': '#5a5c63', # for secondary text
+        'color-foreground-muted': '#646776', # for muted text
+        'color-foreground-border': '#878787', # for content borders
+
+        'color-background-primary': 'white', # for content
+        'color-background-secondary': '#f8f9fb', # for navigation + ToC
+        'color-background-hover': '#efeff4ff', # for navigation-item hover
+        'color-background-hover--transparent': '#efeff400',
+        'color-background-border': '#eeebee', # for UI borders
+        'color-background-item': '#ccc', # for "background" items (eg: copybutton)
+
+        # Announcements
+        'color-announcement-background': '#000000dd',
+        'color-announcement-text': '#eeebee',
+
+        # Brand colors
+        'color-brand-primary': '#2962ff',
+        'color-brand-content': '#2a5adf',
+
+        # Highlighted text (search)
+        'color-highlighted-background': '#ddeeff',
+
+        # GUI Labels
+        'color-guilabel-background': '#ddeeff80',
+        'color-guilabel-border': '#bedaf580',
+
+        # API documentation
+        'color-api-keyword': 'var(--color-foreground-secondary)',
+        'color-highlight-on-target': '#ffffcc',
+
+        # Admonitions
+        'color-admonition-background': 'transparent',
+
+        # Cards
+        'color-card-border': 'var(--color-background-secondary)',
+        'color-card-background': 'transparent',
+        'color-card-marginals-background': 'var(--color-background-hover)',
+
+        # Code blocks
+        'color-code-foreground': 'black',
+        'color-code-background': '#f8f9fb',
+    }
+}
+# Force pygments style in dark mode back to the light variant
+pygments_dark_style = 'tango'
 
 # html_logo = '_static/logo.png'
 
@@ -206,7 +260,9 @@ html_static_path = ["_static"]
 #
 #     https://sphinx-design.readthedocs.io/en/latest/badges_buttons.html#fontawesome-icons
 #
-# html_css_files = []
+html_css_files = [
+    "css/custom.css",
+]
 
 # Timestamp format for the last page updated time
 html_last_updated_fmt = "%b %d, %Y"
