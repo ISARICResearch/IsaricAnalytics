@@ -16,7 +16,6 @@ authors = [
     { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
     { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
-    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" }
 ]
 
 maintainers = [
