@@ -53,22 +53,22 @@ class TestLoadUnitsConversionTable:
 
 class TestLoadCountriesTable:
     def test_load_countries_table__from_local_assets(self):
-        with Path(__file__).parent.parent.parent.joinpath(
+        local_assets_csv_path = Path(__file__).parent.parent.parent.joinpath(
             "assets", "countries.csv"
-        ) as local_assets_csv_path:
-            expected_table = pd.read_csv(
-                Path(__file__).parent.joinpath("assets", "countries.csv")
-            )
+        )
+        expected_table = pd.read_csv(
+            Path(__file__).parent.joinpath("assets", "countries.csv")
+        )
 
-            with mock.patch(
-                "isaricanalytics.redcap_data.pd.read_csv",
-                mock.MagicMock(return_value=expected_table),
-            ) as mock_pd_read_csv:
-                received_table = load_countries_table(encoding="latin-1")
-                mock_pd_read_csv.assert_called_once_with(
-                    local_assets_csv_path, encoding="latin-1"
-                )
-                assert_frame_equal(received_table, expected_table)
+        with mock.patch(
+            "isaricanalytics.redcap_data.pd.read_csv",
+            mock.MagicMock(return_value=expected_table),
+        ) as mock_pd_read_csv:
+            received_table = load_countries_table(encoding="latin-1")
+            mock_pd_read_csv.assert_called_once_with(
+                local_assets_csv_path, encoding="latin-1"
+            )
+            assert_frame_equal(received_table, expected_table)
 
     def test_load_countries_table__from_vertex_github(self):
         with mock.patch(
