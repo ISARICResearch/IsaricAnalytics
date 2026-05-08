@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __all__ = [
     "clean_figure_table",
     "strip_html",
@@ -11,7 +13,7 @@ import re
 import typing
 
 # -- 3rd party libraries --
-import pandas as pd
+import pandas
 
 # -- Internal libraries --
 
@@ -62,8 +64,8 @@ def strip_nonstandard_unicode_chars(value: typing.Any) -> str | typing.Any:
     return value
 
 
-def clean_figure_table(figure_table: pd.DataFrame) -> pd.DataFrame:
-    """:py:class:pandas.DataFrame : A cleaned figure table dataframe.
+def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : A cleaned figure table dataframe.
 
     The cleaning steps are unique to the Plotly graph object table format from
     which the table CSVs were originally, which contain HTML styling elements

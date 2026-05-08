@@ -10,6 +10,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
 from datetime import datetime
 
 # -- 3rd party libraries --
+from docutils import nodes
+from sphinx.addnodes import pending_xref
+from sphinx.application import Sphinx
+from sphinx.environment import BuildEnvironment
+from sphinx.ext.intersphinx import missing_reference
+
 # -- Internal libraries --
 import isaricanalytics
 from isaricanalytics import __version__
@@ -124,12 +130,41 @@ intersphinx_mapping = {
     #'dash': ('https://dash.plotly.com/', None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
     "Python": ("https://docs.python.org/3", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     #'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
     "statsmodels": ("https://www.statsmodels.org/stable", None),
 }
+
+
+# A custom solution from:
+#
+#   https://stackoverflow.com/questions/73528299/link-to-plotly-graph-objects-figure-with-intersphinx
+#
+# to handle Intersphinx problems with the Plotly domain.
+def fix_reference(
+    app: Sphinx, env: BuildEnvironment, node: pending_xref, contnode: nodes.TextElement
+) -> nodes.reference | None:
+    """
+    Fix some intersphinx references that are broken.
+    """
+    if node["refdomain"] == "py":
+        # strange imports in plotly require a hardcoded redirect
+        if node["reftarget"] == "plotly.graph_objs._figure.Figure":
+            node["reftarget"] = "plotly.graph_objects.Figure"
+        return missing_reference(app, env, node, contnode)
+
+    return None
+
+
+def setup(app: Sphinx) -> None:
+    """
+    Force sphinx to fix additional things on setup.
+    """
+    app.connect("missing-reference", fix_reference)
+
 
 # Static template paths
 templates_path = ["_templates"]

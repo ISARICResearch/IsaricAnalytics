@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 __all__ = [
-    "classification_report",
     "convert_categorical_to_onehot",
     "convert_onehot_to_categorical",
     "create_grouped_results",
@@ -53,7 +52,7 @@ import warnings
 
 # -- 3rd party libraries --
 import numpy as np
-import pandas as pd
+import pandas
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from lifelines import CoxPHFitter, KaplanMeierFitter
@@ -68,6 +67,10 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 # -- Internal libraries --
 
+
+pd = pandas  # An alias to allow Pandas code refs to work independently
+# of Pandas Intersphinx refs in type hinting and docstrings
+
 ############################################
 ############################################
 # General preprocessing
@@ -76,16 +79,16 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 def extend_dictionary(
-    dictionary: pd.DataFrame,
+    dictionary: pandas.DataFrame,
     new_variable_dict: dict[str, typing.Any],
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns the VERTEX dictionary with new custom variables added.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the VERTEX dictionary with new custom variables added.
 
     Parameters
     ----------
-    dictionary : pd.DataFrame)
+    dictionary : pandas.DataFrame
         VERTEX dictionary containing columns ``"field_name"``, ``"form_name"``,
         ``"field_type"``, ``"field_label"``, ``"parent"``, ``"branching_logic"``.
 
@@ -93,7 +96,7 @@ def extend_dictionary(
         A dict with the same keys as the dictionary columns, the values for
         each item can be a string or a list.
 
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Pandas dataframe containing the data for the project. The columns of
         this dataframe must include the variables in
         ``new_variable_dict["field_type"]``.
@@ -103,7 +106,7 @@ def extend_dictionary(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         VERTEX dictionary containing the original variables, plus the new
         variables and any one-hot-encoded variables derived from this.
     """  # noqa : E501
@@ -182,8 +185,8 @@ def extend_dictionary(
 
 
 def get_variables_by_section_and_type(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     required_variables: typing.Iterable[str] | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
@@ -202,10 +205,10 @@ def get_variables_by_section_and_type(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     required_variables : typing.Iterable, default=None
@@ -258,21 +261,21 @@ def get_variables_by_section_and_type(
 
 
 def convert_categorical_to_onehot(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     categorical_columns: typing.Iterable[str],
     sep: str = "___",
     missing_val: str = "nan",
     drop_first: bool = False,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns the given dataframe with categorical variable columns converted to onehot-encoded variable columns.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the given dataframe with categorical variable columns converted to onehot-encoded variable columns.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     categorical_columns : typing.Iterable
@@ -291,7 +294,7 @@ def convert_categorical_to_onehot(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The original dataframe with the categorical -> one-hot-encoded variable
         columns.
     """  # noqa : E501
@@ -340,20 +343,20 @@ def convert_categorical_to_onehot(
 
 
 def convert_onehot_to_categorical(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     categorical_columns: typing.Iterable[str],
     sep: str = "___",
     missing_val: str = "nan",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns the given dataframe with onehot-encoded variable columns to categorical variable columns.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the given dataframe with onehot-encoded variable columns to categorical variable columns.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     categorical_columns : typing.Iterable
@@ -368,7 +371,7 @@ def convert_onehot_to_categorical(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The original dataframe with the one-hot-encoded -> categorical variable
         columns.
     """  # noqa : E501
@@ -399,8 +402,8 @@ def convert_onehot_to_categorical(
 
 
 def from_timeA_to_timeB(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     timeA_column: str,
     timeB_column: str,
     timediff_column: str,
@@ -411,10 +414,10 @@ def from_timeA_to_timeB(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     timeA_column : str
@@ -472,7 +475,7 @@ def from_timeA_to_timeB(
 
 
 def get_median_interquartile_range(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -482,7 +485,7 @@ def get_median_interquartile_range(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series for which to calculate the IQR.
 
     add_spaces : bool, default=False
@@ -520,7 +523,7 @@ def get_median_interquartile_range(
 
 
 def median_iqr_str(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -534,7 +537,7 @@ def median_iqr_str(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series for which to calculate the IQR.
 
     add_spaces : bool, default=False
@@ -569,7 +572,7 @@ def median_iqr_str(
 
 
 def get_mean_and_stdev(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -579,7 +582,7 @@ def get_mean_and_stdev(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series for which to calculate the mean and st. dev.
 
     add_spaces : bool, default=False
@@ -615,7 +618,7 @@ def get_mean_and_stdev(
 
 
 def mean_std_str(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -629,7 +632,7 @@ def mean_std_str(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series for which to calculate the mean and st. dev.
 
     add_spaces : bool, default=False
@@ -664,7 +667,7 @@ def mean_std_str(
 
 
 def get_n_percent_value(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -674,7 +677,7 @@ def get_n_percent_value(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series.
 
     add_spaces : bool, default=False
@@ -714,7 +717,7 @@ def get_n_percent_value(
 
 
 def n_percent_str(
-    series: pd.Series,
+    series: pandas.Series,
     add_spaces: bool = False,
     dp: int = 1,
     mfw: int = 4,
@@ -728,7 +731,7 @@ def n_percent_str(
 
     Parameters
     ----------
-    series : pd.Series
+    series : pandas.Series
         The input series.
 
     add_spaces : bool, default=False
@@ -763,19 +766,19 @@ def n_percent_str(
 
 
 def get_chi2_pvalue(
-    x: pd.Series,
-    y: pd.Series,
+    x: pandas.Series,
+    y: pandas.Series,
     x_cat: typing.Iterable[typing.Any] = [True, False],
     y_cat: typing.Iterable[typing.Any] = [True, False],
-) -> float | np.nan:
+) -> float:
     """:py:class:`float` : Returns the :math`p`-value for a Chi-squared test.
 
     Parameters
     ----------
-    x : pd.Series
+    x : pandas.Series
         The first series/factor.
 
-    y : pd.Series
+    y : pandas.Series
         The second series/factor.
 
     x_cat : typing.Iterable
@@ -786,9 +789,8 @@ def get_chi2_pvalue(
 
     Returns
     -------
-    float or np.nan
-        The :math:`p`-value for the test, either a :py:class:`float` or
-        :py:class:`np.nan`.
+    float
+        The :math:`p`-value for the test.
     """  # noqa : E501
     try:
         print(x.name)
@@ -806,8 +808,8 @@ def get_chi2_pvalue(
 
 
 def get_fisher_exact_pvalue(
-    x: pd.Series,
-    y: pd.Series,
+    x: pandas.Series,
+    y: pandas.Series,
     x_cat: typing.Iterable[typing.Any] = [True, False],
     y_cat: typing.Iterable[typing.Any] = [True, False],
 ):
@@ -815,10 +817,10 @@ def get_fisher_exact_pvalue(
 
     Parameters
     ----------
-    x : pd.Series
+    x : pandas.Series
         The first series/factor.
 
-    y : pd.Series
+    y : pandas.Series
         The second series/factor.
 
     x_cat : typing.Iterable
@@ -829,9 +831,8 @@ def get_fisher_exact_pvalue(
 
     Returns
     -------
-    float or np.nan
-        The :math:`p`-value for the test, either a :py:class:`float` or
-        :py:class:`np.nan`.
+    float
+        The :math:`p`-value for the test.
     """  # noqa : E501
     try:
         contingency = pd.crosstab(
@@ -898,8 +899,8 @@ def format_pvalue(
 
 
 def get_descriptive_data(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     by_column: str | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
@@ -915,15 +916,15 @@ def get_descriptive_data(
     include_subjid: bool = False,
     exclude_negatives: bool = True,
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns descriptive data.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns descriptive data.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     by_column : str, default=None
@@ -954,7 +955,7 @@ def get_descriptive_data(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Returns the descriptive data.
     """  # noqa : E501
     _data = data.copy()
@@ -999,25 +1000,25 @@ def get_descriptive_data(
 
 
 def descriptive_table(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     by_column: str | None = None,
     include_totals: bool = True,
     column_reorder: typing.Iterable[str] | None = None,
     include_raw_variable_name: bool = False,
     sep: str = "___",
-) -> tuple[pd.DataFrame, str]:
-    """:py:class:`py:class:tuple` : Returns the descriptive table and table key for binary and numerical variables in the data.
+) -> tuple[pandas.DataFrame, str]:
+    """:py:class:`tuple` : Returns the descriptive table and table key for binary and numerical variables in the data.
 
     The descriptive table will have separate columns for each category that
     exists for the ``by_column`` variable, if this is provided.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     by_column : str, default=None
@@ -1115,8 +1116,8 @@ def descriptive_table(
 
 
 def descriptive_comparison_table(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     by_column: str | None = None,
     include_totals: bool = True,
     column_reorder: typing.Iterable[str] | None = None,
@@ -1130,10 +1131,10 @@ def descriptive_comparison_table(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     by_column : str, default=None
@@ -1272,7 +1273,7 @@ def trim_field_label(x: str, max_len: int = 40) -> str:
 
 
 def format_descriptive_table_variables(
-    dictionary: pd.DataFrame,
+    dictionary: pandas.DataFrame,
     max_len: int = 100,
     add_key: bool = True,
     sep: str = "___",
@@ -1283,7 +1284,7 @@ def format_descriptive_table_variables(
 
     Parameters
     ----------
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     max_len : int, default=100
@@ -1334,13 +1335,13 @@ def format_descriptive_table_variables(
 
 
 def format_variables(
-    dictionary: pd.DataFrame, max_len: int = 40, sep: str = "___"
+    dictionary: pandas.DataFrame, max_len: int = 40, sep: str = "___"
 ) -> str:
     """:py:class:`str` : Returns a formatted string of the descriptive table variable field names.
 
     Parameters
     ----------
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     max_len : int, default=40
@@ -1387,19 +1388,19 @@ def format_variables(
 
 
 def get_counts(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     max_n_variables: int = 10,
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a dataframe of variable column counts.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of variable column counts.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     max_n_variables : int, default=10
@@ -1431,21 +1432,21 @@ def get_counts(
 
 
 def get_proportions(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     max_n_variables: int = 10,
     ignore_branching_logic: bool = False,
     branching_logic: str = "",
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a dataframe of proportional counts for variable columns.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of proportional counts for variable columns.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     max_n_variables : int, default=10
@@ -1457,7 +1458,7 @@ def get_proportions(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A dataframe of proportional counts for variable columns.
     """  # noqa : E501
     if ignore_branching_logic:
@@ -1511,20 +1512,20 @@ def get_proportions(
 
 
 def get_upset_counts_intersections(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     variables: list[str] | None = None,
     n_variables: int = 5,
     sep: str = "___",
-) -> tuple[pd.DataFrame]:
-    """:py:class:`pd.DataFrame` : Returns a dataframe of upset counts intersections.
+) -> tuple[pandas.DataFrame]:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of upset counts intersections.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     variables : list, default=None
@@ -1539,7 +1540,7 @@ def get_upset_counts_intersections(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A dataframe of upset counts intersections.
     """  # noqa : E501
     # Convert variables and column names into their formatted names
@@ -1600,16 +1601,16 @@ def get_upset_counts_intersections(
 
 
 def get_pyramid_data(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     column_dict: dict[str, str],
     left_side: str = "Female",
     right_side: str = "Male",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns dual stack pyramid data.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns dual stack pyramid data.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     column_dict : dict
@@ -1625,7 +1626,7 @@ def get_pyramid_data(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Dual stack pyramid data.
     """
     keys = ["side", "y_axis", "stack_group"]
@@ -1650,8 +1651,8 @@ def get_pyramid_data(
 
 
 def get_modelling_data(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     outcome_columns: str | typing.Iterable[str],
     include_sections: typing.Iterable[str] = [
         "demog",
@@ -1678,15 +1679,15 @@ def get_modelling_data(
     fillna: bool = True,
     drop_first: bool = False,
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns modelling data.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns modelling data.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     outcome_columns : typing.Iterable
@@ -1726,7 +1727,7 @@ def get_modelling_data(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Returns the modelling data.
     """  # noqa : E501
     _data = data.copy()
@@ -1774,19 +1775,19 @@ def get_modelling_data(
 
 
 def variance_influence_factor_backwards_elimination(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     predictors_list: typing.Iterable[str],
     sep: str = "___",
-) -> tuple[typing.Iterable[str], pd.DataFrame]:
+) -> tuple[typing.Iterable[str], pandas.DataFrame]:
     """:py:class:`tuple` : Returns an iterable of retained columns and the VIF backwards elimination data.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Data dictionary.
 
     predictors_list : typing.Iterable
@@ -1853,8 +1854,8 @@ def variance_influence_factor_backwards_elimination(
 
 
 def remove_single_binary_outcome_predictors(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     predictors: typing.Iterable[str],
     outcome: str,
 ) -> typing.Iterable[str]:
@@ -1865,10 +1866,10 @@ def remove_single_binary_outcome_predictors(
 
     Parameters
     ----------
-    data: pd.DataFrame
+    data: pandas.DataFrame
         The incoming data.
 
-    dictionary: pd.DataFrame
+    dictionary: pandas.DataFrame
         The data dictionary.
 
     predictors: typing.Iterable
@@ -1909,21 +1910,21 @@ def remove_single_binary_outcome_predictors(
 
 
 def regression_summary_table(
-    table: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    table: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     highlight_predictors: dict[str, typing.Iterable[str]] | None = None,
     pvalue_significance: float | None = None,
     result_type: str = "OddsRatio",
     sep: str = "___",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a regression summary table.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a regression summary table.
 
     Parameters
     ----------
-    table : pd.DataFrame
+    table : pandas.DataFrame
         The incoming table.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     highlight_predictors : dict, default=None
@@ -1940,7 +1941,7 @@ def regression_summary_table(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Regression summary table.
     """  # noqa : E501
     # Convert variables and column names into their formatted names
@@ -2039,7 +2040,7 @@ def regression_summary_table(
 
 
 def execute_glmm_regression(
-    elr_dataframe_df: pd.DataFrame,
+    elr_dataframe_df: pandas.DataFrame,
     elr_outcome: str,
     elr_predictors: typing.Iterable[str],
     elr_groups: str,
@@ -2047,12 +2048,12 @@ def execute_glmm_regression(
     print_results: bool = True,
     labels: dict[str, str] | None = None,
     reg_type: str = "multi",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Executes a mixed effects model for linear or logistic regression.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a mixed effects model for linear or logistic regression.
 
     Parameters
     ----------
-    elr_dataframe_df : pd.DataFrame
+    elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
     elr_outcome : str
@@ -2082,8 +2083,8 @@ def execute_glmm_regression(
 
     Returns
     -------
-    pd.DataFrame
-        Model results.
+    pandas.DataFrame
+        The model results.
     """  # noqa : E501
     # Builds the formula
     elr_formula_str = elr_outcome + " ~ " + " + ".join(elr_predictors)
@@ -2279,19 +2280,19 @@ def execute_glmm_regression(
 
 
 def execute_glm_regression(
-    elr_dataframe_df: pd.DataFrame,
+    elr_dataframe_df: pandas.DataFrame,
     elr_outcome: str,
     elr_predictors: typing.Iterable,
     model_type: str = "linear",
     print_results: bool = True,
     labels: dict[str, str] | None = None,
     reg_type: str = "Multi",
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Executes a GLM (Generalized Linear Model) for linear or logistic regression.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a GLM (Generalized Linear Model) for linear or logistic regression.
 
     Parameters
     ----------
-    elr_dataframe_df : pd.DataFrame
+    elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
     elr_outcome : str
@@ -2317,8 +2318,10 @@ def execute_glm_regression(
         Optional regression type - ``"uni"`` for univariate, ``"multi"`` for
         multivariate. Defaults to ``"multi"``.
 
-    Returns:
-    - summary_df: DataFrame with the model results.
+    Returns
+    --------
+    pandas.DataFrame
+        The model results.
     """  # noqa : E501
     # Defines the family according to model_type
     if model_type.lower() == "logistic":
@@ -2464,17 +2467,17 @@ def execute_glm_regression(
 
 
 def execute_cox_model(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     duration_col: str,
     event_col: str,
     predictors: typing.Iterable[str],
     labels: dict[str, str] | None = None,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Executes a Cox Proportional Hazards model without weights and returns a summary of the results.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a Cox Proportional Hazards model without weights and returns a summary of the results.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     duration_col : str
@@ -2491,8 +2494,8 @@ def execute_cox_model(
 
     Returns
     -------
-    pd.DataFrame
-        Results of the Cox model.
+    pandas.DataFrame
+        The model results.
     """  # noqa : E501
     # Ensure categorical variables are treated appropriately
     categorical_vars = data.select_dtypes(
@@ -2548,18 +2551,18 @@ def execute_cox_model(
 
 
 def execute_kaplan_meier(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     duration_col: str,
     event_col: str,
     group_col: str,
     alpha=0.05,
     n_times=5,
-) -> tuple[pd.DataFrame, pd.DataFrame, float]:
+) -> tuple[pandas.DataFrame, pandas.DataFrame, float]:
     """:py:class:`tuple` : Executes the Kaplan-Meier model and returns the results.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     duration_col : str
@@ -2579,7 +2582,7 @@ def execute_kaplan_meier(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         A tuple consisting of the model results, risk table and the
         :math:`p`-value.
     """  # noqa : E501
@@ -2659,27 +2662,27 @@ def execute_kaplan_meier(
 
 
 def impute_miss_val(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     outcome_column: str = "outco_binary_outcome",
     missing_threshold: float = 0.7,
     verbose: bool = False,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : The data with missing values imputed.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : The data with missing values imputed.
 
     Imputes missing values or drops columns based on missing value proportion
     and median.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     outcome_column : str, default="outco_binary_outcome"
-        Optional outcome column, default=``"outco_binary_outcome"``.
+        Optional outcome column, defaults to ``"outco_binary_outcome"``.
 
     missing_threshold : float, default=0.7
         A proportional imputation threshold for missing values, defaults to
@@ -2691,7 +2694,7 @@ def impute_miss_val(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Data with missing values imputed or columns dropped.
     """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
@@ -2734,24 +2737,24 @@ def impute_miss_val(
 
 
 def rmv_low_var(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     mad_threshold: float = 0.1,
     freq_threshold: float = 0.05,
     outcome_column: str = "outco_binary_outcome",
     verbose: bool = False,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Removes numerical variables from the data with Median Absolute Deviation (MAD) below a given threshold.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Removes numerical variables from the data with Median Absolute Deviation (MAD) below a given threshold.
 
     Excludes binary columns from MAD calculation. Removes binary columns with
     very low frequencies.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     mad_threshold : float, default=0.1
@@ -2768,7 +2771,7 @@ def rmv_low_var(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with low MAD columns removed.
     """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
@@ -2827,23 +2830,23 @@ def rmv_low_var(
 
 
 def rmv_high_corr(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     outcome_column: str = "outco_binary_outcome",
     correlation_threshold: float = 0.5,
     verbose: bool = False,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Removes variables in the data with high multicollinearity.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Removes variables in the data with high multicollinearity.
 
     Arbitrarily selecting one variable to remove if the correlation between two
     variables is above a threshold.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     outcome_column : str, default=``"outco_binary_outcome"``
@@ -2857,7 +2860,7 @@ def rmv_high_corr(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with high correlation variables removed.
     """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
@@ -2895,7 +2898,7 @@ def rmv_high_corr(
 
 
 def lasso_var_sel_binary(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     outcome_column: str = "mapped_outcome",
     metric: str = "balanced_accuracy",
     threshold: float = 1e-3,
@@ -2913,7 +2916,7 @@ def lasso_var_sel_binary(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     outcome_column : str, default="mapped_outcome"
@@ -2925,10 +2928,7 @@ def lasso_var_sel_binary(
     threshold : float, default=1e-3
         Optional threshold, defaults to :math:`0.001`.
 
-    gridsearch_params : dict, default={
-                                "l1_ratios": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
-                                "Cs": [1e-3, 3.16e-3, 1e-2, 3.16e-2, 1e-1, 3.16e-1, 1, 3.16, 10]
-                              }
+    gridsearch_params : dict, default={"l1_ratios": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], "Cs": [1e-3, 3.16e-3, 1e-2, 3.16e-2, 1e-1, 3.16e-1, 1, 3.16, 10]}
         Optional grid search params, defaults to:
         ::
 
@@ -3283,7 +3283,7 @@ def create_grouped_results(
 
 def get_parameter_ranking(
     logistic: typing.Any, n_top: int = 10, threshold: float = 1e-3
-) -> pd.DataFrame:
+) -> pandas.DataFrame:
     """:py:class:pd.DataFrame : Returns a dataframe of rankings of parameter combinations using stored scores and coefficient paths.
 
     Parameters
@@ -3299,7 +3299,7 @@ def get_parameter_ranking(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The dataframe of parameter rankings.
     """  # noqa : E501
     # Create empty list to store parameter information

@@ -49,13 +49,15 @@ from pathlib import Path
 
 # -- 3rd party libraries --
 import numpy as np
-import pandas as pd
+import pandas
 import requests
 
 # -- Internal libraries --
 from isaricanalytics.logging.logger import setup_logger
 
 logger = setup_logger(__name__)
+pd = pandas  # An alias to allow Pandas code refs to work independently
+# of Pandas Intersphinx refs in type hinting and docstrings
 
 
 ############################################
@@ -95,8 +97,8 @@ def get_records(
     redcap_api_key: str,
     data_access_groups: typing.Iterable[str] | None = None,
     user_assigned_to_dag: bool = False,
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a dataframe of records from the REDCap API.
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of records from the REDCap API.
 
     Parameters
     ----------
@@ -114,9 +116,9 @@ def get_records(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Records from the REDCap API data.
-    """
+    """  # noqa : E501
     started = time.perf_counter()
 
     if (data_access_groups is None) or (user_assigned_to_dag is False):
@@ -214,8 +216,8 @@ def get_records(
     return data
 
 
-def get_data_dictionary(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a data dictionary from the REDCap API.
+def get_data_dictionary(redcap_url: str, redcap_api_key: str) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a data dictionary from the REDCap API.
 
     Parameters
     ----------
@@ -227,7 +229,7 @@ def get_data_dictionary(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Data dictionary from the REDCap API.
     """
     conex = {
@@ -242,8 +244,8 @@ def get_data_dictionary(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
     return pd.read_csv(io.StringIO(response.text), keep_default_na=False)
 
 
-def get_events_and_forms_info(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
+def get_events_and_forms_info(redcap_url: str, redcap_api_key: str) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
 
     Parameters
     ----------
@@ -255,7 +257,7 @@ def get_events_and_forms_info(redcap_url: str, redcap_api_key: str) -> pd.DataFr
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Events, forms and their mapppings from the REDCap API.
     """  # noqa: E501
     conex = {
@@ -321,8 +323,8 @@ def get_events_and_forms_info(redcap_url: str, redcap_api_key: str) -> pd.DataFr
     return form, form_event
 
 
-def get_form_event(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
+def get_form_event(redcap_url: str, redcap_api_key: str) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a combined dataframe of events, forms and their mapppings from the REDCap API.
 
     .. warning::
 
@@ -338,7 +340,7 @@ def get_form_event(redcap_url: str, redcap_api_key: str) -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         Events, forms and their mapppings from the REDCap API.
     """  # noqa: E501
     warnings.warn(
@@ -490,19 +492,19 @@ def get_label(x: typing.Iterable[str]) -> list[str]:
     return get_labels(x)
 
 
-def add_answer_dict(dictionary: pd.DataFrame) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns the REDCap schema data dictionary with a lookup dict of labels and values.
+def add_answer_dict(dictionary: pandas.DataFrame) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the REDCap schema data dictionary with a lookup dict of labels and values.
 
     By default, ignores Yes/No/Unknown radio variables.
 
     Parameters
     ----------
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         REDCap schema data dictionary.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
          An updated REDCap schema data dictionary with a lookup dict of labels
          and values.
     """  # noqa: E501
@@ -530,7 +532,7 @@ def add_answer_dict(dictionary: pd.DataFrame) -> pd.DataFrame:
 
 
 def list_categorical_onehot_columns(
-    dictionary_row: dict[str, typing.Any], data: pd.DataFrame, sep: str = "___"
+    dictionary_row: dict[str, typing.Any], data: pandas.DataFrame, sep: str = "___"
 ) -> list[str]:
     """:py:class:`list` Returns a list of categorical onehot-encoded columns in the given dataframe.
 
@@ -539,7 +541,7 @@ def list_categorical_onehot_columns(
     dictionary_row : dict
         A row of the data dictionary.
 
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     sep : str, default="___"
@@ -557,7 +559,7 @@ def list_categorical_onehot_columns(
 
 
 def list_checkbox_onehot_columns(
-    dictionary_row: dict[str, typing.Any], data: pd.DataFrame, sep: str = "___"
+    dictionary_row: dict[str, typing.Any], data: pandas.DataFrame, sep: str = "___"
 ) -> list[str]:
     """:py:class:`list` Returns a list of checkbox onehot-encoded columns in the given dataframe.
 
@@ -566,7 +568,7 @@ def list_checkbox_onehot_columns(
     dictionary_row : dict
         A row of the data dictionary.
 
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     sep : str, default="___"
@@ -601,9 +603,9 @@ def get_section_prefix(x: str) -> str:
 
 
 def add_onehot_variables(
-    data: pd.DataFrame, dictionary: pd.DataFrame, sep: str = "___"
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Returns the data dictionary with rows for onehot-encoded categorical variables.
+    data: pandas.DataFrame, dictionary: pandas.DataFrame, sep: str = "___"
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the data dictionary with rows for onehot-encoded categorical variables.
 
     Add new rows to the dictionary for onehot-encoded categorical variables,
     using only the answers that exist within the data, e.g. if checkbox columns
@@ -612,10 +614,10 @@ def add_onehot_variables(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     sep : str, default="___"
@@ -623,7 +625,7 @@ def add_onehot_variables(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data dictionary with rows for onehot-encoded categorical variables.
     """  # noqa: E501
     new_dictionary = dictionary.copy()
@@ -749,17 +751,17 @@ def is_yesno(x: str) -> str:
     return is_yesno_question(x)
 
 
-def convert_dictionary_field_type(dictionary: pd.DataFrame) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Return a dictionary of variable types, based on REDCAP structure.
+def convert_dictionary_field_type(dictionary: pandas.DataFrame) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Return a dictionary of variable types, based on REDCAP structure.
 
     Parameters
     ----------
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         a dictionary of variable types, based on REDCAP structure.
     """  # noqa : E501
     new_dictionary = dictionary.copy()
@@ -795,13 +797,13 @@ def convert_dictionary_field_type(dictionary: pd.DataFrame) -> pd.DataFrame:
 
 
 def replace_with_nan_for_missing_code_checkbox(
-    data: pd.DataFrame, missing_data_codes: dict[str, typing.Any]
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Return the input dataframe with missing code checkbox values converted to NaN.
+    data: pandas.DataFrame, missing_data_codes: dict[str, typing.Any]
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Return the input dataframe with missing code checkbox values converted to NaN.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     missing_data_codes : dict
@@ -809,7 +811,7 @@ def replace_with_nan_for_missing_code_checkbox(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The input dataframe with missing code checkbox values converted to NaN.
     """  # noqa : E501
     missing_data_values = [x.lower() for x in missing_data_codes.values()]
@@ -853,8 +855,8 @@ def is_unlisted_item(x: typing.Iterable[str]) -> str:
 
 
 def combine_unlisted_variables(
-    data: pd.DataFrame, dictionary: pd.DataFrame, sep: str = "___"
-) -> tuple[pd.DataFrame]:
+    data: pandas.DataFrame, dictionary: pandas.DataFrame, sep: str = "___"
+) -> tuple[pandas.DataFrame]:
     """:py:class:`tuple` : Combine variables in repetitions of a question.
 
     Combine variables that exist in repeated versions of the same question
@@ -863,10 +865,10 @@ def combine_unlisted_variables(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     sep : str, default="___"
@@ -926,24 +928,24 @@ def combine_unlisted_variables(
 
 
 def rename_checkbox_variables(
-    data: pd.DataFrame, dictionary: pd.DataFrame
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Rename checkbox variable columns.
+    data: pandas.DataFrame, dictionary: pandas.DataFrame
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Rename checkbox variable columns.
 
     By default the suffix is their answer option value. Convert this answer
     option value to the answer option name.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The updated data.
     """
     checkbox_ind = dictionary["field_type"] == "checkbox"
@@ -985,7 +987,7 @@ def get_branching_logic_variables(branching_logic: str) -> list[str]:
 def resolve_checkbox_branching_logic(
     data: pd.DataFrame, dictionary: pd.DataFrame
 ) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Resolves checkbox logic.
+    """:py:class:`pandas.DataFrame` : Resolves checkbox logic.
 
     By default, a cell is marked as 'Unchecked' in the absence of the
     positive, even if the question was not asked to the subjid. If the question
@@ -995,15 +997,15 @@ def resolve_checkbox_branching_logic(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with the checkbox branching logic resolved.
     """
     checkbox_ind = dictionary.loc[(dictionary["field_type"] == "checkbox")]
@@ -1027,10 +1029,10 @@ def resolve_checkbox_branching_logic(
 
 
 def harmonise_age(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     age_columns: typing.Iterable[str] = ["demog_age", "demog_age_units"],
 ) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : The data with ages harmonised.
+    """:py:class:`pandas.DataFrame` : The data with ages harmonised.
 
     .. warning::
 
@@ -1039,7 +1041,7 @@ def harmonise_age(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
     age_columns : typing.Iterable, default=["demog_age", "demog_age_units"]
@@ -1047,7 +1049,7 @@ def harmonise_age(
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with ages harmonised.
     """
     warnings.warn(
@@ -1073,18 +1075,18 @@ def harmonise_age(
 
 
 def map_variable(
-    variable: pd.Series,
+    variable: pandas.Series,
     mapping_dict: dict[str, typing.Any],
     non_nan_value: str = "Other / Unknown",
-) -> pd.Series:
-    """:py:class:`pd.Series` : Map a variable column using a dict.
+) -> pandas.Series:
+    """:py:class:`pandas.Series` : Map a variable column using a dict.
 
     Any non-NaN value not in the dict keys is converted to the value specified
     by ``other_value_str``.
 
     Parameters
     ----------
-    variable : pd.Series
+    variable : pandas.Series
         The variable column to map.
 
     mapping_dict : dict
@@ -1101,12 +1103,12 @@ def map_variable(
     return variable
 
 
-def load_units_conversion_table() -> pd.DataFrame:
+def load_units_conversion_table() -> pandas.DataFrame:
     """:py:class:`pandas.DataFrame` : Loads the conversion table from a CSV.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The conversion table.
     """
     try:
@@ -1122,7 +1124,7 @@ def load_units_conversion_table() -> pd.DataFrame:
         )
 
 
-def load_countries_table(encoding: str = "latin-1") -> pd.DataFrame:
+def load_countries_table(encoding: str = "latin-1") -> pandas.DataFrame:
     """:py:class:`pandas.DataFrame` : Loads countries from a CSV.
 
     Parameters
@@ -1132,7 +1134,7 @@ def load_countries_table(encoding: str = "latin-1") -> pd.DataFrame:
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The countries table.
     """
     try:
@@ -1152,21 +1154,21 @@ def load_countries_table(encoding: str = "latin-1") -> pd.DataFrame:
 
 
 def homogenise_variables(
-    data: pd.DataFrame, dictionary: pd.DataFrame
+    data: pandas.DataFrame, dictionary: pandas.DataFrame
 ) -> tuple[pd.DataFrame]:
-    """:py:class:`pd.DataFrame` : Converts variables in given units in the data based on a conversion table.
+    """:py:class:`pandas.DataFrame` : Converts variables in given units in the data based on a conversion table.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         Conversion table/dictionary, as a Pandas dataframe.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with unit conversions applied.
     """  # noqa : E501
     conversion_table = load_units_conversion_table()
@@ -1233,24 +1235,24 @@ def homogenise_variables(
 
 
 def convert_onehot_to_binary(
-    data: pd.DataFrame, dictionary: pd.DataFrame
-) -> pd.DataFrame:
-    """:py:class:`pd.DataFrame` : Converts onehot-encoded columns in the data.
+    data: pandas.DataFrame, dictionary: pandas.DataFrame
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Converts onehot-encoded columns in the data.
 
     The conversions will be True/False/NaN values, and answers from the data
     dictionary discarded if they exist.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
         The data with the one-hot columns appropriately converted.
     """
     binary_ind = dictionary["field_type"] == "binary"
@@ -1275,18 +1277,18 @@ def convert_onehot_to_binary(
 
 
 def initial_data_processing(
-    data: pd.DataFrame,
-    dictionary: pd.DataFrame,
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
     missing_data_codes: dict[str, typing.Any],
-) -> tuple[pd.DataFrame]:
+) -> tuple[pandas.DataFrame]:
     """:py:class:`tuple` : Initial processing function invoked after the REDCap API call.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming REDCap data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data dictionary.
 
     missing_data_codes : dict
@@ -1388,16 +1390,16 @@ def initial_data_processing(
 
 
 def get_df_map(
-    data: pd.DataFrame, dictionary: pd.DataFrame
-) -> tuple[pd.DataFrame | dict[str, typing.Any]]:
-    """:py:class:`pd.DataFrame` : Returns a dataframe with single-event rows converted to a format with one row per patient.
+    data: pandas.DataFrame, dictionary: pandas.DataFrame
+) -> tuple[pandas.DataFrame | dict[str, typing.Any]]:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe with single-event rows converted to a format with one row per patient.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming REDCap data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The REDCap data.
 
     Returns
@@ -1468,16 +1470,16 @@ def get_df_map(
 
 
 def get_df_forms(
-    data: pd.DataFrame, dictionary: pd.DataFrame
-) -> dict[str, pd.DataFrame]:
+    data: pandas.DataFrame, dictionary: pandas.DataFrame
+) -> dict[str, pandas.DataFrame]:
     """:py:class:`dict` : Returns a dict of clinical form names and associated dataframes.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The incoming REDCap data.
 
-    dictionary : pd.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
     Returns
@@ -1505,7 +1507,7 @@ def get_redcap_data(
     data_access_groups: typing.Iterable[str] | None = None,
     user_assigned_to_dag: bool | None = False,
     country_mapping: dict | None = None,
-) -> tuple[pd.DataFrame | dict[str, pd.DataFrame] | dict[str, typing.Any]]:
+) -> tuple[pandas.DataFrame | dict[str, pandas.DataFrame] | dict[str, typing.Any]]:
     """:py:class:`tuple` : Returns data from REDCap API and transforms them into analysis-ready dataframes.
 
     Parameters

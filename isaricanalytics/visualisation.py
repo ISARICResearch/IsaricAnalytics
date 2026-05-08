@@ -31,12 +31,17 @@ import typing
 
 # -- 3rd party libraries --
 import numpy as np
-import pandas as pd
+import pandas
+import plotly
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
 # -- Internal libraries --
+
+
+pd = pandas  # An alias to allow Pandas code refs to work independently
+# of Pandas Intersphinx refs in type hinting and docstrings
 
 ############################################
 ############################################
@@ -46,17 +51,17 @@ from plotly.subplots import make_subplots
 
 
 def fig_placeholder(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Placeholder scatter plot",
     xlabel: str = "",
     ylabel: str = "",
     height: int = 450,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a placeholder scatter plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a placeholder scatter plot.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Placeholder scatter plot"
@@ -73,8 +78,8 @@ def fig_placeholder(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     if data is None:
         x = [1, 2, 3, 4, 5]
@@ -102,7 +107,7 @@ def fig_placeholder(
 
 
 def fig_pie(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Pie chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -111,11 +116,11 @@ def fig_pie(
     values: str | int | pd.Series | typing.Iterable = "",
     height: int = 450,
 ):
-    """:py:class:`go.Figure` : Returns a pie chart figure.
+    """:py:class:`plotly.graph_objs.Figure` : Returns a pie chart figure.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Placeholder scatter plot"
@@ -141,8 +146,8 @@ def fig_pie(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -167,7 +172,7 @@ def fig_pie(
 
 
 def fig_timelines(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Timeline",
     label_col: str = "",
     group_col: str = "",
@@ -177,12 +182,12 @@ def fig_timelines(
     min_width: int = 2,
     max_width: int = 10,
     height: int = 500,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a timeline figure.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a timeline figure.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Timeline"
@@ -214,8 +219,8 @@ def fig_timelines(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
     df[start_date] = pd.to_datetime(df[start_date])
@@ -291,18 +296,18 @@ def fig_timelines(
 
 
 def fig_sunburst(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Sunburst Chart",
     path: list[str | int] | pd.Series | typing.Iterable | None = ["level0", "level1"],
     values: str | int | pd.Series | typing.Iterable = "values",
     base_color_map: dict[str, str] | None = None,
     height: int = 430,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a sunburst plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a sunburst plot.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Sunburst Chart"
@@ -323,8 +328,8 @@ def fig_sunburst(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -352,7 +357,7 @@ def fig_sunburst(
 
 
 def fig_bar_chart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Bar Chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -361,12 +366,12 @@ def fig_bar_chart(
     xaxis_tickformat: str = "%m-%Y",
     base_color_map: dict[str, str] | None = None,
     height: int = 340,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a bar chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a bar chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Bar Chart"
@@ -397,8 +402,8 @@ def fig_bar_chart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -459,8 +464,8 @@ def fig_upset(
     data: tuple[pd.DataFrame],
     title: str = "Upset Plot",
     height: int = 480,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns an upset plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns an upset plot.
 
     Parameters
     ----------
@@ -476,8 +481,8 @@ def fig_upset(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     counts = data[0].copy()
     intersections = data[1].copy()
@@ -641,18 +646,18 @@ def fig_upset(
 
 
 def fig_count_chart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Count Chart",
     xlabel: str = "Count",
     ylabel: str = "Variable",
     base_color_map: dict[str, str] | None = None,
     height: int = 350,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a count chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a count chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Count Chart"
@@ -672,8 +677,8 @@ def fig_count_chart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
     column_names = ["label", "count", "short_label"]
@@ -743,18 +748,18 @@ def fig_count_chart(
 
 
 def fig_frequency_chart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Frequency Chart",
     xlabel: str = "Proportion",
     ylabel: str = "Variable",
     base_color_map: dict[str, str] | None = None,
     height: int = 350,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a frequency chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a frequency chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Frequency Chart"
@@ -774,8 +779,8 @@ def fig_frequency_chart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -869,16 +874,16 @@ def fig_frequency_chart(
 
 
 def fig_table(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     table_key: str = "",
     columnwidth: typing.Iterable[int | float] | None = None,
     height: int = 500,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a table figure.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a table figure.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     table_key : str, default=""
@@ -892,8 +897,8 @@ def fig_table(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -940,18 +945,18 @@ def fig_table(
 
 
 def fig_dual_stack_pyramid(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Dual-Sided Stacked Pyramid Chart",
     xlabel: str = "Count",
     ylabel: str = "Category",
     base_color_map: dict[str, str] | None = None,
     height: int = 430,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a dual-sided stacked pyramid chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a dual-sided stacked pyramid chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Dual-Sided Stacked Pyramid Chart"
@@ -971,9 +976,9 @@ def fig_dual_stack_pyramid(
 
     Returns
     -------
-    go.Figure
-        The figure.
-    """
+    plotly.graph_objs.Figure
+        The Plotly figure.
+    """  # noqa : E501
     df = data.copy()
 
     # Error Handling
@@ -1114,14 +1119,14 @@ def fig_dual_stack_pyramid(
 
 
 def fig_flowchart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     height: int = 430,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a flowchart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a flowchart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     height : int, default=430
@@ -1129,8 +1134,8 @@ def fig_flowchart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -1196,7 +1201,7 @@ def fig_flowchart(
 
 
 def fig_forest_plot(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Forest Plot",
     xlabel: str = "Odds Ratio (95% CI)",
     ylabel: str = "",
@@ -1205,12 +1210,12 @@ def fig_forest_plot(
     marker: dict[str, typing.Any] | None = None,
     noeffect_line: bool = True,
     height: int = 600,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a forest plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a forest plot.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Forest Plot"
@@ -1239,8 +1244,8 @@ def fig_forest_plot(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -1326,14 +1331,14 @@ def fig_forest_plot(
 
 
 def fig_text(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     height: int = 430,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a figure with an annotation.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a figure with an annotation.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     height : int, default=430
@@ -1341,8 +1346,8 @@ def fig_text(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     fig = go.Figure()
 
@@ -1373,8 +1378,8 @@ def fig_kaplan_meier(
     xlim: typing.Iterable[float | int] | None = None,
     p_value: float | None = None,
     height: int = 480,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a Kaplan-Meier plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a Kaplan-Meier plot.
 
     Parameters
     ----------
@@ -1411,8 +1416,8 @@ def fig_kaplan_meier(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df_km = data[0].copy()
     risk_table = data[1].copy()
@@ -1619,7 +1624,7 @@ def fig_kaplan_meier(
 
 
 def fig_line_chart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Line chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -1629,12 +1634,12 @@ def fig_line_chart(
     lower_column: str | None = None,
     upper_column: str | None = None,
     line_color: str | None = None,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a line chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a line chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Line chart"
@@ -1666,8 +1671,8 @@ def fig_line_chart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -1727,7 +1732,7 @@ def fig_line_chart(
 
 
 def fig_bar_line_chart(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "Combined bar line chart",
     xlabel: str = "",
     ylabel_left: str = "",
@@ -1740,12 +1745,12 @@ def fig_bar_line_chart(
     bar_color: str | None = None,
     line_color: str | None = None,
     height: int = 500,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a bar-line chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a bar-line chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default="Combined bar line chart"
@@ -1783,8 +1788,8 @@ def fig_bar_line_chart(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     df = data.copy()
 
@@ -1866,7 +1871,7 @@ def fig_bar_line_chart(
 
 
 def fig_heatmaps(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     title: str = "",
     subplot_titles: list[str] | None = None,
     ylabel: str = "",
@@ -1878,12 +1883,12 @@ def fig_heatmaps(
     include_annotations: bool = False,
     base_color_map: dict[str, str] | None = None,
     height: int = 750,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a heatmaps chart.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a heatmaps chart.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     title : str, default=""
@@ -1921,8 +1926,8 @@ def fig_heatmaps(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     if isinstance(data, tuple) is False:
         data = (data,)
@@ -1996,14 +2001,14 @@ def fig_heatmaps(
 
 
 def fig_sankey(
-    data: pd.DataFrame,
+    data: pandas.DataFrame,
     height: int = 500,
-) -> go.Figure:
-    """:py:class:`go.Figure` : Returns a Sankey plot.
+) -> plotly.graph_objs.Figure:
+    """:py:class:`plotly.graph_objs.Figure` : Returns a Sankey plot.
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : pandas.DataFrame
         Incoming data.
 
     height : int, default=500
@@ -2011,8 +2016,8 @@ def fig_sankey(
 
     Returns
     -------
-    go.Figure
-        The figure.
+    plotly.graph_objs.Figure
+        The Plotly figure.
     """
     node = data[0].copy()
     link = data[1].copy()
