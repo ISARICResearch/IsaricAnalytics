@@ -32,6 +32,24 @@ keywords = [
     "data-analysis",
     "data-analytics",
 ]
+
+
+# Not strictly required as this isn't a public Python package, but still good
+# to have.
+classifiers = [
+        "Environment :: Console",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
+        "Development Status :: 5 - Production/Stable",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: MacOS",
+        "Operating System :: Microsoft :: Windows",
+]
+
 requires-python = ">=3.11"
 dependencies = [
     "lifelines==0.30.0",
