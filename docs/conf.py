@@ -104,7 +104,7 @@ autodoc_default_options = {
     "exclude-members": "",
     "member-order": "alphabetical",
     "private-members": False,
-    "special-members":
+    "special-members": "",
 }
 
 # Sphinx autodoc autosummary settings
