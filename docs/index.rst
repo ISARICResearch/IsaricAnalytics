@@ -23,7 +23,7 @@ This will install the default ``main`` branch of the repo, including all package
 
    pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics@<branch name or tag or commit SHA>
 
-The minimum required Python version is 3.12.
+The minimum required Python version is 3.11.
 
 Documentation
 -------------
@@ -35,6 +35,8 @@ The documentation is currently limited to an API reference for all the core publ
    :caption: Contents:
 
    sources/api-reference
+   sources/redcap-data
+   sources/analytics
    sources/visualisation
    sources/contributing
 
