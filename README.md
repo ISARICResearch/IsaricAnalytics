@@ -2,7 +2,7 @@
 
 [![CodeQL](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/github-code-scanning/codeql)
 [![pre-commit](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/pre-commit.yml)
-[![Tests (python versions)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test-python-versions-coverage.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test-python-versions-coverage.yml)
+[![Tests (python versions)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/ISARICResearch/IsaricAnalytics/graph/badge.svg?token=Q0A84OK6E5)](https://codecov.io/gh/ISARICResearch/IsaricAnalytics)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
