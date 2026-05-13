@@ -1,7 +1,58 @@
+from __future__ import annotations
+
+__all__ = [
+    "convert_categorical_to_onehot",
+    "convert_onehot_to_categorical",
+    "create_grouped_results",
+    "descriptive_comparison_table",
+    "descriptive_table",
+    "execute_cox_model",
+    "execute_glm_regression",
+    "execute_glmm_regression",
+    "execute_kaplan_meier",
+    "extend_dictionary",
+    "format_descriptive_table_variables",
+    "format_pvalue",
+    "format_variables",
+    "from_timeA_to_timeB",
+    "get_chi2_pvalue",
+    "get_counts",
+    "get_descriptive_data",
+    "get_fisher_exact_pvalue",
+    "get_mean_and_stdev",
+    "get_median_interquartile_range",
+    "get_modelling_data",
+    "get_n_percent_value",
+    "get_parameter_ranking",
+    "get_proportions",
+    "get_pyramid_data",
+    "get_upset_counts_intersections",
+    "get_variables_by_section_and_type",
+    "impute_miss_val",
+    "lasso_var_sel_binary",
+    "mannwhitneyu",
+    "mean_std_str",
+    "median_iqr_str",
+    "n_percent_str",
+    "norm",
+    "regression_summary_table",
+    "remove_single_binary_outcome_predictors",
+    "rmv_high_corr",
+    "rmv_low_var",
+    "trim_field_label",
+    "variance_influence_factor_backwards_elimination",
+]
+
+
+# -- IMPORTS --
+
+# -- Standard libraries --
+import typing
 import warnings
 
+# -- 3rd party libraries --
 import numpy as np
-import pandas as pd
+import pandas
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from lifelines import CoxPHFitter, KaplanMeierFitter
@@ -14,6 +65,12 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from statsmodels.genmod.bayes_mixed_glm import BinomialBayesMixedGLM
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
+# -- Internal libraries --
+
+
+pd = pandas  # An alias to allow Pandas code refs to work independently
+# of Pandas Intersphinx refs in type hinting and docstrings
+
 ############################################
 ############################################
 # General preprocessing
@@ -21,32 +78,46 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 ############################################
 
 
-def extend_dictionary(dictionary, new_variable_dict, data, sep="___"):
-    """Add new custom variables to the VERTEX dictionary.
+def extend_dictionary(
+    dictionary: pandas.DataFrame,
+    new_variable_dict: dict[str, typing.Any],
+    data: pandas.DataFrame,
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the VERTEX dictionary with new custom variables added.
 
-    Args:
-        dictionary (pd.DataFrame):
-            VERTEX dictionary containing columns 'field_name', 'form_name',
-            'field_type', 'field_label', 'parent', 'branching_logic'.
-        new_variable_dict (dict):
-            A dict with the same keys as the dictionary columns, the values for
-            each item can be a string or a list.
-        data (pd.DataFrame):
-            pandas dataframe containing the data for the project. The columns
-            of this dataframe must include the variables in
-            new_variable_dict['field_type'].
-        sep (str): separator for creating new one-hot-encoded variable names.
+    Parameters
+    ----------
+    dictionary : pandas.DataFrame
+        VERTEX dictionary containing columns ``"field_name"``, ``"form_name"``,
+        ``"field_type"``, ``"field_label"``, ``"parent"``, ``"branching_logic"``.
 
-    Returns:
-        dictionary (pd.DataFrame):
-            VERTEX dictionary containing the original variables, plus the new
-            variables and any one-hot-encoded variables derived from this."""
+    new_variable_dict : dict
+        A dict with the same keys as the dictionary columns, the values for
+        each item can be a string or a list.
+
+    data : pandas.DataFrame
+        Pandas dataframe containing the data for the project. The columns of
+        this dataframe must include the variables in
+        ``new_variable_dict["field_type"]``.
+
+    sep : str
+        Separator for creating new one-hot-encoded variable names.
+
+    Returns
+    -------
+    pandas.DataFrame
+        VERTEX dictionary containing the original variables, plus the new
+        variables and any one-hot-encoded variables derived from this.
+    """  # noqa : E501
     # Convert dict values to list if all are strings (otherwise a pandas error)
     if all(isinstance(v, str) for v in new_variable_dict.values()):
         new_variable_dict = {k: [v] for k, v in new_variable_dict.items()}
+
     new_dictionary = pd.DataFrame.from_dict(new_variable_dict)
     new_dictionary["index"] = np.nan
     dictionary = dictionary.reset_index(drop=False)
+
     for ind in new_dictionary.index:
         parent = new_dictionary.loc[ind, "parent"]
         if parent not in new_dictionary["field_name"].values:
@@ -72,6 +143,7 @@ def extend_dictionary(dictionary, new_variable_dict, data, sep="___"):
             )
             # new_ind = new_ind + 0.1
         new_dictionary.loc[ind, "index"] = new_ind
+
     categorical_ind = new_dictionary["field_type"].isin(["categorical"])
     new_dictionary_list = [new_dictionary]
     ind_list = [
@@ -79,6 +151,7 @@ def extend_dictionary(dictionary, new_variable_dict, data, sep="___"):
         for ind in categorical_ind.loc[categorical_ind].index
         if new_dictionary.loc[ind, "field_name"] in data.columns
     ]
+
     for ind in ind_list:
         variable = new_dictionary.loc[ind, "field_name"]
         options = data[variable].drop_duplicates().sort_values().dropna()
@@ -103,19 +176,21 @@ def extend_dictionary(dictionary, new_variable_dict, data, sep="___"):
             len(options),
         )
         new_dictionary_list += [add_options]
+
     dictionary = pd.concat([dictionary] + new_dictionary_list, axis=0)
     dictionary = dictionary.sort_values(by="index").drop(columns="index")
     dictionary = dictionary.reset_index(drop=True)
+
     return dictionary
 
 
 def get_variables_by_section_and_type(
-    df,
-    dictionary,
-    required_variables=None,
-    include_sections=["demog"],
-    include_types=["binary", "categorical", "numeric"],
-    exclude_suffix=[
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    required_variables: typing.Iterable[str] | None = None,
+    include_sections: typing.Iterable[str] = ["demog"],
+    include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
+    exclude_suffixes: typing.Iterable[str] = [
         "_units",
         "addi",
         "otherl2",
@@ -124,12 +199,43 @@ def get_variables_by_section_and_type(
         "_unlisted",
         "otherl3",
     ],
-    include_subjid=False,
-):
-    """
-    Get all variables in the dataframe from specified sections and types,
-    plus any required variables.
-    """
+    include_subjid: bool = False,
+) -> list[str]:
+    """:py:class:`list` : Returns a list of all variables in the dataframe from specified sections and types, plus any required variables.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    required_variables : typing.Iterable, default=None
+        Optional iterable of required variable names, defaults to ``None``.
+
+    include_sections : typing.Iterable, default=["demog"]
+        Optional iterable of names of sections to include, defaults to
+        ``["demog"]``.
+
+    include_types : typing.Iterable, default=["binary", "categorical", "numeric"]
+        Optional iterable of variable type names, defaults to
+        ``["binary", "categorical", "numeric"]``.
+
+    exclude_suffixes : typing.Iterable, default=``["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]``
+        Optional iterable of suffixes to exclude, defaults to
+        ``["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]``.
+
+    include_subjid : bool, default=False
+        Optional boolean to indicate whether to include subject ID, defaults
+        to ``False``.
+
+    Returns
+    -------
+    list
+        A list of all variables in the dataframe from specified sections and
+        types, plus any required variables.
+    """  # noqa : E501
     if "section" in dictionary.columns:  # TODO: this should always be True in future
         include_ind = dictionary["section"].isin(include_sections)
     else:
@@ -141,7 +247,7 @@ def get_variables_by_section_and_type(
     #     lambda x: x.endswith(tuple('___' + x for x in exclude_suffix))) == 0)
     include_ind &= (
         dictionary["field_name"].apply(
-            lambda x: x.endswith(tuple(x for x in exclude_suffix))
+            lambda x: x.endswith(tuple(x for x in exclude_suffixes))
         )
         == 0
     )
@@ -150,28 +256,63 @@ def get_variables_by_section_and_type(
     if include_subjid:
         include_ind |= dictionary["field_name"] == "subjid"
     include_variables = dictionary.loc[include_ind, "field_name"].tolist()
-    include_variables = [col for col in include_variables if col in df.columns]
-    return include_variables
+
+    return [col for col in include_variables if col in data.columns]
 
 
 def convert_categorical_to_onehot(
-    df, dictionary, categorical_columns, sep="___", missing_val="nan", drop_first=False
-):
-    """Convert categorical variables into onehot-encoded variables."""
-    categorical_columns = [col for col in df.columns if col in categorical_columns]
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    categorical_columns: typing.Iterable[str],
+    sep: str = "___",
+    missing_val: str = "nan",
+    drop_first: bool = False,
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the given dataframe with categorical variable columns converted to onehot-encoded variable columns.
 
-    df.loc[:, categorical_columns] = df[categorical_columns].fillna(missing_val)
-    df = pd.get_dummies(df, columns=categorical_columns, prefix_sep=sep)
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    categorical_columns : typing.Iterable
+        An iterable of categorical column names.
+
+    sep : str, default="___"
+        Field-value separator, defaults to ``"___"``
+
+    missing_val : str, default="nan"
+        Optional value with which to replace missing values, defaults to
+        ``"nan"``.
+
+    drop_first : bool, default=False
+        Optional boolean to indicate how to drop categorical columns [?],
+        defaults to ``False``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The original dataframe with the categorical -> one-hot-encoded variable
+        columns.
+    """  # noqa : E501
+    categorical_columns = [col for col in data.columns if col in categorical_columns]
+
+    data.loc[:, categorical_columns] = data[categorical_columns].fillna(missing_val)
+    data = pd.get_dummies(data, columns=categorical_columns, prefix_sep=sep)
 
     for categorical_column in categorical_columns:
         onehot_columns = [
-            var for var in df.columns if var.split(sep)[0] == categorical_column
+            var for var in data.columns if var.split(sep)[0] == categorical_column
         ]
-        df[onehot_columns] = df[onehot_columns].astype(object)
-        if (categorical_column + sep + missing_val) in df.columns:
-            mask = df[categorical_column + sep + missing_val] == 1
-            df.loc[mask, onehot_columns] = np.nan
-            df = df.drop(columns=[categorical_column + sep + missing_val])
+        data[onehot_columns] = data[onehot_columns].astype(object)
+
+        if (categorical_column + sep + missing_val) in data.columns:
+            mask = data[categorical_column + sep + missing_val] == 1
+            data.loc[mask, onehot_columns] = np.nan
+            data = data.drop(columns=[categorical_column + sep + missing_val])
         elif (
             drop_first
             and isinstance(dictionary, pd.DataFrame)
@@ -185,54 +326,122 @@ def convert_categorical_to_onehot(
                 axis=1,
             )
             if drop_column_ind.any():
-                df = df.drop(
+                data = data.drop(
                     columns=[dictionary.loc[drop_column_ind, "field_name"].values[0]]
                 )
 
     if isinstance(dictionary, pd.DataFrame) and "field_name" in dictionary.columns:
-        columns = [col for col in dictionary["field_name"].values if col in df.columns]
-        columns += [
-            col for col in df.columns if col not in dictionary["field_name"].values
+        columns = [
+            col for col in dictionary["field_name"].values if col in data.columns
         ]
-        df = df[columns]
+        columns += [
+            col for col in data.columns if col not in dictionary["field_name"].values
+        ]
+        data = data[columns]
 
-    return df
+    return data
 
 
 def convert_onehot_to_categorical(
-    df, dictionary, categorical_columns, sep="___", missing_val="nan"
-):
-    """Convert onehot-encoded variables into categorical variables."""
-    df = pd.concat([df, pd.DataFrame(columns=categorical_columns)], axis=1)
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    categorical_columns: typing.Iterable[str],
+    sep: str = "___",
+    missing_val: str = "nan",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns the given dataframe with onehot-encoded variable columns to categorical variable columns.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    categorical_columns : typing.Iterable
+        An iterable of categorical column names.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    missing_val : str, default="nan"
+        Optional value with which to replace missing values, defaults to
+        ``"nan"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The original dataframe with the one-hot-encoded -> categorical variable
+        columns.
+    """  # noqa : E501
+    data = pd.concat([data, pd.DataFrame(columns=categorical_columns)], axis=1)
+
     for categorical_column in categorical_columns:
         onehot_columns = list(
-            df.columns[df.columns.str.startswith(categorical_column + sep)]
+            data.columns[data.columns.str.startswith(categorical_column + sep)]
         )
         # Preserve missingness
-        df.loc[:, categorical_column + sep + missing_val] = (
-            df[onehot_columns].any(axis=1) == 0
-        ) | (df[onehot_columns].isna().any(axis=1))
-        with pd.option_context("future.no_silent_downcasting", True):
-            df.loc[:, onehot_columns] = df[onehot_columns].fillna(False)
-        onehot_columns += [categorical_column + sep + missing_val]
-        df.loc[:, categorical_column] = pd.from_dummies(df[onehot_columns], sep=sep)
-        df = df.drop(columns=onehot_columns)
+        data.loc[:, categorical_column + sep + missing_val] = (
+            data[onehot_columns].any(axis=1) == 0
+        ) | (data[onehot_columns].isna().any(axis=1))
 
-    columns = [col for col in dictionary["field_name"].values if col in df.columns]
-    columns += [col for col in df.columns if col not in dictionary["field_name"].values]
-    df = df[columns]
-    return df
+        with pd.option_context("future.no_silent_downcasting", True):
+            data.loc[:, onehot_columns] = data[onehot_columns].fillna(False)
+        onehot_columns += [categorical_column + sep + missing_val]
+        data.loc[:, categorical_column] = pd.from_dummies(data[onehot_columns], sep=sep)
+        data = data.drop(columns=onehot_columns)
+
+    columns = [col for col in dictionary["field_name"].values if col in data.columns]
+    columns += [
+        col for col in data.columns if col not in dictionary["field_name"].values
+    ]
+    data = data[columns]
+
+    return data
 
 
 def from_timeA_to_timeB(
-    data,
-    dictionary,
-    timeA_column,
-    timeB_column,
-    timediff_column,
-    timediff_label,
-    time_unit="days",
-):
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    timeA_column: str,
+    timeB_column: str,
+    timediff_column: str,
+    timediff_label: str,
+    time_unit: str = "days",
+) -> tuple[pd.DataFrame]:
+    """:py:class:`tuple` : Returns the data and data dictionary updated with time difference calculation between two given data columns.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    timeA_column : str
+        The name of the first time column.
+
+    timeB_column : str
+        The name of the second time column.
+
+    timediff_column : str
+        The name of the column for storing the time difference of the two
+        given time columns.
+
+    timediff_label : str
+        A label to attach to the time difference column.
+
+    time_unit : str, default="days"
+        An optional indicator of which time unit to use for the time difference
+        calculation, defaults to ``"days"``.
+
+    Returns
+    -------
+    tuple
+        The data and data dictionary updated with time difference information.
+    """  # noqa : E501
     if time_unit == "days":
         data[timediff_column] = (data[timeB_column] - data[timeA_column]).dt.days
     elif time_unit == "months":
@@ -241,6 +450,7 @@ def from_timeA_to_timeB(
         ) * 12 + (data[timeB_column].dt.month - data[timeA_column].dt.month)
     elif time_unit == "months":
         data[timediff_column] = data[timeB_column].dt.year - data[timeA_column].dt.year
+
     time_dict = {
         "field_name": timediff_column,
         "form_name": dictionary.loc[
@@ -253,6 +463,7 @@ def from_timeA_to_timeB(
         ].values[0],
     }
     dictionary = extend_dictionary(dictionary, time_dict, data)
+
     return data, dictionary
 
 
@@ -263,7 +474,37 @@ def from_timeA_to_timeB(
 ############################################
 
 
-def median_iqr_str(series, add_spaces=False, dp=1, mfw=4, min_n=3):
+def get_median_interquartile_range(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 3,
+) -> str:
+    """:py:class:`str` : Returns the median interquartile range (IQR) of a given series of values as a string.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series for which to calculate the IQR.
+
+    add_spaces : bool, default=False
+        Add spacing in the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=4
+        No description available.
+
+    min_n : int, default=3
+        No description available.
+
+    Returns
+    -------
+    str
+        The IQR as a string.
+    """  # noqa : E501
     if series.notna().sum() < min_n:
         output_str = "N/A"
     elif add_spaces:
@@ -277,10 +518,90 @@ def median_iqr_str(series, add_spaces=False, dp=1, mfw=4, min_n=3):
         output_str += "%.*f" % (dp, series.quantile(0.25)) + "-"
         output_str += "%.*f" % (dp, series.quantile(0.75)) + ") | "
         output_str += str(int(series.notna().sum()))
+
     return output_str
 
 
-def mean_std_str(series, add_spaces=False, dp=1, mfw=4, min_n=3):
+def median_iqr_str(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 3,
+) -> str:
+    """:py:class:`str` : Returns the median interquartile range (IQR) of a given series of values as a formatted string.
+
+    .. warning::
+
+       DEPRECATED. Please use :py:func:`~isaricanalytics.analytics.get_median_interquartile_range` instead.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series for which to calculate the IQR.
+
+    add_spaces : bool, default=False
+        Add spacing in the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=4
+        No description available.
+
+    min_n : int, default=3
+        No description available.
+
+    Returns
+    -------
+    str
+        The IQR as a string.
+    """  # noqa : E501
+    warnings.warn(
+        (
+            "`analytics.median_iqr_str` is deprecated; "
+            "please use `analytics.get_median_interquartile_range` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_median_interquartile_range(
+        series, add_spaces=add_spaces, dp=dp, mfw=mfw, min_n=min_n
+    )
+
+
+def get_mean_and_stdev(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 3,
+) -> str:
+    """:py:class:`str` : Returns the mean and standard deviation of a series of values as a formatted string.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series for which to calculate the mean and st. dev.
+
+    add_spaces : bool, default=False
+        Add spacing in the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=4
+        No description available.
+
+    min_n : int, default=3
+        No description available.
+
+    Returns
+    -------
+    str
+        The mean and st. dev. as a formatted string.
+    """  # noqa : E501
     if series.notna().sum() < min_n:
         output_str = "N/A"
     elif add_spaces:
@@ -292,10 +613,90 @@ def mean_std_str(series, add_spaces=False, dp=1, mfw=4, min_n=3):
         output_str = "%.*f" % (dp, series.mean()) + " ("
         output_str += "%.*f" % (dp, series.std()) + ") | "
         output_str += str(int(series.notna().sum()))
+
     return output_str
 
 
-def n_percent_str(series, add_spaces=False, dp=1, mfw=4, min_n=1):
+def mean_std_str(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 3,
+) -> str:
+    """:py:class:`str` : Returns the mean and standard deviation of a series of values as a formatted string.
+
+    .. warning::
+
+       DEPRECATED. Please use :py:func:`~isaricanalytics.analytics.get_mean_and_stdev` instead.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series for which to calculate the mean and st. dev.
+
+    add_spaces : bool, default=False
+        Add spacing in the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=4
+        No description available.
+
+    min_n : int, default=3
+        No description available.
+
+    Returns
+    -------
+    str
+        The mean and st. dev. as a formatted string.
+    """  # noqa : E501
+    warnings.warn(
+        (
+            "`analytics.mean_std_str` is deprecated; "
+            "please use `analytics.get_mean_and_stdev` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_mean_and_stdev(
+        series, add_spaces=add_spaces, dp=dp, mfw=mfw, min_n=min_n
+    )
+
+
+def get_n_percent_value(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 1,
+) -> str:
+    """:py:class:`str` : Returns the n-percent value of a series as a string.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series.
+
+    add_spaces : bool, default=False
+        Add spacing around the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=1
+        No description available.
+
+    min_n : int, default=1
+        No description available.
+
+    Returns
+    -------
+    str
+        The n-percent value of the series as a string.
+    """  # noqa : E501
     if series.notna().sum() < min_n:
         output_str = "N/A"
     elif add_spaces:
@@ -311,10 +712,86 @@ def n_percent_str(series, add_spaces=False, dp=1, mfw=4, min_n=1):
         percent = "%.*f" % (dp, 100 * series.mean())
         denom = str(int(series.notna().sum()))
         output_str = f"{count} ({percent}) | {denom}"
+
     return output_str
 
 
-def get_chi2_pvalue(x, y, x_cat=[True, False], y_cat=[True, False]):
+def n_percent_str(
+    series: pandas.Series,
+    add_spaces: bool = False,
+    dp: int = 1,
+    mfw: int = 4,
+    min_n: int = 1,
+) -> str:
+    """:py:class:`str` : Returns the n-percent value of a series as a string.
+
+    .. warning::
+
+       DEPRECATED. Please use :py:func:`~isaricanalytics.analytics.get_n_percent_value` instead.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        The input series.
+
+    add_spaces : bool, default=False
+        Add spacing around the string.
+
+    dp : int, default=1
+        No description available.
+
+    mfw : int, default=1
+        No description available.
+
+    min_n : int, default=1
+        No description available.
+
+    Returns
+    -------
+    str
+        The n-percent value of the series as a string.
+    """  # noqa : E501
+    warnings.warn(
+        (
+            "`analytics.n_percent_str` is deprecated; "
+            "please use `analytics.get_n_percent_value` instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    return get_n_percent_value(
+        series, add_spaces=add_spaces, dp=dp, mfw=mfw, min_n=min_n
+    )
+
+
+def get_chi2_pvalue(
+    x: pandas.Series,
+    y: pandas.Series,
+    x_cat: typing.Iterable[typing.Any] = [True, False],
+    y_cat: typing.Iterable[typing.Any] = [True, False],
+) -> float:
+    """:py:class:`float` : Returns the :math`p`-value for a Chi-squared test.
+
+    Parameters
+    ----------
+    x : pandas.Series
+        The first series/factor.
+
+    y : pandas.Series
+        The second series/factor.
+
+    x_cat : typing.Iterable
+        An iterable of categories by which to group the first series.
+
+    y_cat : typing.Iterable
+        An interable of categories by which to group the second series.
+
+    Returns
+    -------
+    float
+        The :math:`p`-value for the test.
+    """  # noqa : E501
     try:
         print(x.name)
         contingency = pd.crosstab(
@@ -326,10 +803,37 @@ def get_chi2_pvalue(x, y, x_cat=[True, False], y_cat=[True, False]):
         pvalue = chi2_contingency(contingency).pvalue
     except ValueError:
         pvalue = np.nan
+
     return pvalue
 
 
-def get_fisher_exact_pvalue(x, y, x_cat=[True, False], y_cat=[True, False]):
+def get_fisher_exact_pvalue(
+    x: pandas.Series,
+    y: pandas.Series,
+    x_cat: typing.Iterable[typing.Any] = [True, False],
+    y_cat: typing.Iterable[typing.Any] = [True, False],
+):
+    """:py:class:`float` : Returns the :math:`p`-value for a Fisher exact test.
+
+    Parameters
+    ----------
+    x : pandas.Series
+        The first series/factor.
+
+    y : pandas.Series
+        The second series/factor.
+
+    x_cat : typing.Iterable
+        An iterable of categories by which to group the first series.
+
+    y_cat : typing.Iterable
+        An interable of categories by which to group the second series.
+
+    Returns
+    -------
+    float
+        The :math:`p`-value for the test.
+    """  # noqa : E501
     try:
         contingency = pd.crosstab(
             pd.Categorical(x.loc[x.notna()], categories=x_cat),
@@ -344,33 +848,63 @@ def get_fisher_exact_pvalue(x, y, x_cat=[True, False], y_cat=[True, False]):
             pvalue = result.pvalue
     except ValueError:
         pvalue = np.nan
+
     return pvalue
 
 
-def format_pvalue(pvalue, dp=3, min_val=0.001, significance={"*": 0.05, "**": 0.01}):
+def format_pvalue(
+    pvalue: float,
+    dp: int = 3,
+    min_val: float = 0.001,
+    significance: dict[str, float] = {"*": 0.05, "**": 0.01},
+) -> str:
+    """:py:class:`str` : Returns a formatted :math:`p`-value string.
+
+    Parameters
+    ----------
+    pvalue : float
+        The :math:`p`-value.
+
+    dp : int, default=3
+        Optional. No description available, defaults to :math:`3`.
+
+    min_val : float, default=0.001
+        Optional. No description available, defaults to :math:`0.001`.
+
+    significance : dict, default={"*": 0.05, "**": 0.01}.
+        Dict of significance levels, defaults to ``{"*": 0.05, "**": 0.01}``.
+
+    Returns
+    -------
+    str
+        The formatted :math:`p`-value string.
+    """  # noqa : E501
     if pvalue < min_val:
         pvalue_str = f"<{min_val}"
     elif np.isnan(pvalue):
         pvalue_str = ""
     else:
         pvalue_str = "%.*f" % (dp, pvalue)
+
     for key in significance:
         level = significance[key]
         min_threshold = max([v for k, v in significance.items() if (k != key)] + [0])
+
         if min_threshold > level:
             min_threshold = 0
         if (pvalue < level) & (pvalue > (min_threshold - 1e-8)):
             pvalue_str = pvalue_str + f" ({key})"
+
     return pvalue_str
 
 
 def get_descriptive_data(
-    data,
-    dictionary,
-    by_column=None,
-    include_sections=["demog"],
-    include_types=["binary", "categorical", "numeric"],
-    exclude_suffix=[
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    by_column: str | None = None,
+    include_sections: typing.Iterable[str] = ["demog"],
+    include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
+    exclude_suffix: typing.Iterable[str] = [
         "_units",
         "addi",
         "otherl2",
@@ -379,14 +913,55 @@ def get_descriptive_data(
         "_unlisted",
         "otherl3",
     ],
-    include_subjid=False,
-    exclude_negatives=True,
-    sep="___",
-):
-    df = data.copy()
+    include_subjid: bool = False,
+    exclude_negatives: bool = True,
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns descriptive data.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    by_column : str, default=None
+        Optional. No description available, defaults to ``None``.
+
+    include_sections : typing.Iterable, default=["demog"]
+        Optional list of names of sections to include, defaults to
+        ``["demog"]``.
+
+    include_types : typing.Iterable, default=["binary", "categorical", "numeric"]
+        Optional iterable of variable type names, defaults to
+        ``["binary", "categorical", "numeric"]``.
+
+    exclude_suffix : typing.Iterable, default=["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]
+        Optional iterable of suffixes to exclude, defaults to
+        ``["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]``.
+
+    include_subjid : bool, default=False
+        Optional boolean to indicate whether to include subject ID, defaults to
+        ``False``.
+
+    exclude_negatives : bool, default=True
+        Optional boolean to indicate whether to drop negatives, defaults to
+        ``True``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Returns the descriptive data.
+    """  # noqa : E501
+    _data = data.copy()
 
     include_columns = get_variables_by_section_and_type(
-        df,
+        _data,
         dictionary,
         include_types=include_types,
         include_subjid=include_subjid,
@@ -395,57 +970,88 @@ def get_descriptive_data(
     )
     if (by_column is not None) & (by_column not in include_columns):
         include_columns = [by_column] + include_columns
-    df = df[include_columns].dropna(axis=1, how="all").copy()
+    _data = _data[include_columns].dropna(axis=1, how="all").copy()
 
     # Convert categorical variables to onehot-encoded binary columns
     categorical_ind = dictionary["field_type"] == "categorical"
     columns = dictionary.loc[categorical_ind, "field_name"].tolist()
     columns = [col for col in columns if col != by_column]
-    df = convert_categorical_to_onehot(
-        df, dictionary, categorical_columns=columns, sep=sep
+    _data = convert_categorical_to_onehot(
+        _data, dictionary, categorical_columns=columns, sep=sep
     )
 
-    if (by_column is not None) & (by_column not in df.columns):
-        df = convert_onehot_to_categorical(
-            df, dictionary, categorical_columns=[by_column], sep=sep
+    if (by_column is not None) & (by_column not in _data.columns):
+        _data = convert_onehot_to_categorical(
+            _data, dictionary, categorical_columns=[by_column], sep=sep
         )
 
     negative_values = ("no", "never smoked")
     negative_columns = [
-        col for col in df.columns if col.split(sep)[-1].lower() in negative_values
+        col for col in _data.columns if col.split(sep)[-1].lower() in negative_values
     ]
     if exclude_negatives:
-        df.drop(columns=negative_columns, inplace=True)
+        _data.drop(columns=negative_columns, inplace=True)
 
     # Remove columns with only NaN values
-    df = df.dropna(axis=1, how="all")
-    df.fillna({by_column: "Unknown"}, inplace=True)
-    return df
+    _data = _data.dropna(axis=1, how="all")
+    _data.fillna({by_column: "Unknown"}, inplace=True)
+
+    return _data
 
 
 def descriptive_table(
-    data,
-    dictionary,
-    by_column=None,
-    include_totals=True,
-    column_reorder=None,
-    include_raw_variable_name=False,
-    sep="___",
-):
-    """
-    Descriptive table for binary (including onehot-encoded categorical) and
-    numerical variables in data. The descriptive table will have seperate
-    columns for each category that exists for the variable 'by_column', if
-    this is provided.
-    """
-    df = data.copy()
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    by_column: str | None = None,
+    include_totals: bool = True,
+    column_reorder: typing.Iterable[str] | None = None,
+    include_raw_variable_name: bool = False,
+    sep: str = "___",
+) -> tuple[pandas.DataFrame, str]:
+    """:py:class:`tuple` : Returns the descriptive table and table key for binary and numerical variables in the data.
+
+    The descriptive table will have separate columns for each category that
+    exists for the ``by_column`` variable, if this is provided.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    by_column : str, default=None
+        Optional. No description available, defaults to ``None``.
+
+    include_totals : bool, default=None
+        Optional. No description available, defaults to ``None``.
+
+    column_reorder : typing.Iterable, default=None
+        Optional iterable of names of columns to reorder by, defaults to
+        ``None``.
+
+    include_raw_variable_name : bool, default=False
+        Optional boolean indicating whether to include the raw variable name,
+        defaults to ``False``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    tuple
+        Returns the descriptive table and table key for binary and numerical
+        variables in the data.
+    """  # noqa : E501
+    _data = data.copy()
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in _data.columns]
     binary_ind = dictionary["field_type"] == "binary"
     binary_columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    binary_columns = [col for col in binary_columns if col in df.columns]
+    binary_columns = [col for col in binary_columns if col in _data.columns]
 
     # Add columns for section headers and categorical questions
     index = numeric_columns + binary_columns
@@ -454,76 +1060,113 @@ def descriptive_table(
     index = table_dictionary["field_name"].tolist()
 
     table_columns = ["Variable", "All"]
+
     if by_column is not None:
-        add_columns = list(df[by_column].unique())
+        add_columns = list(_data[by_column].unique())
         if column_reorder is not None:
             table_columns += [col for col in column_reorder if col in add_columns]
             table_columns += [col for col in add_columns if col not in column_reorder]
         else:
             table_columns += add_columns
+
     table_columns += ["Raw variable name"]
     table = pd.DataFrame("", index=index, columns=table_columns)
 
-    table["Raw variable name"] = [var if var in df.columns else "" for var in index]
+    table["Raw variable name"] = [var if var in _data.columns else "" for var in index]
     table["Variable"] = format_descriptive_table_variables(
         table_dictionary, sep=sep
     ).tolist()
 
-    mfw = int(np.log10(df.shape[0])) + 1  # Min field width, for formatting
-    table.loc[numeric_columns, "All"] = df[numeric_columns].apply(
+    mfw = int(np.log10(_data.shape[0])) + 1  # Min field width, for formatting
+    table.loc[numeric_columns, "All"] = _data[numeric_columns].apply(
         median_iqr_str, mfw=mfw
     )
-    table.loc[binary_columns, "All"] = df[binary_columns].apply(n_percent_str, mfw=mfw)
+    table.loc[binary_columns, "All"] = _data[binary_columns].apply(
+        n_percent_str, mfw=mfw
+    )
 
     totals = pd.DataFrame(columns=table_columns, index=["totals"])
     totals["Variable"] = "<b>Totals</b>"
-    totals["All"] = df.shape[0]
+    totals["All"] = _data.shape[0]
 
     if by_column is not None:
-        choices_values = df[by_column].unique()
+        choices_values = _data[by_column].unique()
         for value in choices_values:
-            ind = df[by_column] == value
+            ind = _data[by_column] == value
             mfw = int(np.log10(ind.sum())) + 1  # Min field width, for format
-            table.loc[numeric_columns, value] = df.loc[ind, numeric_columns].apply(
+            table.loc[numeric_columns, value] = _data.loc[ind, numeric_columns].apply(
                 median_iqr_str, mfw=mfw
             )
-            table.loc[binary_columns, value] = df.loc[ind, binary_columns].apply(
+            table.loc[binary_columns, value] = _data.loc[ind, binary_columns].apply(
                 n_percent_str, mfw=mfw
             )
             totals[value] = ind.sum()
 
     table = table.reset_index(drop=True)
+
     if include_totals:
         table = pd.concat([totals, table], axis=0).reset_index(drop=True)
+
     table_key = "<b>KEY</b><br>(*) Count (%) | N<br>(+) Median (IQR) | N"
+
     if include_raw_variable_name is False:
         table.drop(columns=["Raw variable name"], inplace=True)
+
     return table, table_key
 
 
 def descriptive_comparison_table(
-    data,
-    dictionary,
-    by_column=None,
-    include_totals=True,
-    column_reorder=None,
-    sep="___",
-    pvalue_significance={"*": 0.05, "**": 0.01},
-):
-    """
-    Descriptive table for binary (including onehot-encoded categorical) and
-    numerical variables in data. The descriptive table will have seperate
-    columns for each category that exists for the variable 'by_column', if
-    this is provided.
-    """
-    df = data.copy()
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    by_column: str | None = None,
+    include_totals: bool = True,
+    column_reorder: typing.Iterable[str] | None = None,
+    sep: str = "___",
+    pvalue_significance: dict[str, float] = {"*": 0.05, "**": 0.01},
+) -> tuple[pd.DataFrame, str]:
+    """:py:class:`tuple` : Returns the descriptive comparison table and table key for binary (including onehot-encoded categorical) and numerical variables in data.
+
+    The descriptive table will have separate columns for each category that
+    exists for the ``by_column`` variable, if this is provided.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    by_column : str, default=None
+        Optional. No description available, defaults to ``None``.
+
+    include_totals : bool, default=None
+        Optional. No description available, defaults to ``None``.
+
+    column_reorder : typing.Iterable, default=None
+        Optional iterable of names of columns to reorder by, defaults to
+        ``None``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    pvalue_significance : dict, default={"*": 0.05, "**": 0.01}
+        A dict of significance levels, defaults to ``{"*": 0.05, "**": 0.01}``.
+
+    Returns
+    -------
+    tuple
+        Returns the descriptive comparison table and table key for binary and
+        numerical variables in the data.
+    """  # noqa : E501
+    _data = data.copy()
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in _data.columns]
     binary_ind = dictionary["field_type"] == "binary"
     binary_columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    binary_columns = [col for col in binary_columns if col in df.columns]
+    binary_columns = [col for col in binary_columns if col in _data.columns]
 
     # Add columns for section headers and categorical questions
     index = numeric_columns + binary_columns
@@ -533,7 +1176,7 @@ def descriptive_comparison_table(
 
     table_columns = ["Variable", "All"]
     if by_column is not None:
-        add_columns = list(df[by_column].unique())
+        add_columns = list(_data[by_column].unique())
         if column_reorder is not None:
             table_columns += [col for col in column_reorder if col in add_columns]
             table_columns += [col for col in add_columns if col not in column_reorder]
@@ -546,35 +1189,37 @@ def descriptive_comparison_table(
         table_dictionary, sep=sep, binary_symbol="†"
     ).tolist()
 
-    mfw = int(np.log10(df.shape[0])) + 1  # Min field width, for formatting
-    table.loc[numeric_columns, "All"] = df[numeric_columns].apply(
+    mfw = int(np.log10(_data.shape[0])) + 1  # Min field width, for formatting
+    table.loc[numeric_columns, "All"] = _data[numeric_columns].apply(
         median_iqr_str, mfw=mfw
     )
-    table.loc[binary_columns, "All"] = df[binary_columns].apply(n_percent_str, mfw=mfw)
+    table.loc[binary_columns, "All"] = _data[binary_columns].apply(
+        n_percent_str, mfw=mfw
+    )
 
     totals = pd.DataFrame(columns=table_columns, index=["totals"])
     totals["Variable"] = "<b>Totals</b>"
-    totals["All"] = df.shape[0]
+    totals["All"] = _data.shape[0]
 
     if by_column is not None:
-        by_column_values = df[by_column].unique()
+        by_column_values = _data[by_column].unique()
         for value in by_column_values:
-            ind = df[by_column] == value
+            ind = _data[by_column] == value
             mfw = int(np.log10(ind.sum())) + 1  # Min field width, for format
-            table.loc[numeric_columns, value] = df.loc[ind, numeric_columns].apply(
+            table.loc[numeric_columns, value] = _data.loc[ind, numeric_columns].apply(
                 median_iqr_str, mfw=mfw
             )
-            table.loc[binary_columns, value] = df.loc[ind, binary_columns].apply(
+            table.loc[binary_columns, value] = _data.loc[ind, binary_columns].apply(
                 n_percent_str, mfw=mfw
             )
             totals[value] = ind.sum()
         if len(by_column_values) == 2:
-            y = df[by_column] == by_column_values[0]
+            y = _data[by_column] == by_column_values[0]
             pvalues = pd.Series(index=table.index)
-            pvalues.loc[numeric_columns] = df[numeric_columns].apply(
+            pvalues.loc[numeric_columns] = _data[numeric_columns].apply(
                 lambda x: mannwhitneyu(x, y, nan_policy="omit").pvalue, axis=0
             )
-            pvalues.loc[binary_columns] = df[binary_columns].apply(
+            pvalues.loc[binary_columns] = _data[binary_columns].apply(
                 lambda x: get_fisher_exact_pvalue(x, y), axis=0
             )
             table["p-value"] = pvalues.apply(
@@ -593,6 +1238,7 @@ test,    (+) Median (IQR) | N, p-value using Mann-Whitney test<br>"""
             if (pvalues < v).any()
         ]
     )
+
     return table, table_key
 
 
@@ -603,20 +1249,64 @@ test,    (+) Median (IQR) | N, p-value using Mann-Whitney test<br>"""
 ############################################
 
 
-def trim_field_label(x, max_len=40):
+def trim_field_label(x: str, max_len: int = 40) -> str:
+    """:py:class:`str` : Trims field label using an optional max. length parameter that defaults to 40 characters.
+
+    Parameters
+    ----------
+    x : str
+        The input field label.
+
+    max_len : int, default=40
+    An optional maximum length parameter to use for trimming, defaults to
+    :math:`40`.
+
+    Returns
+    -------
+    str
+        The trimmed field label.
+    """  # noqa : E501
     if len(x) > max_len:
         x = " ".join(x[:max_len].split(" ")[:-1]) + " ..."
+
     return x
 
 
 def format_descriptive_table_variables(
-    dictionary,
-    max_len=100,
-    add_key=True,
-    sep="___",
-    binary_symbol="*",
-    numeric_symbol="+",
-):
+    dictionary: pandas.DataFrame,
+    max_len: int = 100,
+    add_key: bool = True,
+    sep: str = "___",
+    binary_symbol: str = "*",
+    numeric_symbol: str = "+",
+) -> str:
+    """:py:class:`str` : Returns a formatted string of the descriptive table variable field names.
+
+    Parameters
+    ----------
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    max_len : int, default=100
+        Optional maximum length of field names, defaults to :math:`100`.
+
+    add_key : bool, default=True
+        Optional. No description available, defaults to ``True``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    binary_symbol : str, default="*"
+        Optional. No description available, defaults to ``"*"``.
+
+    numeric_symbol : str, default="*"
+        Optional. No description available, defaults to ``"+"``.
+
+    Returns
+    -------
+    str
+        A formatted string of the descriptive table variable field names.
+    """  # noqa : E501
     name = dictionary["field_name"].apply(lambda x: "   ↳ " if sep in x else "<b>")
     name += dictionary["field_type"].map({"section": "<i>"}).fillna("")
     name += (
@@ -626,6 +1316,7 @@ def format_descriptive_table_variables(
     )
     name += dictionary["field_type"].map({"section": "</i>"}).fillna("")
     name += dictionary["field_name"].apply(lambda x: "" if sep in x else "</b>")
+
     if add_key is True:
         field_type = (
             dictionary["field_type"]
@@ -639,10 +1330,32 @@ def format_descriptive_table_variables(
             .fillna("")
         )
         name += field_type * (dictionary["field_name"].str.contains(sep) == 0)
+
     return name
 
 
-def format_variables(dictionary, max_len=40, sep="___"):
+def format_variables(
+    dictionary: pandas.DataFrame, max_len: int = 40, sep: str = "___"
+) -> str:
+    """:py:class:`str` : Returns a formatted string of the descriptive table variable field names.
+
+    Parameters
+    ----------
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    max_len : int, default=40
+        Optional maximum length of field names, defaults to :math:`40`.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    str
+        A formatted string of the descriptive table variable field names.
+    """  # noqa : E501
+
     def get_parent_label(x):
         if pd.isna(x) or not isinstance(x, str):
             return ""
@@ -674,8 +1387,34 @@ def format_variables(dictionary, max_len=40, sep="___"):
 ############################################
 
 
-def get_counts(df, dictionary, max_n_variables=10, sep="___"):
-    counts = df.apply(lambda x: x.sum()).T.reset_index()
+def get_counts(
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    max_n_variables: int = 10,
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of variable column counts.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    max_n_variables : int, default=10
+        Optional number of variables for which to take counts, defaults to
+        :math:`10`.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    The variable column counts dataframe.
+    """  # noqa : E501
+    counts = data.apply(lambda x: x.sum()).T.reset_index()
 
     counts.columns = ["variable", "count"]
     counts = counts.sort_values(by=["count"], ascending=False).reset_index(drop=True)
@@ -688,29 +1427,52 @@ def get_counts(df, dictionary, max_n_variables=10, sep="___"):
     short_format_dict = dict(zip(dictionary["field_name"], short_format))
     counts["label"] = counts["variable"].map(format_dict)
     counts["short_label"] = counts["variable"].map(short_format_dict)
+
     return counts
 
 
 def get_proportions(
-    df,
-    dictionary,
-    max_n_variables=10,
-    ignore_branching_logic=False,
-    branching_logic="",
-    sep="___",
-):
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    max_n_variables: int = 10,
+    ignore_branching_logic: bool = False,
+    branching_logic: str = "",
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of proportional counts for variable columns.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    max_n_variables : int, default=10
+        Optional number of variables for which to take counts, defaults to
+        :math:`10`.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe of proportional counts for variable columns.
+    """  # noqa : E501
     if ignore_branching_logic:
-        columns = [col for col in df.columns]
+        columns = [col for col in data.columns]
     else:
         dictionary_subset = dictionary.loc[
             (dictionary["branching_logic"] == branching_logic)
         ]
         columns = [
-            col for col in df.columns if col in dictionary_subset["field_name"].values
+            col for col in data.columns if col in dictionary_subset["field_name"].values
         ]
         if len(columns) == 0:
             branching_logic = dictionary.loc[
-                dictionary["field_name"].isin(df.columns), "branching_logic"
+                dictionary["field_name"].isin(data.columns), "branching_logic"
             ]
             branching_logic = branching_logic.values[0]
             dictionary_subset = dictionary.loc[
@@ -718,17 +1480,19 @@ def get_proportions(
             ]
             columns = [
                 col
-                for col in df.columns
+                for col in data.columns
                 if col in dictionary_subset["field_name"].values
             ]
+
     proportions = (
-        df[columns].apply(lambda x: (x.sum() / x.count(), x.sum())).T.reset_index()
+        data[columns].apply(lambda x: (x.sum() / x.count(), x.sum())).T.reset_index()
     )
 
     proportions.columns = ["variable", "proportion", "count"]
     proportions = proportions.sort_values(by=["count"], ascending=False).reset_index(
         drop=True
     )
+
     if proportions.shape[0] > max_n_variables:
         proportions = proportions.head(max_n_variables)
 
@@ -743,17 +1507,42 @@ def get_proportions(
     short_format_dict = dict(zip(dictionary["field_name"], short_format))
     proportions["label"] = proportions["variable"].map(format_dict)
     proportions["short_label"] = proportions["variable"].map(short_format_dict)
+
     return proportions
 
 
 def get_upset_counts_intersections(
-    df,
-    dictionary,
-    proportions=None,  # Deprecated
-    variables=None,
-    n_variables=5,
-    sep="___",
-):
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    variables: list[str] | None = None,
+    n_variables: int = 5,
+    sep: str = "___",
+) -> tuple[pandas.DataFrame]:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of upset counts intersections.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    variables : list, default=None
+        Optional list of names of variable columns for which to take counts,
+        defaults to ``None``.
+
+    n_variables : int, default=5
+        Optional limit for the number of variable columns, defaults to :math:`5`.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe of upset counts intersections.
+    """  # noqa : E501
     # Convert variables and column names into their formatted names
     long_format = format_variables(dictionary, max_len=1000, sep=sep)
     short_format = format_variables(dictionary, max_len=40, sep=sep)
@@ -761,29 +1550,30 @@ def get_upset_counts_intersections(
     short_format_dict = dict(zip(dictionary["field_name"], short_format))
 
     if variables is None:
-        variables = df.columns.tolist()
+        variables = data.columns.tolist()
 
     binary_columns = dictionary.loc[
         (dictionary["field_type"] == "binary"), "field_name"
     ].tolist()
     variables = [col for col in variables if col in binary_columns]
-    variables = [var for var in variables if df[var].sum() > 0]
-    df = df[variables].astype(float).fillna(0)
+    variables = [var for var in variables if data[var].sum() > 0]
+    data = data[variables].astype(float).fillna(0)
 
-    counts = df.sum().astype(int).reset_index().rename(columns={0: "count"})
+    counts = data.sum().astype(int).reset_index().rename(columns={0: "count"})
     counts = counts.sort_values(by="count", ascending=False).reset_index(drop=True)
     counts["short_label"] = counts["index"].map(short_format_dict)
     counts["label"] = counts["index"].map(format_dict)
 
     variable_order_dict = dict(zip(counts["index"], counts.index))
     variables = counts["index"].tolist()
+
     if n_variables is not None:
         variables = variables[:n_variables]
 
-    df = df[variables]
+    data = data[variables]
     counts = counts.loc[counts["index"].isin(variables)]
 
-    intersections = df.loc[df.any(axis=1)].value_counts().reset_index()
+    intersections = data.loc[data.any(axis=1)].value_counts().reset_index()
     intersections["index"] = intersections.drop(columns="count").apply(
         lambda x: tuple(col for col in x.index if x[col] == 1), axis=1
     )
@@ -806,20 +1596,50 @@ def get_upset_counts_intersections(
     )
     keep_columns = ["index", "label", "count"]
     intersections = intersections[keep_columns].reset_index(drop=True)
+
     return counts, intersections
 
 
-def get_pyramid_data(df, column_dict, left_side="Female", right_side="Male"):
+def get_pyramid_data(
+    data: pandas.DataFrame,
+    column_dict: dict[str, str],
+    left_side: str = "Female",
+    right_side: str = "Male",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns dual stack pyramid data.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    column_dict : dict
+        Dict of pyramid keys and data column names.
+
+    left_side : str, default="Female"
+        Optional label for the left side of the pyramid, defaults to
+        ``"Female"``.
+
+    right_side : str, default="Male"
+        Optional label for the right side of the pyramid, defaults to
+        ``"Male"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Dual stack pyramid data.
+    """
     keys = ["side", "y_axis", "stack_group"]
     # assert all(key in tuple(column_dict.keys()) for key in keys), 'Error'
     columns = [column_dict[key] for key in keys]
-    df_pyramid = df[["subjid"] + columns].copy()
+    df_pyramid = data[["subjid"] + columns].copy()
     df_pyramid = df_pyramid.groupby(columns, observed=True).count().reset_index()
     df_pyramid.rename(columns={"subjid": "value"}, inplace=True)
     df_pyramid.rename(columns={v: k for k, v in column_dict.items()}, inplace=True)
     df_pyramid = df_pyramid.loc[df_pyramid["side"].isin([left_side, right_side])]
     df_pyramid.loc[:, "left_side"] = df_pyramid["side"] == left_side
     df_pyramid = df_pyramid.sort_values(by="y_axis").reset_index(drop=True)
+
     return df_pyramid
 
 
@@ -831,13 +1651,21 @@ def get_pyramid_data(df, column_dict, left_side="Female", right_side="Male"):
 
 
 def get_modelling_data(
-    data,
-    dictionary,
-    outcome_columns,
-    include_sections=["demog", "comor", "adsym", "vacci", "vital", "sympt", "labs"],
-    required_variables=None,
-    include_types=["binary", "categorical", "numeric"],
-    exclude_suffix=[
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    outcome_columns: str | typing.Iterable[str],
+    include_sections: typing.Iterable[str] = [
+        "demog",
+        "comor",
+        "adsym",
+        "vacci",
+        "vital",
+        "sympt",
+        "labs",
+    ],
+    required_variables: typing.Iterable[str] | None = None,
+    include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
+    exclude_suffix: typing.Iterable[str] = [
         "_units",
         "addi",
         "otherl2",
@@ -846,19 +1674,69 @@ def get_modelling_data(
         "_unlisted",
         "otherl3",
     ],
-    include_subjid=False,
-    exclude_negatives=True,
-    fillna=True,
-    drop_first=False,
-    sep="___",
-):
-    df = data.copy()
+    include_subjid: bool = False,
+    exclude_negatives: bool = True,
+    fillna: bool = True,
+    drop_first: bool = False,
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns modelling data.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    outcome_columns : typing.Iterable
+        Outcome columns.
+
+    include_sections : typing.Iterable, default=["demog", "comor", "adsym", "vacci", "vital", "sympt", "labs"]
+        Optional list of names of sections to include, defaults to
+        ``["demog", "comor", "adsym", "vacci", "vital", "sympt", "labs"]``.
+
+    required_variables: typing.Iterable, default=None
+        Required variable column names, defaults to ``None``.
+
+    include_types : typing.Iterable, default=["binary", "categorical", "numeric"]
+        Optional iterable of variable type names, defaults to
+        ``["binary", "categorical", "numeric"]``.
+
+    exclude_suffix : typing.Iterable, default=["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]
+        Optional iterable of suffixes to exclude, defaults to
+        ``["_units", "addi", "otherl2", "item", "_oth", "_unlisted", "otherl3"]``.
+
+    include_subjid : bool, default=False
+        Optional boolean to indicate whether to include subject ID, defaults to
+        ``False``.
+
+    exclude_negatives : bool, default=True
+        Optional boolean to indicate whether to drop negatives, defaults to
+        ``True``.
+
+    fillna : bool, default=True
+        Optional boolean to fill nulls, defaults to ``True``.
+
+    drop_first : bool, default=False
+        Optional boolean relating to dropping columns, defaults to ``False``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Returns the modelling data.
+    """  # noqa : E501
+    _data = data.copy()
 
     if isinstance(outcome_columns, str):
         outcome_columns = [outcome_columns]
 
     include_columns = get_variables_by_section_and_type(
-        df,
+        _data,
         dictionary,
         required_variables=required_variables,
         include_types=include_types,
@@ -869,64 +1747,91 @@ def get_modelling_data(
     for outcome_column in outcome_columns:
         if outcome_column not in include_columns:
             include_columns = [outcome_column] + include_columns
-    df = df[include_columns].dropna(axis=1, how="all").copy()
+    _data = _data[include_columns].dropna(axis=1, how="all").copy()
 
     # Convert categorical variables to onehot-encoded binary columns
     categorical_ind = dictionary["field_type"] == "categorical"
     columns = dictionary.loc[categorical_ind, "field_name"].tolist()
     columns = [col for col in columns if col not in tuple(outcome_columns)]
-    df = convert_categorical_to_onehot(
-        df, dictionary, categorical_columns=columns, drop_first=drop_first, sep=sep
+    _data = convert_categorical_to_onehot(
+        _data, dictionary, categorical_columns=columns, drop_first=drop_first, sep=sep
     )
 
     binary_ind = dictionary["field_type"] == "binary"
     columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    columns = [col for col in columns if col in df.columns]
+    columns = [col for col in columns if col in _data.columns]
     if fillna is True:
         with pd.option_context("future.no_silent_downcasting", True):
-            df[columns] = df[columns].fillna(False)
+            _data[columns] = _data[columns].fillna(False)
 
     negative_values = ("no", "never smoked")
     negative_columns = [
-        col for col in df.columns if col.split(sep)[-1].lower() in negative_values
+        col for col in _data.columns if col.split(sep)[-1].lower() in negative_values
     ]
     if exclude_negatives:
-        df.drop(columns=negative_columns, inplace=True)
-    return df
+        _data.drop(columns=negative_columns, inplace=True)
+
+    return _data
 
 
 def variance_influence_factor_backwards_elimination(
-    data, dictionary, predictors_list, sep="___"
-):
-    df = data.copy()
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    predictors_list: typing.Iterable[str],
+    sep: str = "___",
+) -> tuple[typing.Iterable[str], pandas.DataFrame]:
+    """:py:class:`tuple` : Returns an iterable of retained columns and the VIF backwards elimination data.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Incoming data.
+
+    dictionary : pandas.DataFrame
+        Data dictionary.
+
+    predictors_list : typing.Iterable
+        Iterable of predictor variable column names.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    tuple
+        An iterable of retained columns and the VIF backwards elimination data.
+    """  # noqa : E501
+    _data = data.copy()
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in _data.columns]
     numeric_columns = [col for col in numeric_columns if col in predictors_list]
 
     categorical_ind = dictionary["field_type"].isin(["binary"])
     categorical_columns = dictionary.loc[categorical_ind, "field_name"].tolist()
-    categorical_columns = [col for col in categorical_columns if col in df.columns]
+    categorical_columns = [col for col in categorical_columns if col in _data.columns]
     categorical_columns = [col for col in categorical_columns if col in predictors_list]
 
-    df[numeric_columns] = (df[numeric_columns] - df[numeric_columns].mean()) / df[
-        numeric_columns
-    ].std()
+    _data[numeric_columns] = (
+        _data[numeric_columns] - _data[numeric_columns].mean()
+    ) / _data[numeric_columns].std()
 
-    df = 1.0 * pd.concat([df[numeric_columns], df[categorical_columns]], axis=1).astype(
-        float
-    )
+    _data = 1.0 * pd.concat(
+        [_data[numeric_columns], _data[categorical_columns]], axis=1
+    ).astype(float)
 
-    keep_columns = df.columns
+    keep_columns = _data.columns
     iterative_vif = pd.DataFrame(keep_columns, columns=["variable"])
+
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=RuntimeWarning)
         iterative_vif["vif_iter_1"] = [
-            variance_inflation_factor(df[keep_columns].values, ii)
+            variance_inflation_factor(_data[keep_columns].values, ii)
             for ii in range(len(keep_columns))
         ]
     n = 1
+
     while (iterative_vif["vif_iter_" + str(n)] > 10).any():
         remove_column = iterative_vif.loc[
             iterative_vif["vif_iter_" + str(n)].idxmax(), "variable"
@@ -940,43 +1845,59 @@ def variance_influence_factor_backwards_elimination(
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=RuntimeWarning)
             vif["vif_iter_" + str(n)] = [
-                variance_inflation_factor(df[keep_columns].values, ii)
+                variance_inflation_factor(_data[keep_columns].values, ii)
                 for ii in range(len(keep_columns))
             ]
         iterative_vif = pd.merge(iterative_vif, vif, how="left", on="variable")
+
     return keep_columns, iterative_vif
 
 
 def remove_single_binary_outcome_predictors(
-    data, dictionary, predictors_list, outcome_str
-):
-    """
-    Removes binary predictors that are associated with only one outcome (e.g.
-    if all patients with some_variable=1 have outcome=1)
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    predictors: typing.Iterable[str],
+    outcome: str,
+) -> typing.Iterable[str]:
+    """:py:class:`typing.Iterable` : Returns a list of retained columns in the data after removing single binary outcome predictor columns.
 
-    Parameters:
-    - data: Pandas DataFrame containing the data.
-    - outcome_str: Name of the response variable.
-    - predictors_list: List of predictor variable names.
+    Removes binary predictors that are associated with only one outcome, e.g.
+    if all patients with ``some_variable=1`` have ``outcome=1``.
 
-    Returns:
-    - updated_predictors_list: List of predictor variable names excluding
-    any that can't be used in the logistic regression model.
-    """
-    df = data.copy()
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        The incoming data.
+
+    dictionary: pandas.DataFrame
+        The data dictionary.
+
+    predictors: typing.Iterable
+        Iterable of predictor variable column names.
+
+    outcome : str
+        The outcome string.
+
+    Returns
+    -------
+    typing.Iterable:
+        List of predictor variable column names excluding any that can't be
+        used in the logistic regression model.
+    """  # noqa : E501
+    _data = data.copy()
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
-    numeric_columns = [col for col in numeric_columns if col in predictors_list]
+    numeric_columns = [col for col in numeric_columns if col in _data.columns]
+    numeric_columns = [col for col in numeric_columns if col in predictors]
 
     categorical_ind = dictionary["field_type"].isin(["binary"])
     categorical_columns = dictionary.loc[categorical_ind, "field_name"].tolist()
     categorical_columns = [col for col in categorical_columns if col in data.columns]
-    categorical_columns = [col for col in categorical_columns if col in predictors_list]
+    categorical_columns = [col for col in categorical_columns if col in predictors]
 
     result = (
-        df.groupby(outcome_str)[categorical_columns]
+        _data.groupby(outcome)[categorical_columns]
         .apply(
             lambda x: x.isin([True]).any() & x.isin([False]).any(), include_groups=False
         )
@@ -984,17 +1905,46 @@ def remove_single_binary_outcome_predictors(
     )
     keep_columns = result.loc[result.all(axis=1)].index.tolist()
     keep_columns = keep_columns + numeric_columns
+
     return keep_columns
 
 
 def regression_summary_table(
-    table,
-    dictionary,
-    highlight_predictors=None,
-    pvalue_significance=None,
-    result_type="OddsRatio",
-    sep="___",
-):
+    table: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    highlight_predictors: dict[str, typing.Iterable[str]] | None = None,
+    pvalue_significance: float | None = None,
+    result_type: str = "OddsRatio",
+    sep: str = "___",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a regression summary table.
+
+    Parameters
+    ----------
+    table : pandas.DataFrame
+        The incoming table.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    highlight_predictors : dict, default=None
+        Optional. No description available, defaults to ``None``.
+
+    pvalue_significance : int, default=5
+        Optional :math:`p`-value significance level, defaults to ``None``.
+
+    result_type : str, default="OddsRatio"
+        Optional. No description avaiable, defaults to ``"OddsRatio"``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Regression summary table.
+    """  # noqa : E501
+    # Convert variables and column names into their formatted names
     variables = table["Variable"].tolist()
     new_variables = (
         variables
@@ -1085,58 +2035,79 @@ def regression_summary_table(
     }
     table["Variable"] = table["Variable"].map(mapping_dict)
     table["Variable"] = table["Variable"] + add_key
+
     return table
 
 
 def execute_glmm_regression(
-    elr_dataframe_df,
-    elr_outcome_str,
-    elr_predictors_list,
-    elr_groups_str,
-    model_type="linear",
-    print_results=True,
-    labels=False,
-    reg_type="multi",
-):
-    """
-    Executes a mixed effects model for linear or logistic regression.
+    elr_dataframe_df: pandas.DataFrame,
+    elr_outcome: str,
+    elr_predictors: typing.Iterable[str],
+    elr_groups: str,
+    model_type: str = "linear",
+    print_results: bool = True,
+    labels: dict[str, str] | None = None,
+    reg_type: str = "multi",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a mixed effects model for linear or logistic regression.
 
-    Parameters:
-    - elr_dataframe_df: Pandas DataFrame containing the data.
-    - elr_outcome_str: Name of the response variable.
-    - elr_predictors_list: List of predictor variable names.
-    - elr_groups_str: Name of the variable that defines the groups (random effect).
-    - model_type: 'linear' for linear regression or 'logistic' for logistic regression.
-    - print_results: If True, prints the summary of the results.
-    - labels: (Optional) Dictionary to map variable names to readable labels.
-    - reg_type: 'uni' or 'multi', to rename the output columns.
+    Parameters
+    ----------
+    elr_dataframe_df : pandas.DataFrame
+        The incoming data.
 
-    Returns:
-    - elr_summary_df: DataFrame with the model results.
-    """
+    elr_outcome : str
+        Name of the response variable.
 
+    elr_predictors : typing.Iterable
+        Iterable of predictor variable names.
+
+    elr_groups : str
+        Name of the variable that defines the groups (random effect).
+
+    model_type : str, default="linear"
+        Optional regression model type - use ``"linear"`` for linear regression
+        or ``"logistic"`` for logistic regression; defaults to ``"linear"``.
+
+    print_results : bool, default=True
+        Optional indicator of whether to print the results summary, defaults to
+        ``True``.
+
+    labels : dict, default=None
+        Optional map of variable names to readable labels, defaults to
+        ``None``.
+
+    reg_type : str, default="multi"
+        Optional regression type - ``"uni"`` for univariate, ``"multi"`` for
+        multivariate. Defaults to ``"multi"``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The model results.
+    """  # noqa : E501
     # Builds the formula
-    elr_formula_str = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
+    elr_formula_str = elr_outcome + " ~ " + " + ".join(elr_predictors)
 
     # Converts predictor categorical variables
     elr_categorical_vars_list = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
     )
     elr_categorical_vars_list = elr_categorical_vars_list.columns.intersection(
-        elr_predictors_list
+        elr_predictors
     )
     for elr_var_str in elr_categorical_vars_list:
         elr_dataframe_df[elr_var_str] = elr_dataframe_df[elr_var_str].astype("category")
 
     # Converts the groups column to string to ensure that the values are hashable
-    elr_dataframe_df[elr_groups_str] = elr_dataframe_df[elr_groups_str].astype(str)
+    elr_dataframe_df[elr_groups] = elr_dataframe_df[elr_groups].astype(str)
 
     if model_type.lower() == "linear":
         # Mixed linear model using MixedLM (following your function)
         elr_model_obj = smf.mixedlm(
             formula=elr_formula_str,
             data=elr_dataframe_df,
-            groups=elr_dataframe_df[elr_groups_str],
+            groups=elr_dataframe_df[elr_groups],
         )
         elr_result_obj = elr_model_obj.fit()
 
@@ -1153,12 +2124,11 @@ def execute_glmm_regression(
                 "p-value": pvalues.values,
             }
         )
-
     elif model_type.lower() == "logistic":
         # Mixed logistic model using BinomialBayesMixedGLM (Bayesian approach via VB)
 
         # Defines vc_formula for random effect (random intercept per group)
-        vc_formula = {elr_groups_str: "0 + C({})".format(elr_groups_str)}
+        vc_formula = {elr_groups: "0 + C({})".format(elr_groups)}
 
         elr_model_obj = BinomialBayesMixedGLM.from_formula(
             formula=elr_formula_str, vc_formulas=vc_formula, data=elr_dataframe_df
@@ -1310,31 +2280,49 @@ def execute_glmm_regression(
 
 
 def execute_glm_regression(
-    elr_dataframe_df,
-    elr_outcome_str,
-    elr_predictors_list,
-    model_type="linear",
-    print_results=True,
-    labels=False,
-    reg_type="Multi",
-):
-    """
-    Executes a GLM (Generalized Linear Model) for linear or logistic regression.
+    elr_dataframe_df: pandas.DataFrame,
+    elr_outcome: str,
+    elr_predictors: typing.Iterable,
+    model_type: str = "linear",
+    print_results: bool = True,
+    labels: dict[str, str] | None = None,
+    reg_type: str = "Multi",
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a GLM (Generalized Linear Model) for linear or logistic regression.
 
-    Parameters:
-    - elr_dataframe_df: Pandas DataFrame containing the data.
-    - elr_outcome_str: Name of the response variable.
-    - elr_predictors_list: List of predictor variable names.
-    - model_type: 'linear' for linear regression (Gaussian) or 'logistic' for
-      logistic regression (Binomial).
-    - print_results: If True, prints the results table.
-    - labels: (Optional) Dictionary to map variable names to readable labels.
-    - reg_type: Type of regression ('uni' or 'multi') to rename the output columns.
+    Parameters
+    ----------
+    elr_dataframe_df : pandas.DataFrame
+        The incoming data.
 
-    Returns:
-    - summary_df: DataFrame with the model results.
-    """
+    elr_outcome : str
+        Name of the response variable.
 
+    elr_predictors: typing.Iterable
+        Iterable of predictor variable names.
+
+    model_type : str, default="linear"
+        Optional indicator regression model type - use ``"linear"`` for linear
+        regression (Gaussian) or ``"logistic"`` for logistic regression
+        (Binomial); defaults to ``"linear"``.
+
+    print_results : bool, default=True
+        Optional indicator of whether to print the results table, defaults to
+        ``True``.
+
+    labels : dict, default=None
+        Optional map of variable names to readable labels, defaults to
+        ``None``.`.
+
+    reg_type : str, default="multi"
+        Optional regression type - ``"uni"`` for univariate, ``"multi"`` for
+        multivariate. Defaults to ``"multi"``.
+
+    Returns
+    --------
+    pandas.DataFrame
+        The model results.
+    """  # noqa : E501
     # Defines the family according to model_type
     if model_type.lower() == "logistic":
         family = sm.families.Binomial()
@@ -1344,12 +2332,12 @@ def execute_glm_regression(
         raise ValueError("model_type must be 'linear' or 'logistic'")
 
     # Builds the formula
-    formula = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
+    formula = elr_outcome + " ~ " + " + ".join(elr_predictors)
 
     # Converts categorical variables to 'category' type
     categorical_vars = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
-    ).columns.intersection(elr_predictors_list)
+    ).columns.intersection(elr_predictors)
     for var in categorical_vars:
         elr_dataframe_df[var] = elr_dataframe_df[var].astype("category")
 
@@ -1478,50 +2466,63 @@ def execute_glm_regression(
     return summary_df
 
 
-def execute_cox_model(df, duration_col, event_col, predictors, labels=None):
-    """
-    Performs a Cox Proportional Hazards model without weights and
-    returns a summary of the results.
+def execute_cox_model(
+    data: pandas.DataFrame,
+    duration_col: str,
+    event_col: str,
+    predictors: typing.Iterable[str],
+    labels: dict[str, str] | None = None,
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Executes a Cox Proportional Hazards model without weights and returns a summary of the results.
 
-    Parameters:
-    - df: Pandas DataFrame containing the data.
-    - duration_col: String with the name of the time variable.
-    - event_col: String with the name of the outcome variable (binary event).
-    - predictors: List of strings with the names of predictor variables.
-    - labels (Optional):
-        Dictionary mapping variable names to readable labels.
-        Default is None.
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
 
-    Returns:
-    - summary_df: DataFrame with the results of the Cox model.
-    """
+    duration_col : str
+        Name of the time variable.
 
+    event_col : str
+        Name of the outcome variable (binary event).
+
+    predictors : typing.Iterable
+        Names of predictor variables.
+
+    labels : dict, default=None
+        Dictionary mapping variable names to readable labels, default=``None``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The model results.
+    """  # noqa : E501
     # Ensure categorical variables are treated appropriately
-    categorical_vars = df.select_dtypes(
+    categorical_vars = data.select_dtypes(
         include=["object", "category"]
     ).columns.intersection(predictors)
     for var in categorical_vars:
-        df[var] = df[var].astype("category")
+        data[var] = data[var].astype("category")
 
     # Convert categorical variables to dummies
-    df = pd.get_dummies(df, columns=categorical_vars, drop_first=True)
+    data = pd.get_dummies(data, columns=categorical_vars, drop_first=True)
 
     # Ensure numerical variables have the correct type
-    df[duration_col] = pd.to_numeric(df[duration_col], errors="coerce")
-    df[event_col] = pd.to_numeric(df[event_col], errors="coerce")
+    data[duration_col] = pd.to_numeric(data[duration_col], errors="coerce")
+    data[event_col] = pd.to_numeric(data[event_col], errors="coerce")
 
     # Update predictors to include one-hot encoded columns
     predictors = [
         c
-        for c in df.columns
+        for c in data.columns
         if c in predictors or any(c.startswith(p + "_") for p in categorical_vars)
     ]
 
     # Remove rows with missing values in essential columns
-    df = df.dropna(subset=[duration_col, event_col] + predictors)
+    data = data.dropna(subset=[duration_col, event_col] + predictors)
 
     # Select relevant columns
-    df_cox = df[[duration_col, event_col] + predictors]
+    df_cox = data[[duration_col, event_col] + predictors]
 
     # Fit the Cox model
     cph = CoxPHFitter()
@@ -1549,19 +2550,54 @@ def execute_cox_model(df, duration_col, event_col, predictors, labels=None):
     return summary_df
 
 
-def execute_kaplan_meier(df, duration_col, event_col, group_col, alpha=0.05, n_times=5):
+def execute_kaplan_meier(
+    data: pandas.DataFrame,
+    duration_col: str,
+    event_col: str,
+    group_col: str,
+    alpha=0.05,
+    n_times=5,
+) -> tuple[pandas.DataFrame, pandas.DataFrame, float]:
+    """:py:class:`tuple` : Executes the Kaplan-Meier model and returns the results.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    duration_col : str
+        Name of the time variable.
+
+    event_col : str
+        Name of the outcome variable (binary event).
+
+    group_col : str
+        Name of the grouping column.
+
+    alpha : float, default=0.05
+        Optional alpha, defaults to :math:`0.05`.
+
+    n_times : int, default=5
+        Optional. No description available, defaults to :math:`5`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A tuple consisting of the model results, risk table and the
+        :math:`p`-value.
+    """  # noqa : E501
     # Remove rows with missing values in relevant columns
-    df = df.dropna(subset=[duration_col, event_col, group_col])
+    data = data.dropna(subset=[duration_col, event_col, group_col])
     kmf = KaplanMeierFitter()
 
-    unique_groups = df[group_col].sort_values().unique()
+    unique_groups = data[group_col].sort_values().unique()
     df_km = pd.DataFrame(columns=["timeline"])
-    max_time = (df[duration_col].max() // n_times) * (n_times + 1)
+    max_time = (data[duration_col].max() // n_times) * (n_times + 1)
     times = np.arange(0, max_time, n_times)
 
     # Compute survival curves and confidence intervals for each group
     for group in unique_groups:
-        group_data = df[df[group_col] == group]
+        group_data = data[data[group_col] == group]
         kmf.fit(
             group_data[duration_col],
             event_observed=group_data[event_col],
@@ -1584,8 +2620,8 @@ def execute_kaplan_meier(df, duration_col, event_col, group_col, alpha=0.05, n_t
 
     # Perform log-rank test
     if len(unique_groups) == 2:
-        group1_data = df[df[group_col] == unique_groups[0]]
-        group2_data = df[df[group_col] == unique_groups[1]]
+        group1_data = data[data[group_col] == unique_groups[0]]
+        group2_data = data[data[group_col] == unique_groups[1]]
         result = logrank_test(
             group1_data[duration_col],
             group2_data[duration_col],
@@ -1595,7 +2631,7 @@ def execute_kaplan_meier(df, duration_col, event_col, group_col, alpha=0.05, n_t
         p_value = result.p_value
     elif len(unique_groups) > 2:
         result = multivariate_logrank_test(
-            df[duration_col], df[group_col], df[event_col]
+            data[duration_col], data[group_col], data[event_col]
         )
         p_value = result.p_value
     else:
@@ -1604,7 +2640,8 @@ def execute_kaplan_meier(df, duration_col, event_col, group_col, alpha=0.05, n_t
     # Generate risk table: number of individuals at risk over time
     risk_counts = {
         group: [
-            ((df[group_col] == group) & (df[duration_col] >= t)).sum() for t in times
+            ((data[group_col] == group) & (data[duration_col] >= t)).sum()
+            for t in times
         ]
         for group in unique_groups
     }
@@ -1625,108 +2662,144 @@ def execute_kaplan_meier(df, duration_col, event_col, group_col, alpha=0.05, n_t
 
 
 def impute_miss_val(
-    df,
-    dictionary,
-    outcome_column="outco_binary_outcome",
-    missing_threshold=0.7,
-    verbose=False,
-):
-    """
-    Imputes missing values or drops columns based on missing value proportion
-    and median
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    outcome_column: str = "outco_binary_outcome",
+    missing_threshold: float = 0.7,
+    verbose: bool = False,
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : The data with missing values imputed.
 
-     Returns:
-    - df: DataFrame with missing values imputed or columns dropped
-    """
+    Imputes missing values or drops columns based on missing value proportion
+    and median.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    outcome_column : str, default="outco_binary_outcome"
+        Optional outcome column, defaults to ``"outco_binary_outcome"``.
+
+    missing_threshold : float, default=0.7
+        A proportional imputation threshold for missing values, defaults to
+        :math:`0.7`.
+
+    verbose, bool=False
+        Optional indicator of whether to print imputations summary, defaults
+        to ``False``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Data with missing values imputed or columns dropped.
+    """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in data.columns]
 
     binary_ind = dictionary["field_type"] == "binary"
     binary_columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    binary_columns = [col for col in binary_columns if col in df.columns]
+    binary_columns = [col for col in binary_columns if col in data.columns]
 
     categorical_ind = dictionary["field_type"].isin(["binary"])
     categorical_columns = dictionary.loc[categorical_ind, "field_name"].tolist()
-    categorical_columns = [col for col in categorical_columns if col in df.columns]
+    categorical_columns = [col for col in categorical_columns if col in data.columns]
 
     # Calculate the proportion of missing values in each column
-    missing_proportions = df.isnull().mean()
+    missing_proportions = data.isnull().mean()
 
     # Identify columns to drop
     columns_to_drop = missing_proportions[
         (missing_proportions > missing_threshold)
     ].index.tolist()
     columns_to_drop = [col for col in columns_to_drop if col not in keep_columns]
-    df = df.drop(columns=columns_to_drop)
+    data = data.drop(columns=columns_to_drop)
 
-    impute_columns = [col for col in df.columns if col not in keep_columns]
+    impute_columns = [col for col in data.columns if col not in keep_columns]
     # Impute missing values in remaining columns
     for col in impute_columns:
         if col in numeric_columns:
-            df[col] = df[col].fillna(df[col].median())
+            data[col] = data[col].fillna(data[col].median())
         if col in (binary_columns + categorical_columns):
-            df[col] = df[col].fillna(df[col].mode().values[0])
+            data[col] = data[col].fillna(data[col].mode().values[0])
 
     if verbose:
         print("\nSummary after Imputation")
-        print("Size of remaining data:", df.shape)
-    return df
+        print("Size of remaining data:", data.shape)
+
+    return data
 
 
 def rmv_low_var(
-    df,
-    dictionary,
-    mad_threshold=0.1,
-    freq_threshold=0.05,
-    outcome_column="outco_binary_outcome",
-    verbose=False,
-):
-    """
-    Removes numerical variables with Median Absolute Deviation (MAD) below a
-    threshold.
-    Excludes binary columns from MAD calculation.
-    Removes binary columns with very low frequencies
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    mad_threshold: float = 0.1,
+    freq_threshold: float = 0.05,
+    outcome_column: str = "outco_binary_outcome",
+    verbose: bool = False,
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Removes numerical variables from the data with Median Absolute Deviation (MAD) below a given threshold.
 
-    Returns:
-    - df: pandas DataFrame with low MAD columns removed
-    """
+    Excludes binary columns from MAD calculation. Removes binary columns with
+    very low frequencies.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    mad_threshold : float, default=0.1
+        Optional MAD threshold, defaults to :math:`0.1`.
+
+    freq_threshold : float, default=0.5
+        Optional frequency threshold, defaults to :math:`0.05`.
+
+    outcome_column : str, default=``"outco_binary_outcome"``
+        Optional outcome column, defaults to ``"outco_binary_outcome"``.
+
+    verbose : bool, default=False
+        Optional indicator of whether to print MAD analysis summary.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The data with low MAD columns removed.
+    """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in data.columns]
     binary_ind = dictionary["field_type"] == "binary"
     binary_columns = dictionary.loc[binary_ind, "field_name"].tolist()
-    binary_columns = [col for col in binary_columns if col in df.columns]
+    binary_columns = [col for col in binary_columns if col in data.columns]
 
     # Remove single-valued columns first
-    single_value_columns = df.columns[df.nunique() == 1]
+    single_value_columns = data.columns[data.nunique() == 1]
     single_value_columns = [
         col for col in single_value_columns if col not in keep_columns
     ]
-    df = df.drop(columns=single_value_columns)
-
-    # Select numeric columns
-    # numeric_columns = df.select_dtypes(include=[np.number]).columns
-
-    # Select numeric columns and identify binary columns
-    # numeric_cols = df.select_dtypes(include=[np.number]).columns
-    # binary_cols = df.columns[df.nunique() == 2]
-    # non_binary_cols = numeric_cols.difference(binary_cols)
+    data = data.drop(columns=single_value_columns)
 
     # Calculate low frequency binary numeric column
     # Handle binary columns - convert to numeric first
-    binary_counts = df[binary_columns].mean(axis=0)
+    binary_counts = data[binary_columns].mean(axis=0)
     binary_counts = binary_counts.apply(lambda x: min((x, 1 - x)))
     exclude_binary_columns = [
         col for col in binary_columns if (binary_counts[col] < freq_threshold)
     ]
 
     mad_series = (
-        df[numeric_columns]
+        data[numeric_columns]
         .apply(lambda x: x / x.abs().max(), axis=0)
         .apply(lambda x: np.median(np.abs(x - np.median(x))))
     )
@@ -1740,8 +2813,8 @@ def rmv_low_var(
     # 3. Non-binary numeric columns with MAD above threshold
     # Start with all CAT columns
     exclude_columns = exclude_binary_columns + exclude_numeric_columns
-    keep_columns = [col for col in df.columns if col not in exclude_columns]
-    df = df[keep_columns]
+    keep_columns = [col for col in data.columns if col not in exclude_columns]
+    data = data[keep_columns]
 
     if verbose:
         print("\nMAD Analysis Summary:")
@@ -1752,33 +2825,53 @@ def rmv_low_var(
 {len(binary_columns) - len(exclude_binary_columns)}""")
         print(f"""Columns removed due to low MAD: \
 {len(numeric_columns) - len(exclude_numeric_columns)}""")
-    return df
+
+    return data
 
 
 def rmv_high_corr(
-    df,
-    dictionary,
-    outcome_column="outco_binary_outcome",
-    correlation_threshold=0.5,
-    verbose=False,
-):
-    """
-    Removes variables if there is high multicollinearity, arbitrarily selecting
-    one variable to remove if the correlation between two variables is above
-    a threshold.
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    outcome_column: str = "outco_binary_outcome",
+    correlation_threshold: float = 0.5,
+    verbose: bool = False,
+) -> pandas.DataFrame:
+    """:py:class:`pandas.DataFrame` : Removes variables in the data with high multicollinearity.
 
-    Returns:
-    - df: pandas DataFrame with high correlation variables removed
-    """
+    Arbitrarily selecting one variable to remove if the correlation between two
+    variables is above a threshold.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    dictionary : pandas.DataFrame
+        The data dictionary.
+
+    outcome_column : str, default=``"outco_binary_outcome"``
+        Optional outcome column, defaults to ``"outco_binary_outcome"``.
+
+    correlation_threshold : float, default=0.5
+        Optional correlation threshold, defaults to :math:`0.5`.
+
+    verbose : bool, default=False
+        Optional indicator of whether to print correlation summary.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The data with high correlation variables removed.
+    """  # noqa : E501
     keep_columns = ["subjid", outcome_column]
 
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
-    numeric_columns = [col for col in numeric_columns if col in df.columns]
+    numeric_columns = [col for col in numeric_columns if col in data.columns]
 
     # Step 1: Select numeric columns only
     # numeric_cols = df.select_dtypes(include=[np.number]).columns
-    df_numeric = df[numeric_columns]  # DataFrame with only numeric columns
+    df_numeric = data[numeric_columns]  # DataFrame with only numeric columns
 
     # Step 2: Calculate the correlation matrix
     corr_matrix = df_numeric.corr().abs()
@@ -1794,57 +2887,78 @@ def rmv_high_corr(
     # Step 4: Drop highly correlated columns (arbitrarily drop second column)
     exclude_columns = corr_pairs["level_1"].unique().tolist()
     exclude_columns = [col for col in exclude_columns if col not in keep_columns]
-
-    # # Step 3: Identify highly correlated columns with a double loop
-    # to_drop = set()  # Use a set to avoid duplicates
-    # num_cols = corr_matrix.shape[0]
-    #
-    # for i in range(num_cols):
-    #     for j in range(i + 1, num_cols):  # Only look at the upper triangle
-    #         if corr_matrix.iloc[i, j] > correlation_threshold:
-    #             # Identify the columns with high correlation
-    #             # col1 = corr_matrix.columns[i]  # ??
-    #             col2 = corr_matrix.columns[j]
-    #
-    #             # Add one of the columns to `to_drop`
-    #             to_drop.add(col2)  # Arbitrarily drop the second column
-    #
-    # # Step 4: Drop highly correlated columns
-    # exclude_columns = [col for col in list(to_drop) if col not in keep_columns]
-    df = df.drop(columns=exclude_columns)
+    data = data.drop(columns=exclude_columns)
 
     if verbose:
         print("\nCORR Summary")
         print(f"Columns removed due to high correlation: \
 {len(exclude_columns)}")
-    return df
+
+    return data
 
 
 def lasso_var_sel_binary(
-    df,
-    outcome_column="mapped_outcome",
-    metric="balanced_accuracy",
-    threshold=1e-3,
-    gridsearch_params={
+    data: pandas.DataFrame,
+    outcome_column: str = "mapped_outcome",
+    metric: str = "balanced_accuracy",
+    threshold: float = 1e-3,
+    gridsearch_params: dict[str, typing.Iterable[float]] = {
         "l1_ratios": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
         "Cs": [1e-3, 3.16e-3, 1e-2, 3.16e-2, 1e-1, 3.16e-1, 1, 3.16, 10],
     },
-    random_state=42,
-    verbose=False,
-    sep="___",
-):
-    """
-    Prepare data and select features using binary logistic regression with
-    elastic net penalty.
+    random_state: int = 42,
+    verbose: bool = False,
+    sep: str = "___",
+) -> tuple[typing.Any]:
+    """:py:class:`tuple` : Prepares data and selects features using binary logistic regression with elastic net penalty.
+
     Specifically designed for binary outcomes only.
-    """
-    if outcome_column not in df.columns:
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The incoming data.
+
+    outcome_column : str, default="mapped_outcome"
+        Optional outcome column, defaults to ``"mapped_outcome"``.
+
+    metric : str, default="balanced_accuracy"
+        Optional metric, defaults to ``"balanced_accuracy"``.
+
+    threshold : float, default=1e-3
+        Optional threshold, defaults to :math:`0.001`.
+
+    gridsearch_params : dict, default={"l1_ratios": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], "Cs": [1e-3, 3.16e-3, 1e-2, 3.16e-2, 1e-1, 3.16e-1, 1, 3.16, 10]}
+        Optional grid search params, defaults to:
+        ::
+
+            {
+                "l1_ratios": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+                "Cs": [1e-3, 3.16e-3, 1e-2, 3.16e-2, 1e-1, 3.16e-1, 1, 3.16, 10]
+            }
+
+    random_state : int, default=42
+        Optional random state, defaults to :math:`42`.
+
+    verbose : bool, default=False
+        Optional indicator of whether to print the analysis, defaults to
+        ``False``.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    -------
+    tuple
+        Results tuple.
+    """  # noqa : E501
+    if outcome_column not in data.columns:
         error_str = f"Outcome column {outcome_column} not found in DataFrame"
         raise ValueError(error_str)
 
     # Separate predictors and outcome
-    y = df[outcome_column].copy()
-    X_ini = df.drop(columns=[outcome_column])
+    y = data[outcome_column].copy()
+    X_ini = data.drop(columns=[outcome_column])
     if verbose:
         print(f"\nInitial shape of X: {X_ini.shape}")
 
@@ -2067,11 +3181,32 @@ ID if applicable)."""
     )
 
 
-def create_grouped_results(selected_features, feature_importance, sep="___"):
-    """
-    Create a DataFrame with all categories listed under their main fields,
-    with main fields sorted by their maximum coefficient magnitude.
-    """
+def create_grouped_results(
+    selected_features: typing.Iterable[str],
+    feature_importance: dict[str, float],
+    sep: str = "___",
+) -> tuple[pd.DataFrame, typing.Iterable[str], typing.Iterable[str]]:
+    """:py:class:`tuple` : Creates and returns grouped feature results.
+
+    The main dataFrame lists categories under their main fields, with main
+    fields sorted by their maximum coefficient magnitude.
+
+    Parameters
+    ----------
+    selected_features : typing.Iterable
+        An iterable of selected feature names.
+
+    feature_importance : dict
+        A dict of feature names and coefficient weights.
+
+    sep : str, default="___"
+        Optional field-value separator, defaults to ``"___"``.
+
+    Returns
+    ----------
+    tuple
+        Feature results.
+    """  # noqa : E501
     # Step 1: Identify one-hot encoded and regular features
     categorical_fields = set()
     regular_features = []
@@ -2146,11 +3281,27 @@ def create_grouped_results(selected_features, feature_importance, sep="___"):
     return pd.DataFrame(results), sorted_fields, categorical_fields
 
 
-def get_parameter_ranking(logistic, n_top=10, threshold=1e-3):
-    """
-    Create a ranking of parameter combinations using stored scores
-    and coefficient paths.
-    """
+def get_parameter_ranking(
+    logistic: typing.Any, n_top: int = 10, threshold: float = 1e-3
+) -> pandas.DataFrame:
+    """:py:class:pd.DataFrame : Returns a dataframe of rankings of parameter combinations using stored scores and coefficient paths.
+
+    Parameters
+    ----------
+    logistic : typing.Any
+        The logistic model.
+
+    n_top : int, default=10
+        Optional number of top ranking features to select, defaults to :math:`10`.
+
+    threshold : float, default=1e-3
+        Optional ranking threshold, defaults to :math:`0.001`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The dataframe of parameter rankings.
+    """  # noqa : E501
     # Create empty list to store parameter information
     param_scores = []
 
@@ -2167,15 +3318,11 @@ def get_parameter_ranking(logistic, n_top=10, threshold=1e-3):
         for C_idx, C in enumerate(Cs):
             # Get mean score across folds for this parameter combination
             score = logistic.scores_[first_class][:, C_idx, l1_ratio_idx].mean()
-            # fold_ind = (
-            #     logistic.scores_[first_class][:, C_idx, l1_ratio_idx].argmax())
+
             # Get coefficients for this parameter combination
             coef0 = logistic.coefs_paths_[first_class][0, C_idx, l1_ratio_idx, :]
             coef1 = logistic.coefs_paths_[first_class][1, C_idx, l1_ratio_idx, :]
             coef2 = logistic.coefs_paths_[first_class][2, C_idx, l1_ratio_idx, :]
-
-            # # Average across folds  # Why is this the mean?
-            # mean_coef = np.mean(coef_path, axis=0)
 
             # Count non-zero coefficients
             n_features0 = np.sum(np.abs(coef0) > threshold)

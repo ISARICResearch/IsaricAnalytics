@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - run: |
+          echo "github.event_name=${{ github.event_name }}"
+          echo "github.event.workflow_run.conclusion=${{ github.event.workflow_run.conclusion }}"
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Install build dependencies
+        run: |
+          pip install -U pip build
+
+      - name: Build package artifacts and install wheel
+        run: |
+          python -m build
+          pip install dist/isaricanalytics*.whl
+
+      - name: Test wheel import
+        run: |
+          python -c "import isaricanalytics; print(isaricanalytics.__version__)"

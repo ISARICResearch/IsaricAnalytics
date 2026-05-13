@@ -2,7 +2,7 @@
 
 [![CodeQL](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/github-code-scanning/codeql)
 [![pre-commit](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/pre-commit.yml)
-[![Tests (python versions)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test-python-versions-coverage.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test-python-versions-coverage.yml)
+[![Tests (python versions)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/ISARICResearch/IsaricAnalytics/graph/badge.svg?token=Q0A84OK6E5)](https://codecov.io/gh/ISARICResearch/IsaricAnalytics)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -22,3 +22,7 @@ characteristics that allow some automation during research analyses and the re-u
 elements of analysis pipelines to similar contexts. This package is designed to support
 Reusable Analytical Pipelines for Infectious Diseases (RAPIDs), which is based on the concept
 of [Reproducible Analytical Pipelines](https://analysisfunction.civilservice.gov.uk/support/reproducible-analytical-pipelines/).
+
+## Documentation
+
+Project documentation is available at https://isaricanalytics.readthedocs.io/en/latest. It is built with [Sphinx](https://www.sphinx-doc.org/en/) from content and configuration defined in the [`docs`](https://github.com/ISARICResearch/VERTEX/tree/main/docs) subfolder.

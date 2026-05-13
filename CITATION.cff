@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+title: IsaricAnalytics
+message: Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks.
+type: software
+authors:
+  - name-particle: Tom
+    family-names: Edinburgh
+    email: tom.edinburgh@ndm.ox.ac.uk
+    orcid: 0000-0002-3599-7133
+  - name-particle: Esteban
+    family-names: Garcia-Gallo
+    email: esteban.garcia@ndm.ox.ac.uk
+    orcid: 0000-0002-8030-9985
+  - name-particle: Igor
+    family-names: Peres
+    email: igor.peres@puc-rio.br
+    orcid:
+  - name-particle: Tomoe
+    family-names: Gusberti
+    email: tomoegusberti@gmail.com
+    orcid:
+  - name-particle: Luiz
+    family-names: Raffaini
+    email: lemraffaini@gmail.com
+    orcid:
+repository-code: 'https://github.com/ISARICResearch/IsaricAnalytics'
+url: 'https://github.com/ISARICResearch/IsaricAnalytics'
+abstract: Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks.
+keywords:
+    - isaric
+    - infectious disease
+    - pandemic
+    - disease outbreak
+    - clinical epidemiology
+    - disease outbreak response
+    - data analysis
+    - data analytics
+license: MIT
+version: 0.2.0
+date-released:

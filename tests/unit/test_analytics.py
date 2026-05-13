@@ -1,6 +1,6 @@
 import pandas as pd
 
-from isaricanalytics.IsaricAnalytics import (
+from isaricanalytics.analytics import (
     convert_categorical_to_onehot,
     convert_onehot_to_categorical,
     from_timeA_to_timeB,

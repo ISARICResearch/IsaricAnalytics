@@ -1,16 +1,55 @@
-.. isaricanalytics documentation master file, created by
-   sphinx-quickstart on Wed Apr  8 09:51:09 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+================
+ISARIC Analytics
+================
 
-isaricanalytics documentation
-=============================
+The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+- REDCap data extraction
+- ISARIC data analytics
+- ISARIC data visualisation
 
+ISARICAnalytics is licensed under the open source compliant `MIT license <https://opensource.org/license/mit>`_.
+
+.. image:: _static/osi-badge-light.svg
+   :target: https://opensource.org/license/mit
+   :height: 200px
+   :width:  200px
+
+Installation
+------------
+
+Install with :program:`pip` directly from GitHub using:
+
+.. code:: shell
+
+   pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics
+
+This will install the default ``main`` branch of the repo, including all package dependencies (and sub-dependencies) - if you want a specific branch, tag or commit SHA use
+
+.. code:: shell
+
+   pip install -U git+https://github.com/ISARICResearch/ISARICAnalytics@<branch name or tag or commit SHA>
+
+The minimum required Python version is 3.11.
+
+Documentation
+-------------
+
+The documentation is currently limited to an API reference for all the core public libraries, but user tutorials, a visualisation gallery and additional documentation will be added in the future.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
+
+   sources/api-reference
+   sources/redcap-data
+   sources/analytics
+   sources/visualisation
+   sources/contributing
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

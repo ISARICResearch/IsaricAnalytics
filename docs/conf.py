@@ -10,6 +10,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
 from datetime import datetime
 
 # -- 3rd party libraries --
+from docutils import nodes
+from sphinx.addnodes import pending_xref
+from sphinx.application import Sphinx
+from sphinx.environment import BuildEnvironment
+from sphinx.ext.intersphinx import missing_reference
+
 # -- Internal libraries --
 import isaricanalytics
 from isaricanalytics import __version__
@@ -102,9 +108,9 @@ extensions = [
 #         https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
     "exclude-members": "",
-    "member-order": "bysource",
+    "member-order": "alphabetical",
     "private-members": False,
-    "special-members": "__init__,__new__",
+    "special-members": "",
 }
 
 # Sphinx autodoc autosummary settings
@@ -124,12 +130,41 @@ intersphinx_mapping = {
     #'dash': ('https://dash.plotly.com/', None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "plotly": ("https://plotly.com/python-api-reference/", None),
     "Python": ("https://docs.python.org/3", None),
     "scikit-learn": ("https://scikit-learn.org/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     #'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
     "statsmodels": ("https://www.statsmodels.org/stable", None),
 }
+
+
+# A custom solution from:
+#
+#   https://stackoverflow.com/questions/73528299/link-to-plotly-graph-objects-figure-with-intersphinx
+#
+# to handle Intersphinx problems with the Plotly domain.
+def fix_reference(
+    app: Sphinx, env: BuildEnvironment, node: pending_xref, contnode: nodes.TextElement
+) -> nodes.reference | None:
+    """
+    Fix some intersphinx references that are broken.
+    """
+    if node["refdomain"] == "py":
+        # strange imports in plotly require a hardcoded redirect
+        if node["reftarget"] == "plotly.graph_objs._figure.Figure":
+            node["reftarget"] = "plotly.graph_objects.Figure"
+        return missing_reference(app, env, node, contnode)
+
+    return None
+
+
+def setup(app: Sphinx) -> None:
+    """
+    Force sphinx to fix additional things on setup.
+    """
+    app.connect("missing-reference", fix_reference)
+
 
 # Static template paths
 templates_path = ["_templates"]
@@ -150,7 +185,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+# pygments_style = "sphinx"
 
 # A list of prefixes that are ignored when creating the module index.
 # (new in Sphinx 0.6)
@@ -193,20 +228,87 @@ html_context = {
 
 # HTML theme options
 html_theme = "furo"
-html_theme_options = {}
+html_theme_options = {
+    # Since Furo doesn't allow us to disable dark mode, we make dark mode
+    # equivalent to light mode by overriding all colors back to their light value.
+    # See: https://github.com/pradyunsg/furo/issues/28
+    "dark_css_variables": {
+        # Taken from: https://github.com/pradyunsg/furo/blob/c682d5d3502f3fa713c909eebbf9f3afa0f469d9/src/furo/assets/styles/variables/_colors.scss
+        "color-problematic": "#b30000",
+        # Base Colors
+        "color-foreground-primary": "black",  # for main text and headings
+        "color-foreground-secondary": "#5a5c63",  # for secondary text
+        "color-foreground-muted": "#646776",  # for muted text
+        "color-foreground-border": "#878787",  # for content borders
+        "color-background-primary": "white",  # for content
+        "color-background-secondary": "#f8f9fb",  # for navigation + ToC
+        "color-background-hover": "#efeff4ff",  # for navigation-item hover
+        "color-background-hover--transparent": "#efeff400",
+        "color-background-border": "#eeebee",  # for UI borders
+        "color-background-item": "#ccc",  # for "background" items (eg: copybutton)
+        # Announcements
+        "color-announcement-background": "#000000dd",
+        "color-announcement-text": "#eeebee",
+        # Brand colors
+        "color-brand-primary": "#2962ff",
+        "color-brand-content": "#2a5adf",
+        # Highlighted text (search)
+        "color-highlighted-background": "#ddeeff",
+        # GUI Labels
+        "color-guilabel-background": "#ddeeff80",
+        "color-guilabel-border": "#bedaf580",
+        # API documentation
+        "color-api-keyword": "var(--color-foreground-secondary)",
+        "color-highlight-on-target": "#ffffcc",
+        # Admonitions
+        "color-admonition-background": "transparent",
+        # Cards
+        "color-card-border": "var(--color-background-secondary)",
+        "color-card-background": "transparent",
+        "color-card-marginals-background": "var(--color-background-hover)",
+        # Code blocks
+        "color-code-foreground": "black",
+        "color-code-background": "#f8f9fb",
+    },
+    "footer_icons": [
+        {
+            "name": "ISARICAnalytics@GitHub",
+            "url": "https://github.com/ISARICResearch/ISARICAnalytics",
+            "html": """
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            """,  # noqa : E501
+            "class": "",
+        },
+    ],
+}
 
-# html_logo = '_static/logo.png'
+# Override the default sidebar listing by commenting out the ethical ads sidebar.
+html_sidebars = {
+    "**": [
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        # "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+    ]
+}
+
+# Force pygments style in dark mode back to the light variant
+pygments_dark_style = "tango"
+
+html_logo = "_static/isaric-logo.png"
 
 # Relative path (from the ``docs`` folder) to the static files folder - so
 # ``_static`` should be one level below ``docs``.
 html_static_path = ["_static"]
 
-# Custom CSS file(s) - currently source the Font Awesome CSS classes to support
-# Font Awesome icons. for more information see:
-#
-#     https://sphinx-design.readthedocs.io/en/latest/badges_buttons.html#fontawesome-icons
-#
-# html_css_files = []
+# Custom CSS file(s)
+html_css_files = [
+    "css/custom.css",
+]
 
 # Timestamp format for the last page updated time
 html_last_updated_fmt = "%b %d, %Y"
