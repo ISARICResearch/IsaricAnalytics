@@ -8,6 +8,13 @@ The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ lib
 - ISARIC data analytics
 - ISARIC data visualisation
 
+ISARICAnalytics is licensed under the open source compliant `MIT license <https://opensource.org/license/mit>`_.
+
+.. image:: _static/osi-badge-light.svg
+   :target: https://opensource.org/license/mit
+   :height: 200px
+   :width:  200px
+
 Installation
 ------------
 
