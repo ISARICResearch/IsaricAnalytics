@@ -842,11 +842,18 @@ def get_df_map(data, dictionary):
         "Death": "Death",  # :(
         "Palliative care": "Death",  # :(
     }
+
+    if 'outco_outcome' in df_map.columns:
+        df_map['outco_outcome'] = df_map["outco_outcome"].fillna("Censored")
+    else:
+        df_map['outco_outcome'] = "Censored"
+
     df_map["outco_binary_outcome"] = map_variable(
-        df_map["outco_outcome"].fillna("Censored"),
+        df_map,
         mapping_dict,
         other_value_str="Censored",
     )
+
     outcome_dict = {}
     outcomes = ["Death", "Discharged", "Censored"]
     outcome_dict["field_name"] = ["outco_binary_outcome"]
