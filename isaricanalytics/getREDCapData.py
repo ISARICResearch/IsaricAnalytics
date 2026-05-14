@@ -800,11 +800,14 @@ def initial_data_processing(data, dictionary, missing_data_codes):
 def get_df_map(data, dictionary):
     """Convert single-event rows into one row per patient."""
     df_map = data.copy()
-    forms = ["presentation", "daily", "outcome"]
+    forms = ["presentation", "daily", "outcome", "inclusion_criteria", "consent"]
     columns = dictionary.loc[dictionary["form_name"].isin(forms), "field_name"].tolist()
     columns = [col for col in columns if col in df_map.columns]
     ind = data["form_name"].apply(
-        lambda x: any(y in x.split(",") for y in ["presentation", "outcome"])
+        lambda x: any(
+            y in x.split(",")
+            for y in ["presentation", "outcome", "inclusion_criteria", "consent"]
+        )
     )
     df_map = df_map.reset_index(drop=True)
     ind = ind.reset_index(drop=True) if hasattr(ind, "reset_index") else ind
