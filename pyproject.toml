@@ -53,6 +53,7 @@ classifiers = [
 
 requires-python = ">=3.11"
 dependencies = [
+    "adtl>=0.13.3",
     "lifelines==0.30.0",
     "numpy==1.26.4",
     "pandas==2.2.1",
