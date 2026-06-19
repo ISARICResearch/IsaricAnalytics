@@ -85,6 +85,7 @@ extensions = [
     "nb2plots",
     "numpydoc",
     "sphinx.ext.autodoc",
+    # "sphinx_gallery.gen_gallery",
     #'sphinx.ext.autosectionlabel',
     #'sphinx.ext.autosummary',
     "sphinx.ext.coverage",
