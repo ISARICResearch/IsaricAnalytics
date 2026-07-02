@@ -4,6 +4,16 @@
 Visualisation
 =============
 
+.. toctree::
+   :hidden:
+
+   plot_gallery/sunburst
+   plot_gallery/frequency
+   plot_gallery/table
+   plot_gallery/dual-stack-pyramid
+   plot_gallery/upset
+   plot_gallery/sankey
+
 A variety of figures / plots can be generated using functions in the :py:mod:`~isaricanalytics.visualisation` library. Click on the figure panels below for more details.
 
 .. grid::
