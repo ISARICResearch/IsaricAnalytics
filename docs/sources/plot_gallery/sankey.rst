@@ -47,42 +47,43 @@ Here are the Python steps you need to generate the plot using the :py:func:`~isa
 
 .. code:: python
 
-   >>> from isaricanalytics.visualisation import fig_sankey
+   import pandas as pd
+   from isaricanalytics.visualisation import fig_sankey
    # Load the CSV data from a string buffer
-   >>> data = pd.read_csv(io.StringIO(
-                  """source,target,value\n
-                     Community,Hospitalised,1200\n
-                     Hospitalised,ICU,300\n
-                     Hospitalised,Ward,900\n
-                     ICU,Death,80\n
-                     ICU,Recovered,220\n
-                     Ward,Recovered,850\n
-                     Ward,Death,50"""
-               ))
+   data = pd.read_csv(io.StringIO(
+       """source,target,value\n
+          Community,Hospitalised,1200\n
+          Hospitalised,ICU,300\n
+          Hospitalised,Ward,900\n
+          ICU,Death,80\n
+          ICU,Recovered,220\n
+          Ward,Recovered,850\n
+          Ward,Death,50"""
+   ))
 
    # Create the labels, nodes, flows/arrows and annotations
-   >>> labels = pd.Series(pd.unique(flows[["source", "target"]].values.ravel()))
-   >>> node = pd.DataFrame({
-   ...     "label": labels,
-   ...     "customdata": labels.apply(lambda x: f"{x} (synthetic)")
-   ... })
-   >>> label_to_idx = {label: i for i, label in enumerate(labels)}
-   >>> link = pd.DataFrame({
-   ...    "source": data["source"].map(label_to_idx),
-   ...    "target": data["target"].map(label_to_idx),
-   ...    "value": data["value"],
-   ...    "customdata": data.apply(lambda r: f"{r['source']} → {r['target']}: {r['value']} cases", axis=1)
-   ... })
-   >>> annotations = pd.DataFrame([{
-   ...     "text": "Synthetic patient flow (cases)",
-   ...     "x": 0.5,
-   ...     "y": 1.08,
-   ...     "xref": "paper",
-   ...     "yref": "paper",
-   ...     "showarrow": False,
-   ...     "font": {"size": 14}
-   ... }])
-   >>> fig = fig_sankey([node, link, annotations], height=600)
-   >>> fig.show()
+   labels = pd.Series(pd.unique(flows[["source", "target"]].values.ravel()))
+   node = pd.DataFrame({
+       "label": labels,
+       "customdata": labels.apply(lambda x: f"{x} (synthetic)")
+   })
+   label_to_idx = {label: i for i, label in enumerate(labels)}
+   link = pd.DataFrame({
+       "source": data["source"].map(label_to_idx),
+       "target": data["target"].map(label_to_idx),
+       "value": data["value"],
+       "customdata": data.apply(lambda r: f"{r['source']} → {r['target']}: {r['value']} cases", axis=1)
+   })
+   annotations = pd.DataFrame([{
+       "text": "Synthetic patient flow (cases)",
+       "x": 0.5,
+       "y": 1.08,
+       "xref": "paper",
+       "yref": "paper",
+       "showarrow": False,
+       "font": {"size": 14}
+   }])
+   fig = fig_sankey([node, link, annotations], height=600)
+   fig.show()
 
 You should see the plot appearing as given above.
