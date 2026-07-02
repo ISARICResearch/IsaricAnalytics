@@ -10,7 +10,7 @@ Sankey plots provide a way of visualising temporal data flows/relationships betw
    :alt:   Sankey plot for a hypothetical disease outbreak in a small community
    :target: ../../_static/plot_gallery/fig_sankey.html
 
-The Sankey plot above was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. Click the image to view the interactive and fully annotated Plotly figure that you will be able to see when you generate it.
+The plot above was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. Click the image to view the full interactive and fully annotated Plotly figure that you will be able to see when you generate it.
 
 Here is the dataset that was used to generated, given as a table (which can easily be converted to a CSV).
 
@@ -43,7 +43,7 @@ Here is the dataset that was used to generated, given as a table (which can easi
      - Death
      - 50
 
-And these are the Python steps required to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
+Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
 
 .. code:: python
 
