@@ -1,4 +1,4 @@
-.. _fig-table:
+.. _table-plots:
 
 Table Plots
 ===========

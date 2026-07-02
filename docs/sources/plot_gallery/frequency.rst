@@ -1,4 +1,4 @@
-.. _fig-frequency-chart:
+.. _frequency-plots:
 
 Frequency Plots
 ===============

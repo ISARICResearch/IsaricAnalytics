@@ -1,4 +1,4 @@
-.. _fig-upset:
+.. _upset-plots:
 
 Upset Plots
 ===========

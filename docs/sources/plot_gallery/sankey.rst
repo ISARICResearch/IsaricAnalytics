@@ -1,4 +1,4 @@
-.. _fig-sankey:
+.. _sankey-plots:
 
 Sankey Plots
 ============
