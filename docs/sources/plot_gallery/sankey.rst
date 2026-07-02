@@ -68,10 +68,10 @@ And these are the Python steps required to generate the plot using the :py:func:
    ... })
    >>> label_to_idx = {label: i for i, label in enumerate(labels)}
    >>> link = pd.DataFrame({
-   ...    "source": flows["source"].map(label_to_idx),
-   ...    "target": flows["target"].map(label_to_idx),
-   ...    "value": flows["value"],
-   ...    "customdata": flows.apply(lambda r: f"{r['source']} → {r['target']}: {r['value']} cases", axis=1)
+   ...    "source": data["source"].map(label_to_idx),
+   ...    "target": data["target"].map(label_to_idx),
+   ...    "value": data["value"],
+   ...    "customdata": data.apply(lambda r: f"{r['source']} → {r['target']}: {r['value']} cases", axis=1)
    ... })
    >>> annotations = pd.DataFrame([{
    ...     "text": "Synthetic patient flow (cases)",
