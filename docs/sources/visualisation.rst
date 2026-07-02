@@ -57,4 +57,8 @@ A variety of figures / plots can be generated using functions in the :py:mod:`~i
    .. grid-item::
       :columns: 6
 
-      .. todo:: TODO
+      .. figure:: ../_static/plot_gallery/fig_sankey.png
+         :target: plot_gallery/sankey.html
+         :alt: Sankey Plots
+
+         Sankey Plots
