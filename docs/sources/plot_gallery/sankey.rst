@@ -3,7 +3,7 @@
 Sankey Plots
 ============
 
-Sankey plots provide a way of visualising temporal data flows/relationships between data entities/nodes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function.
+`Sankey plots <https://en.wikipedia.org/wiki/Sankey_diagram>`_ (often called Sankey diagrams) provide a way of visualising temporal data flows/relationships between data entities/nodes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function.
 
 .. figure:: ../../_static/plot_gallery/fig_sankey.png
    :width: 100%
