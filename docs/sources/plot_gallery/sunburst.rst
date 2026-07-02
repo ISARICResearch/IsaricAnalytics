@@ -69,33 +69,33 @@ Here are the Python steps you need to generate the plot above using the :py:func
 
 .. code:: python
 
-   >>> from isaricanalytics.visualisation import fig_sunburst
+   import pandas as pd
+   from isaricanalytics.visualisation import fig_sunburst
    # Load the CSV data from a string buffer
-   >>> data = pd.read_csv(io.StringIO(
-                  """Site,Country,SubjectID\n
-                     0,COL,21\n2,COL,25\n
-                     3,GBR,199\n
-                     5,CAN,31\n
-                     6,BRA,156\n
-                     7,BRA,27\n
-                     8,BRA,8\n
-                     9,FRA,174\n
-                     10,POL,89\n
-                     11,POL,30\n
-                     13,RWA,121\n
-                     14,KEN,1\n
-                     15,KEN,15\n
-                     16,KEN,1\n
-                     18,NLD,102\n"""
-               ))
-
+   data = pd.read_csv(io.StringIO(
+       """Site,Country,SubjectID\n
+          0,COL,21\n2,COL,25\n
+          3,GBR,199\n
+          5,CAN,31\n
+          6,BRA,156\n
+          7,BRA,27\n
+          8,BRA,8\n
+          9,FRA,174\n
+          10,POL,89\n
+          11,POL,30\n
+          13,RWA,121\n
+          14,KEN,1\n
+          15,KEN,15\n
+          16,KEN,1\n
+          18,NLD,102\n"""
+   ))
    # Create and display the figure
-   >>> fig = fig_sunburst(
-   ...     data,
-   ...     title="Patient Enrolment by Site",
-   ...       path=["Country", "Site"],
-   ...       values="SubjectID"
-   ...   )
-   >>> fig.show()
+   fig = fig_sunburst(
+       data,
+       title="Patient Enrolment by Site",
+       path=["Country", "Site"],
+       values="SubjectID"
+   )
+   fig.show()
 
 You should see the plot appearing as given above.
