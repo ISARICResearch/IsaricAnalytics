@@ -1,4 +1,4 @@
-.. _fig-dual-stack-pyramid:
+.. _dual-stack-pyramid-plots:
 
 Dual Stack Pyramid Plots
 ========================
