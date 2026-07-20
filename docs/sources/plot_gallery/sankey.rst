@@ -7,6 +7,7 @@ Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sanke
 
 .. figure:: ../../_static/plot_gallery/fig_sankey.png
    :width: 100%
+   :height: 20pc
    :alt:   Sankey plot for a hypothetical disease outbreak in a small community
    :target: ../../_static/plot_gallery/fig_sankey.html
 
