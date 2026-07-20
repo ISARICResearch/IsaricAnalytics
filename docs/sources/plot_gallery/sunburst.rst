@@ -3,14 +3,14 @@
 Sunburst Plots
 ==============
 
-Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be used to visualise hierarchical data as concentric spiral shapes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function.
+Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be used to visualise hierarchical data as concentric spiral shapes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_sunburst.png
    :width: 100%
    :alt:   Sunburst plot
    :target: ../../_static/plot_gallery/fig_sunburst.html
 
-The plot above was generated using a synthetic dataset of patient enrolment at clinical sites filtered by country. Click the image to view the full interactive and fully annotated Plotly figure that you will be able to see when you generate it. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
+The plot above was generated using a synthetic dataset of patient enrolment at clinical sites filtered by country. **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset for patient enrolment at clinical sites filtered by country
    :header-rows: 1
