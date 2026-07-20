@@ -3,14 +3,14 @@
 Sankey Plots
 ============
 
-`Sankey plots <https://en.wikipedia.org/wiki/Sankey_diagram>`_ (often called Sankey diagrams) provide a way of visualising temporal data flows/relationships between data entities/nodes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function.
+Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sankey_diagram>`_) provide a way of visualising temporal data flows/relationships between data entities/nodes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_sankey.png
    :width: 100%
    :alt:   Sankey plot for a hypothetical disease outbreak in a small community
    :target: ../../_static/plot_gallery/fig_sankey.html
 
-The plot above was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. Click the image to view the full interactive and fully annotated Plotly figure that you will be able to see when you generate it.
+The plot above was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 
 Here is the dataset that was used to generated, given as a table (which can easily be converted to a CSV).
 
@@ -59,16 +59,16 @@ Here are the Python steps you need to generate the plot using the :py:func:`~isa
           ICU,Recovered,220\n
           Ward,Recovered,850\n
           Ward,Death,50"""
-   ))
+   ), skipinitialspace=True)
 
    # Create the labels, nodes, flows/arrows and annotations
-   labels = pd.Series(pd.unique(flows[["source", "target"]].values.ravel()))
-   node = pd.DataFrame({
+   labels = pd.Series(pd.unique(data[["source", "target"]].values.ravel()))
+   nodes = pd.DataFrame({
        "label": labels,
        "customdata": labels.apply(lambda x: f"{x} (synthetic)")
    })
    label_to_idx = {label: i for i, label in enumerate(labels)}
-   link = pd.DataFrame({
+   arrows = pd.DataFrame({
        "source": data["source"].map(label_to_idx),
        "target": data["target"].map(label_to_idx),
        "value": data["value"],
@@ -83,7 +83,7 @@ Here are the Python steps you need to generate the plot using the :py:func:`~isa
        "showarrow": False,
        "font": {"size": 14}
    }])
-   fig = fig_sankey([node, link, annotations], height=600)
+   fig = fig_sankey([nodes, arrows, annotations], height=600)
    fig.show()
 
 You should see the plot appearing as given above.
