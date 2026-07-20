@@ -33,7 +33,7 @@ Click on the plot panels below for more details - not every function has a plot 
    .. grid-item::
       :columns: 6
 
-      .. figure:: ../_static/plot_gallery/fig_frequency_chart.png
+      .. figure:: ../_static/plot_gallery/fig_frequency.png
          :target: plot_gallery/frequency.html
          :alt: Frequency Plots
 
