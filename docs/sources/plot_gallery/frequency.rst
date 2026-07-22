@@ -66,3 +66,12 @@ Provided your CSV contains these columns and is loaded into a valid Pandas dataf
    fig.show()
 
 You should see the plot appearing as given above.
+
+.. note::
+
+   Any dataframe or CSV column names, or dictionary field labels, in the example
+   above, must be as given, otherwise the function will throw an exception or
+   return unexpected data. Also, the ``height`` parameter, which is optional
+   with a default of ``350``, can be used to customise the plot height. Refer
+   to the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function
+   docstring for more information.

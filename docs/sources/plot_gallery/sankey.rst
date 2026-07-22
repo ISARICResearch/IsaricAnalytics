@@ -84,7 +84,19 @@ Here are the Python steps you need to generate the plot using the :py:func:`~isa
        "showarrow": False,
        "font": {"size": 14}
    }])
-   fig = fig_sankey([nodes, arrows, annotations], height=600)
+   fig = fig_sankey(
+    [nodes, arrows, annotations],
+    height=600
+   )
    fig.show()
 
 You should see the plot appearing as given above.
+
+.. note::
+
+   Any dataframe or CSV column names, or dictionary field labels, in the example
+   above, must be as given, otherwise the function will throw an exception or
+   return unexpected data. Also, the ``height`` parameter, which is optional
+   with a default of ``430``, can be used to customise the plot height. Refer
+   to the :py:func:`~isaricanalytics.visualisation.fig_sankey` function
+   docstring for more information.
