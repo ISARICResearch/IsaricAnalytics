@@ -3,14 +3,14 @@
 Dual Stack Pyramid Plots
 ========================
 
-Dual stack pyramid plots are used to construct so-called `population pyramids <https://en.wikipedia.org/wiki/Population_pyramid>`_, which show the distribution of a population by age groups and sex in the form of stacked histogram bars, one bar for each age group. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+Dual stack pyramid plots are used to construct so-called `population pyramids <https://en.wikipedia.org/wiki/Population_pyramid>`_, which show the distribution of a population by age group and sex in the form of stacked histogram bars, one bar for each age group, with bar segments indicating subgroups. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_dual_stack_pyramid.png
    :width: 100%
    :alt:   Dual stack pyramid plot
    :target: ../../_static/plot_gallery/fig_dual_stack_pyramid.html
 
-The plot above was generated using a synthetic dataset of patient population distribution by age, sex, and patient outcome. **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
+The plot above was generated using a synthetic dataset of patient population pyramid with subgroups indicating patient outcome (Death, Discharged, Censored). **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset of a patient population distribution by age group, sex and outcome
    :header-rows: 1
@@ -655,4 +655,9 @@ You should see the plot appearing as given above.
 
 .. note::
 
-   The ``base_color_map`` dictionary defines the colours of the patient outcome subgroups for males and females in each age group, and this can be customised.
+   Any dataframe or CSV column names, or dictionary field labels, in the example
+   above, must be as given, otherwise the function will throw an exception or
+   return unexpected data. Also, the ``height`` parameter, which is optional
+   with a default of ``430``, can be used to customise the plot height. Refer
+   to the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   docstring for more information.
