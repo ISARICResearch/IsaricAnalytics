@@ -2105,13 +2105,16 @@ def hex_to_rgba(hex_color: str, opacity: float) -> str:
     return rgba_color
 
 
-def rgb_to_rgba(rgb_color: tuple[int], alpha: float) -> str:
-    """:py:class:`str` : Converts an RGB colour tuple and alpha value to an RGBA colour string.
+def rgb_to_rgba(rgb_value: str, alpha: float) -> str:
+    """:py:class:`str` : Converts an RGB colour string and an alpha to an RGBA colour string.
+
+    The RGB colour string is specified with an ``"rgb"`` prefix,
+    e.g. ``"rgb(0, 0, 0)"``, and any spaces are stripped.
 
     Parameters
     ----------
-    rgb_color : tuple
-        RGB color tuple.
+    rgb_value : str
+        RGB color string with a ``"rgb"`` prefix, e.g. ``"rgb(0, 0, 0)"``.
 
     alpha : float
         Opacity/transparency value between 0.0 (fully transparent) and 1.0
@@ -2120,7 +2123,12 @@ def rgb_to_rgba(rgb_color: tuple[int], alpha: float) -> str:
     Returns
     -------
     str
-        RGBA colour string.
+        RGBA colour string, e.g. ``"rgba(0, 0, 0, 1)"``.
+
+    Examples
+    --------
+    >>> from isaricanalytics.visualisation import rgb_to_rgba
+    >>> rgb_to_rgba("rgb(0, 0, 0)", 1)
+    'rgba(0,0,0,1)'
     """  # noqa: E501
-    rgba_color = f"rgba({rgb_color[0]}, {rgb_color[1]}, {rgb_color[2]}, {alpha})"
-    return rgba_color
+    return f"rgba{rgb_value.replace(' ', '')[3:-1]},{alpha})"

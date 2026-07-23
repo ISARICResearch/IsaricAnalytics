@@ -824,9 +824,9 @@ class TestRgbToRgba:
            alpha,
            expected_rgba_string""",
         [
-            ((0, 0, 0), 0.0, "rgba(0, 0, 0, 0.0)"),
-            ((9, 34, 39), 0.5, "rgba(9, 34, 39, 0.5)"),
-            ((255, 255, 255), 1.0, "rgba(255, 255, 255, 1.0)"),
+            ("rgb(0, 0, 0)", 0.0, "rgba(0,0,0,0.0)"),
+            ("rgb(9, 34, 39)", 0.5, "rgba(9,34,39,0.5)"),
+            ("rgb(255, 255, 255)", 1.0, "rgba(255,255,255,1.0)"),
         ],
     )
     def test_rgb_to_rgba(self, rgb_color, alpha, expected_rgba_string):
