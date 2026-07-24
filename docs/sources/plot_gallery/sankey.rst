@@ -3,7 +3,7 @@
 Sankey Plots
 ============
 
-Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sankey_diagram>`_) provide a way of visualising temporal data flows/relationships between data entities/nodes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sankey_diagram>`_) can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_sankey.png
    :width: 100%
@@ -44,7 +44,7 @@ The synthetic dataset used for this plot is given as a table (which can easily b
      - Death
      - 50
 
-Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
+The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
 
 .. code:: python
 
@@ -100,5 +100,5 @@ You should see the plot appearing as given above.
 
    Also, the ``height`` parameter, which is optional with a default of ``430``,
    can be used to customise the plot height. Refer to the
-   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   :py:func:`~isaricanalytics.visualisation.fig_sankey` function
    docstring for more information.

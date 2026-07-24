@@ -3,7 +3,7 @@
 Upset Plots
 ===========
 
-`Upset plots <https://en.wikipedia.org/wiki/UpSet_plot>`_ are used to visualise intersections between subsets of a dataset created on the basis of a categorical variable. They can be generated using the :py:func:`~isaricanalytics.visualisation.fig_upset` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+`Upset plots <https://en.wikipedia.org/wiki/UpSet_plot>`_ can be generated using the :py:func:`~isaricanalytics.visualisation.fig_upset` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_upset.png
    :width: 100%
@@ -113,7 +113,7 @@ and the second dataframe containing the complication intersection data with the 
 * ``"label"`` - a string form of the descriptive labels associated with the complications, e.g. ``"('Shock ', 'Meningitis', 'Acute renal injury / acute renal failure', 'Cardiac arrest', 'Focal neurological signs')"``
 * ``"count"`` - the complication intersection count
 
-Provided your dataframes are in this form, here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_upset` function:
+The data source(s) can be in any appropriate form, such as, typically, CSVs. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_upset` function:
 
 .. code:: python
 
@@ -186,5 +186,5 @@ You should see the plot appearing as given above.
 
    Also, the ``height`` parameter, which is optional with a default of ``480``,
    can be used to customise the plot height. Refer to the
-   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   :py:func:`~isaricanalytics.visualisation.fig_upset` function
    docstring for more information.

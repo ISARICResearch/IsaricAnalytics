@@ -3,7 +3,7 @@
 Dual Stack Pyramid Plots
 ========================
 
-Dual stack pyramid plots are used to construct so-called `population pyramids <https://en.wikipedia.org/wiki/Population_pyramid>`_, which show the distribution of a population by age group and sex in the form of stacked histogram bars, one bar for each age group, with bar segments indicating subgroups. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+`Population pyramid <https://en.wikipedia.org/wiki/Population_pyramid>`_ plots can be generated using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_dual_stack_pyramid.png
    :width: 100%
@@ -507,7 +507,7 @@ The :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function ex
 * ``"value"`` - the number of patients in the category (combination of age group, sex, outcome)
 * ``"left_side"`` - a boolean to indicate where the value should appear, with ``1`` indicating left and ``0`` indicating right
 
-Provided your CSV contains these columns and is loaded into a valid Pandas dataframe, here are the Python steps you need to generate the plot above using the plot above, where males are on the left and females are on the right, using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function:
+The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps required to generate the plot, where males are on the left and females are on the right, using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function:
 
 .. code:: python
 
@@ -663,5 +663,5 @@ You should see the plot appearing as given above.
 
    Also, the ``height`` parameter, which is optional with a default of ``430``,
    can be used to customise the plot height. Refer to the
-   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.
