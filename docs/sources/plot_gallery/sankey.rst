@@ -13,7 +13,7 @@ Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sanke
 
 The plot above was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 
-Here is the dataset that was used to generated, given as a table (which can easily be converted to a CSV).
+The synthetic dataset used for this plot is given as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset for a disease outbreak response in a small community
    :widths: 33 33 33
@@ -76,7 +76,7 @@ Here are the Python steps you need to generate the plot using the :py:func:`~isa
        "customdata": data.apply(lambda r: f"{r['source']} → {r['target']}: {r['value']} cases", axis=1)
    })
    annotations = pd.DataFrame([{
-       "text": "Synthetic patient flow (cases)",
+       "text": "Sankey plot of Synthetic Outbreak Patient Case Flow",
        "x": 0.5,
        "y": 1.08,
        "xref": "paper",
@@ -95,8 +95,10 @@ You should see the plot appearing as given above.
 .. note::
 
    Any dataframe or CSV column names, or dictionary field labels, in the example
-   above, must be as given, otherwise the function will throw an exception or
-   return unexpected data. Also, the ``height`` parameter, which is optional
-   with a default of ``430``, can be used to customise the plot height. Refer
-   to the :py:func:`~isaricanalytics.visualisation.fig_sankey` function
+   above that are not specific to the dataset must be as given, otherwise the
+   function may throw an exception or return an incorrect figure.
+
+   Also, the ``height`` parameter, which is optional with a default of ``430``,
+   can be used to customise the plot height. Refer to the
+   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.

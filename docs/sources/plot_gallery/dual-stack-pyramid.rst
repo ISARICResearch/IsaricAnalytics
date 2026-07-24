@@ -10,7 +10,9 @@ Dual stack pyramid plots are used to construct so-called `population pyramids <h
    :alt:   Dual stack pyramid plot
    :target: ../../_static/plot_gallery/fig_dual_stack_pyramid.html
 
-The plot above was generated using a synthetic dataset of patient population pyramid with subgroups indicating patient outcome (Death, Discharged, Censored). **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
+The plot above was generated using a synthetic dataset of patient population pyramid with subgroups indicating patient outcome (Death, Discharged, Censored). **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+
+The synthetic dataset used for this plot is given below as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset of a patient population distribution by age group, sex and outcome
    :header-rows: 1
@@ -639,7 +641,7 @@ Provided your CSV contains these columns and is loaded into a valid Pandas dataf
    ), skipinitialspace=True)
    fig = fig_dual_stack_pyramid(
       data=data,
-      title="Synthetic Patient Population Age Pyramid",
+      title="Population Pyramid Plot of Synthetic Patient Dataset",
       xlabel="Count",
       ylabel="Age Group",
       base_color_map={
@@ -656,8 +658,10 @@ You should see the plot appearing as given above.
 .. note::
 
    Any dataframe or CSV column names, or dictionary field labels, in the example
-   above, must be as given, otherwise the function will throw an exception or
-   return unexpected data. Also, the ``height`` parameter, which is optional
-   with a default of ``430``, can be used to customise the plot height. Refer
-   to the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   above that are not specific to the dataset must be as given, otherwise the
+   function may throw an exception or return an incorrect figure.
+
+   Also, the ``height`` parameter, which is optional with a default of ``430``,
+   can be used to customise the plot height. Refer to the
+   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.

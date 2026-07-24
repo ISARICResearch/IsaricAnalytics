@@ -10,7 +10,9 @@ Frequency plots/charts refer to `stacked horizontal bar charts <https://en.wikip
    :alt:   Frequency plot
    :target: ../../_static/plot_gallery/fig_frequency.html
 
-The plot above was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of ten patients and five complications. **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
+The plot above was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of ten patients and five complications. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+
+The synthetic dataset used for this plot is given below as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset for Dengue patient treatment complications
    :header-rows: 1
@@ -60,7 +62,7 @@ Provided your CSV contains these columns and is loaded into a valid Pandas dataf
    # Create and display the figure
    fig = fig_frequency_chart(
        data,
-       title="Synthetic Dengue Patient Complications - Frequency Chart",
+       title="Frequency Chart of Synthetic Dengue Patient Complications",
        height=350
    )
    fig.show()
@@ -70,8 +72,10 @@ You should see the plot appearing as given above.
 .. note::
 
    Any dataframe or CSV column names, or dictionary field labels, in the example
-   above, must be as given, otherwise the function will throw an exception or
-   return unexpected data. Also, the ``height`` parameter, which is optional
-   with a default of ``350``, can be used to customise the plot height. Refer
-   to the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function
+   above that are not specific to the dataset must be as given, otherwise the
+   function may throw an exception or return an incorrect figure.
+
+   Also, the ``height`` parameter, which is optional with a default of ``350``,
+   can be used to customise the plot height. Refer to the
+   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.
