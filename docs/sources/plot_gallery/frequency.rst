@@ -3,7 +3,7 @@
 Frequency Plots
 ===============
 
-Frequency plots/charts refer to `stacked horizontal bar charts <https://en.wikipedia.org/wiki/Bar_chart#Stacked_bar_chart>`_, which show frequency distribution of data across labelled and segmented subgroups, with segment widths representing the proportion or frequency of the subgroup. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+Frequency plots/charts refer to `stacked horizontal bar charts <https://en.wikipedia.org/wiki/Bar_chart#Stacked_bar_chart>`_ which show frequency distribution of data across labelled and segmented subgroups, with segment widths representing the proportion or frequency of the subgroup. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_frequency.png
    :width: 100%
@@ -43,7 +43,7 @@ The :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function expec
 * ``"short_label"`` - the description column of the table
 * ``"proportion"`` - the frequency column of the table
 
-Provided your CSV contains these columns and is loaded into a valid Pandas dataframe, here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
+The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
 
 .. code:: python
 
@@ -77,5 +77,5 @@ You should see the plot appearing as given above.
 
    Also, the ``height`` parameter, which is optional with a default of ``350``,
    can be used to customise the plot height. Refer to the
-   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   :py:func:`~isaricanalytics.visualisation.fig_frequency` function
    docstring for more information.

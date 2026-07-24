@@ -3,7 +3,7 @@
 Sunburst Plots
 ==============
 
-Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be used to visualise hierarchical data as concentric spiral shapes, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 .. figure:: ../../_static/plot_gallery/fig_sunburst.png
    :width: 100%
@@ -67,7 +67,7 @@ The synthetic dataset used for this plot is given as a table (which can easily b
      - NLD
      - 102
 
-Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
+The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
 
 .. code:: python
 
@@ -111,5 +111,5 @@ You should see the plot appearing as given above.
 
    Also, the ``height`` parameter, which is optional with a default of ``430``,
    can be used to customise the plot height. Refer to the
-   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
+   :py:func:`~isaricanalytics.visualisation.fig_sunburst` function
    docstring for more information.
