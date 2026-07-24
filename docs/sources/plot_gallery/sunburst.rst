@@ -10,7 +10,9 @@ Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_ch
    :alt:   Sunburst plot
    :target: ../../_static/plot_gallery/fig_sunburst.html
 
-The plot above was generated using a synthetic dataset of patient enrolment at clinical sites filtered by country. **Click** the image to view the full interactive and fully annotated Plotly Go figure. Here is the synthetic dataset below as a table (which can easily be converted to a CSV).
+The plot above was generated using a synthetic dataset of patient enrolment at clinical sites filtered by country. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+
+The synthetic dataset used for this plot is given as a table (which can easily be converted to a CSV).
 
 .. list-table:: Synthetic dataset for patient enrolment at clinical sites filtered by country
    :header-rows: 1
@@ -92,9 +94,10 @@ Here are the Python steps you need to generate the plot above using the :py:func
    # Create and display the figure
    fig = fig_sunburst(
        data,
-       title="Patient Enrolment by Site",
+       title="Sunburst Plot of Synthetic Patient Enrolment by Site",
        path=["Country", "Site"],
-       values="SubjectID"
+       values="SubjectID",
+       height=600
    )
    fig.show()
 
@@ -103,8 +106,10 @@ You should see the plot appearing as given above.
 .. note::
 
    Any dataframe or CSV column names, or dictionary field labels, in the example
-   above, must be as given, otherwise the function will throw an exception or
-   return unexpected data. Also, the ``height`` parameter, which is optional
-   with a default of ``430``, can be used to customise the plot height. Refer
-   to the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function
+   above that are not specific to the dataset must be as given, otherwise the
+   function may throw an exception or return an incorrect figure.
+
+   Also, the ``height`` parameter, which is optional with a default of ``430``,
+   can be used to customise the plot height. Refer to the
+   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.

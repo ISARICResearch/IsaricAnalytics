@@ -12,7 +12,7 @@ Upset Plots
 
 The plot above was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of five complications and their patient counts, as well counts for the intersections (conjoint occurrences) of the complication subsets. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 
-The sythetic dataset used for this plot is given below in the form of two tables, the first showing the individual complications and their patient counts:
+The sythetic dataset used for this plot is given below in the form of two tables (which can easily be converted to CSVs), the first showing the individual complications and their patient counts:
 
 .. list-table:: Synthetic dataset of Dengue patient treatment complications - patient counts
    :header-rows: 1
@@ -167,7 +167,7 @@ Provided your dataframes are in this form, here are the Python steps you need to
    # Create and display the figure
    fig = fig_upset(
        (counts, intersections),
-       title="Synthetic Upset Plot of Dengue Patient Treatment Complications",
+       title="Upset Plot of Synthetic Dengue Patient Treatment Complications",
        height=480
    )
    fig.show()
@@ -181,8 +181,10 @@ You should see the plot appearing as given above.
 .. note::
 
    Any dataframe or CSV column names, or dictionary field labels, in the example
-   above, must be as given, otherwise the function will throw an exception or
-   return unexpected data. Also, the ``height`` parameter, which is optional
-   with a default of ``480``, can be used to customise the plot height. Refer
-   to the :py:func:`~isaricanalytics.visualisation.fig_upset` function
+   above that are not specific to the dataset must be as given, otherwise the
+   function may throw an exception or return an incorrect figure.
+
+   Also, the ``height`` parameter, which is optional with a default of ``480``,
+   can be used to customise the plot height. Refer to the
+   :py:func:~isaricanalytics.visualisation.fig_dual_stack_pyramid` function
    docstring for more information.
