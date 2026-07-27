@@ -10,7 +10,7 @@ Dual Stack Pyramid Plots
    :alt:   Dual stack pyramid plot
    :target: ../../_static/plot_gallery/fig_dual_stack_pyramid.html
 
-The plot above was generated using a synthetic dataset of patient population pyramid with subgroups indicating patient outcome (Death, Discharged, Censored). **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+The plot above was generated using a synthetic dataset of patients with subgroups indicating outcome (Death, Discharged, Censored). **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 
 The synthetic dataset used for this plot is given below as a table (which can easily be converted to a CSV).
 
@@ -657,9 +657,9 @@ You should see the plot appearing as given above.
 
 .. note::
 
-   Any dataframe or CSV column names, or dictionary field labels, in the example
-   above that are not specific to the dataset must be as given, otherwise the
-   function may throw an exception or return an incorrect figure.
+   Any dataframe or CSV column names, or dictionary field labels, in the
+   example above that are not specific to the dataset must be as given,
+   otherwise the function may throw an exception or return an incorrect figure.
 
    Also, the ``height`` parameter, which is optional with a default of ``430``,
    can be used to customise the plot height. Refer to the
