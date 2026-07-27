@@ -89,8 +89,8 @@ The data source can be in any appropriate form, such as, typically, a CSV. Here 
           14,KEN,1\n
           15,KEN,15\n
           16,KEN,1\n
-          18,NLD,102\n"""
-   ))
+          18,NLD,102\n""",
+   ), skipinitialspace=True)
    # Create and display the figure
    fig = fig_sunburst(
        data,
@@ -105,9 +105,9 @@ You should see the plot appearing as given above.
 
 .. note::
 
-   Any dataframe or CSV column names, or dictionary field labels, in the example
-   above that are not specific to the dataset must be as given, otherwise the
-   function may throw an exception or return an incorrect figure.
+   Any dataframe or CSV column names, or dictionary field labels, in the
+   example above that are not specific to the dataset must be as given,
+   otherwise the function may throw an exception or return an incorrect figure.
 
    Also, the ``height`` parameter, which is optional with a default of ``430``,
    can be used to customise the plot height. Refer to the

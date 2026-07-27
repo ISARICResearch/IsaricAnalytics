@@ -52,7 +52,7 @@ The data source can be in any appropriate form, such as, typically, a CSV. Here 
    # Load the CSV data from a string buffer
    data = pd.read_csv(io.StringIO(
        """label,short_label,proportion\n
-          Dengue Heamorrhagic Fever,DHF,0.4\n
+          Dengue Haemorrhagic Fever,DHF,0.4\n
           Dengue Shock Syndrome,DSS,0.2\n
           Thrombocytopenia,Low Platelets,0.6\n
           Hepatomegaly,Hepatomegaly,0.3\n
@@ -71,9 +71,9 @@ You should see the plot appearing as given above.
 
 .. note::
 
-   Any dataframe or CSV column names, or dictionary field labels, in the example
-   above that are not specific to the dataset must be as given, otherwise the
-   function may throw an exception or return an incorrect figure.
+   Any dataframe or CSV column names, or dictionary field labels, in the
+   example above that are not specific to the dataset must be as given,
+   otherwise the function may throw an exception or return an incorrect figure.
 
    Also, the ``height`` parameter, which is optional with a default of ``350``,
    can be used to customise the plot height. Refer to the
