@@ -30,7 +30,6 @@ __all__ = [
     "get_variables_by_section_and_type",
     "impute_miss_val",
     "lasso_var_sel_binary",
-    "mannwhitneyu",
     "mean_std_str",
     "median_iqr_str",
     "n_percent_str",
