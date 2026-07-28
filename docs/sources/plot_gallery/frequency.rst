@@ -57,7 +57,7 @@ The data source can be in any appropriate form, such as, typically, a CSV. Here 
           Thrombocytopenia,Low Platelets,0.6\n
           Hepatomegaly,Hepatomegaly,0.3\n
           Plasma Leakage,Plasma Leakage,0.1\n
-	   """
+       """
    ), skipinitialspace=True)
    # Create and display the figure
    fig = fig_frequency_chart(
