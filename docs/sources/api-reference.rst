@@ -9,7 +9,8 @@ API Reference
    :name: api_reference_toc
    :caption: Contents:
 
-   isaricanalytics/redcap_data
+   isaricanalytics/redcap-data
+   isaricanalytics/isaric-data-schema
    isaricanalytics/analytics
    isaricanalytics/visualisation
    isaricanalytics/utils
