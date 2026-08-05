@@ -3,26 +3,37 @@ title: IsaricAnalytics
 message: Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks.
 type: software
 authors:
-  - name-particle: Tom
-    family-names: Edinburgh
-    email: tom.edinburgh@ndm.ox.ac.uk
-    orcid: 0000-0002-3599-7133
-  - name-particle: Esteban
-    family-names: Garcia-Gallo
+  - family-names: Edinburgh
+    given-names: Tom
+    email: tom.edinburgh@paediatrics.ox.ac.uk
+    orcid: https://orcid.org/0000-0002-3599-7133
+
+  - family-names: Garcia-Gallo
+    given-names: Esteban
     email: esteban.garcia@ndm.ox.ac.uk
-    orcid: 0000-0002-8030-9985
-  - name-particle: Igor
-    family-names: Peres
+    orcid: https://orcid.org/0000-0002-8030-9985
+
+  - family-names: Peres
+    given-names: Igor
     email: igor.peres@puc-rio.br
-    orcid:
-  - name-particle: Tomoe
-    family-names: Gusberti
+
+  - family-names: Gusberti
+    given-names: Tomoe
     email: tomoegusberti@gmail.com
-    orcid:
-  - name-particle: Luiz
-    family-names: Raffaini
+
+  - family-names: Raffaini
+    given-names: Luiz
     email: lemraffaini@gmail.com
-    orcid:
+
+  - family-names: Murthy
+    given-names: Sandeep R.
+    email: sandeep.murthy@ndm.ox.ac.uk
+    orcid: https://orcid.org/0009-0006-8277-9389
+
+  - family-names: Wilson
+    given-names: Alasdair
+    email: alasdair.wilson@dtc.ox.ac.uk
+
 repository-code: 'https://github.com/ISARICResearch/IsaricAnalytics'
 url: 'https://github.com/ISARICResearch/IsaricAnalytics'
 abstract: Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks.
@@ -37,4 +48,3 @@ keywords:
     - data analytics
 license: MIT
 version: 0.2.0
-date-released:
