@@ -44,7 +44,7 @@ All contributors listed in the citation file should be included.
 Documentation
 -------------
 
-The documentation is currently limited to an API reference for all the core public libraries, but more documentation on using the core libraries, including a plot gallery showing a range of plots and figures that can be generated using the visualisation library, will be added over time.
+The documentation is currently limited to an :ref:`API reference <api-reference>` for all the core public libraries. Further documentation on using the core libraries, including a plot gallery showing a range of plots and figures that can be generated using the visualisation library, will be added over time.
 
 If you're interested in contributing please look at the :ref:`contributing guide <contributing-guide>`.
 
@@ -52,11 +52,11 @@ If you're interested in contributing please look at the :ref:`contributing guide
    :maxdepth: 1
    :caption: Contents:
 
-   sources/api-reference
    sources/data-extraction
    sources/data-analytics
    sources/data-visualisation
    sources/isaric-data-schema
+   sources/api-reference
    sources/contributing
 
 Indices and tables
