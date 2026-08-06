@@ -12,6 +12,7 @@ API Reference
    :caption: Contents:
 
    isaricanalytics/redcap-data
+   isaricanalytics/isaric-transformations
    isaricanalytics/isaric-data-schema
    isaricanalytics/analytics
    isaricanalytics/visualisation
