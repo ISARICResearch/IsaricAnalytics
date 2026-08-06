@@ -28,6 +28,11 @@ jobs:
           python -m pip install uv
           uv sync --verbose --group test --no-install-project
 
+
+      - name: Run doctests (example snippets in docstrings)
+        run: |
+            PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/*.py
+
       - name: Run pytest with coverage
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
