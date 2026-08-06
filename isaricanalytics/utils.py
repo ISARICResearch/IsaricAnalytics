@@ -105,26 +105,18 @@ def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
     >>> pd.set_option("display.max_columns", None)
     >>> data = pd.read_csv(io.StringIO(
     ...     '''
-    ...     Variable,All,Discharged,Death,Censored
-    ...     <b>Totals</b>,1000,219,326,455
-    ...     <b><i>COMPLICATIONS</i></b>,,,,
-    ...     <b>Seizure</b> (*),665 (81.7) | 814,148 (80.9) | 183,207 (79.6) | 260,310 (83.6) | 371
-    ...     <b>Focal neurological signs</b> (*),702 (74.8) | 938,156 (75.4) | 207,231 (75.5) | 306,315 (74.1) | 425
-    ...     <b>Encephalitis</b> (*),481 (52.6) | 914,102 (52.0) | 196,161 (53.5) | 301,218 (52.3) | 417
-    ...     <b>Meningitis</b> (*),781 (90.2) | 866,173 (88.7) | 195,252 (91.0) | 277,356 (90.4) | 394
-    ...     <b>Cardiac arrhythmia</b> (*),241 (26.7) | 901,64 (32.0) | 200,70 (24.1) | 291,107 (26.1) | 410
+    ...     A,B,C
+    ...     <b>A1</b>,<i>A2</i>,<b><i>A3</i></b>
+    ...     <b>B1</b>,<i>B2</i>,<b><i>B3</i></b>
+    ...     <b>C1</b>,<i>C2</i>,<b><i>C3</i></b>
     ...     '''
     ... ), skipinitialspace=True)
     >>> cleaned_data = clean_figure_table(data)
     >>> cleaned_data
-                           Variable               All        Discharged             Death          Censored
-    0                        Totals              1000               219               326               455
-    1                 COMPLICATIONS               NaN               NaN               NaN               NaN
-    2                   Seizure (*)  665 (81.7) | 814  148 (80.9) | 183  207 (79.6) | 260  310 (83.6) | 371
-    3  Focal neurological signs (*)  702 (74.8) | 938  156 (75.4) | 207  231 (75.5) | 306  315 (74.1) | 425
-    4              Encephalitis (*)  481 (52.6) | 914  102 (52.0) | 196  161 (53.5) | 301  218 (52.3) | 417
-    5                Meningitis (*)  781 (90.2) | 866  173 (88.7) | 195  252 (91.0) | 277  356 (90.4) | 394
-    6        Cardiac arrhythmia (*)  241 (26.7) | 901   64 (32.0) | 200   70 (24.1) | 291  107 (26.1) | 410
+        A   B   C
+    0  A1  A2  A3
+    1  B1  B2  B3
+    2  C1  C2  C3
     """  # noqa : E501
     return figure_table.map(strip_html).map(strip_nonstandard_unicode_chars)
 
