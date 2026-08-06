@@ -102,6 +102,7 @@ def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
     Examples
     --------
     >>> import io, pandas as pd
+    >>> pd.set_option("display.max_columns", None)
     >>> data = pd.read_csv(io.StringIO(
     ...     '''
     ...     Variable,All,Discharged,Death,Censored
