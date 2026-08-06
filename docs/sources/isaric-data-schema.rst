@@ -4,7 +4,7 @@
 ISARIC Data Schema
 ==================
 
-A guide to data transformations into the  ISARIC data schema using :py:mod:`isaricanalytics.isaric_data_schema`.
+A guide to data transformations into the  ISARIC data schema using :py:mod:`isaricanalytics.isaric_transformations` and :py:mod:`isaricanalytics.isaric_data_schema`.
 
 .. todo::
 

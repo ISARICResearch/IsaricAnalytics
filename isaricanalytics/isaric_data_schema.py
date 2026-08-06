@@ -15,12 +15,13 @@ import adtl
 import pandas as pd
 
 # -- Internal libraries --
+import isaricanalytics.isaric_transformations as tf
 
 
 def transform_to_isaric_data_schema(
     parser_file: str | pathlib.Path, data_file: str | pathlib.Path
-) -> pd.DataFrame:
-    """:py:class:`pandas.DataFrame` : An ISARIC schema-compliant dataset as a Pandas dataframe.
+) -> dict[str, pd.DataFrame]:
+    """:py:class:`dict` : A dict of ISARIC schema-compliant short- (core) and long-format datasets as Pandas dataframes.
 
     Parameters
     ----------
@@ -32,7 +33,8 @@ def transform_to_isaric_data_schema(
 
     Returns
     -------
-    pandas.DataFrame
-        An ISARIC schema-compliant dataset as a Pandas dataframe.
+    dict
+        A dict of two Pandas dataframes representing short- and long-format
+        ISARIC schema-compliant transforms of the original dataset.
     """  # noqa : E501
-    return adtl.parse(pathlib.Path(parser_file), pathlib.Path(data_file))
+    return adtl.parse(parser_file, data_file, include_transform=tf.__file__)
