@@ -49,6 +49,8 @@
 
   requires-python = ">=3.12"
   dependencies = [
+      "adtl>=0.13.3",
+      "isaric-bridge@git+https://github.com/ISARICResearch/BRIDGE@v1.2",
       "kaleido>=1.0.0",
       "lifelines==0.30.0",
       "numpy==1.26.4",

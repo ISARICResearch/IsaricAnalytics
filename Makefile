@@ -131,3 +131,7 @@ test: clean
 	                               --tb=native \
 	                               --verbosity=3 \
 	                               tests/unit
+
+doctest: clean
+	@echo "$(PACKAGE_NAME)[$(BRANCH)@$(HEAD)]: Running Python doctests"
+	PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/*.py
