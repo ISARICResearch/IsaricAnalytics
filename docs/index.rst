@@ -45,19 +45,12 @@ See the linked pages below for more information on how to use the libraries or t
    :maxdepth: 1
    :caption: Contents:
 
-<<<<<<< HEAD
    sources/redcap-data
+   sources/isaric-data-schema
    sources/analytics
    sources/visualisation/index
    sources/citing-isaric-analytics
    sources/api-reference
-=======
-   sources/api-reference
-   sources/data-extraction
-   sources/data-analytics
-   sources/data-visualisation
-   sources/isaric-data-schema
->>>>>>> 8b7b342 (New ISARIC data schema lib + refreshed Sphinx docs)
    sources/contributing
 
 Indices and tables
