@@ -52,10 +52,6 @@ If you're interested in contributing please look at the :ref:`contributing guide
    :maxdepth: 1
    :caption: Contents:
 
-   sources/data-extraction
-   sources/data-analytics
-   sources/data-visualisation
-   sources/isaric-data-schema
    sources/api-reference
    sources/contributing
 
