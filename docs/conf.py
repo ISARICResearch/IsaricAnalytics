@@ -10,6 +10,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
 from datetime import datetime
 
 # -- 3rd party libraries --
+# import plotly.io as pio
+# pio.renderers.default = "sphinx_gallery"
+
 from docutils import nodes
 from sphinx.addnodes import pending_xref
 from sphinx.application import Sphinx
@@ -85,7 +88,7 @@ extensions = [
     "nb2plots",
     "numpydoc",
     "sphinx.ext.autodoc",
-    # "sphinx_gallery.gen_gallery",
+    "sphinx_gallery.gen_gallery",
     #'sphinx.ext.autosectionlabel',
     #'sphinx.ext.autosummary',
     "sphinx.ext.coverage",
@@ -103,6 +106,11 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
 ]
+
+#
+# sphinx_gallery_conf = {
+#    "image_scrapers": ("matplotlib", "plotly.io._sg_scraper.plotly_sg_scraper")
+# }
 
 # Autodoc settings -
 #     For more on all available autodoc defaults see

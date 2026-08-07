@@ -101,6 +101,7 @@ docs = [
     "furo",
     "numpydoc",
     "nb2plots",
+    "orca",
     "jupyter-sphinx"
 ]
 
