@@ -4,7 +4,7 @@
 Data Extraction & Cleaning
 ==========================
 
-A guide to extracting and cleaning raw data from `REDCap <https://projectredcap.org>`_ project databases, and some related utilities, using :py:mod:`isaricanalytics.redcap_data` and :py:mod:`isaricanalytics.utils`.
+A guide to extracting and cleaning raw data from `REDCap <https://projectredcap.org>`_ project databases or custom data sources, using :py:mod:`isaricanalytics.redcap_data`, :py:mod:`isaricanalytics.utils` and :py:mod:`isaricanalytics.isaric_transformations`.
 
 .. todo::
 
