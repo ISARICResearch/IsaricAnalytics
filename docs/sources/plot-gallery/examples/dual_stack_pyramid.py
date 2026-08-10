@@ -505,8 +505,6 @@ Dual Stack Pyramid Plots
 # * ``"left_side"`` - a boolean to indicate where the value should appear, with ``1`` indicating left and ``0`` indicating right
 #
 # The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps required to generate the plot, where males are on the left and females are on the right, using the :py:func:`~isaricanalytics.visualisation.fig_dual_stack_pyramid` function:
-#
-# Here are the Python steps you need to generate the plot.
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_dual_stack_pyramid
 # Load the CSV data from a string buffer

@@ -39,9 +39,7 @@ Frequency Plots
 # * ``"short_label"`` - the description column of the table
 # * ``"proportion"`` - the frequency column of the table
 #
-# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
-#
-# Here are the Python steps you need to generate the plot.
+# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_frequency_chart
 # Load the CSV data from a string buffer
