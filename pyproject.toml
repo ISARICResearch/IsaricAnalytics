@@ -122,7 +122,8 @@ lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import so
 exclude = [
     ".venv",
     "build",
-    "dist"
+    "dist",
+    "docs/sources/plot-gallery"
 ]
 
 [tool.ruff.format]

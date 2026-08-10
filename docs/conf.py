@@ -11,6 +11,7 @@ from datetime import datetime
 
 # -- 3rd party libraries --
 import plotly.io as pio
+
 pio.renderers.default = "sphinx_gallery"
 
 from docutils import nodes
@@ -115,9 +116,9 @@ extensions = [
 
 # Sphinx gallery conf.
 sphinx_gallery_conf = {
-     "examples_dirs": "sources/plot-gallery/examples",   # path to your example scripts
-     "gallery_dirs": "sources/plot-gallery/auto_examples",  # path to where to save gallery generated output
-     "image_scrapers": ("matplotlib", "plotly.io._sg_scraper.plotly_sg_scraper")
+    "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
+    "gallery_dirs": "sources/plot-gallery/auto_examples",  # path to where to save gallery generated output
+    "image_scrapers": ("matplotlib", "plotly.io._sg_scraper.plotly_sg_scraper"),
 }
 
 
