@@ -1,14 +1,14 @@
 """
 Sunburst Plots
 ==============
-Sunburst Plot of Synthetic Patient Enrolment Data Organised by Site and Country
 """
 
 # %%
 # Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 #
+# The plot below was generated using a synthetic dataset of patient enrolment data organised by site and country.
 #
-# The synthetic dataset used for this plot is given as a table (which can easily be converted to a CSV).
+# The synthetic dataset is given as a table (which can easily be converted to a CSV).
 #
 # .. list-table:: Synthetic dataset for patient enrolment at clinical sites filtered by country
 #   :header-rows: 1
@@ -64,7 +64,8 @@ Sunburst Plot of Synthetic Patient Enrolment Data Organised by Site and Country
 #     - 102
 #
 # The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
-
+#
+# Here are the Python steps you need to generate the plot.
 import io
 
 import pandas as pd
@@ -100,7 +101,7 @@ fig = fig_sunburst(
     path=["Country", "Site"],
     values="SubjectID",
 )
-fig.update_layout(height=600)
+fig.update_layout(autosize=True)
 fig
 
 # %%
@@ -108,11 +109,12 @@ fig
 #
 # .. note::
 #
-#   Any dataframe or CSV column names, or dictionary field labels, in the
-#   example above that are not specific to the dataset must be as given,
-#   otherwise the function may throw an exception or return an incorrect figure.
+#    Any dataframe or CSV column names, or dictionary field labels, in the
+#    example above that are not specific to the dataset must be as given,
+#    otherwise the function may throw an exception or return an incorrect figure.
 #
-#   Also, the ``height`` parameter, which is optional with a default of ``430``,
-#   can be used to customise the plot height. Refer to the
-#   :py:func:`~isaricanalytics.visualisation.fig_sunburst` function
-#   docstring for more information.
+#    The figure height and width parameters can be set using the ``height``
+#    and ``width`` parameters, but it may be more convenient to let Plotly handle
+#    this using the figure layout `autosize <https://plotly.com/python/reference/layout/#layout-autosize>`_
+#    parameter. Refer to the :py:func:`~isaricanalytics.visualisation.fig_sunburst`
+#    function docstring for more information.
