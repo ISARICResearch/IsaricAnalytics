@@ -6,7 +6,7 @@ Sunburst Plot of Synthetic Patient Enrolment Data Organised by Site and Country
 
 # %%
 # Sunburst plots, also known as `ring charts <https://en.wikipedia.org/wiki/Pie_chart#Ring_chart,_sunburst_chart,_and_multilevel_pie_chart>`_, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
-# 
+#
 #
 # The synthetic dataset used for this plot is given as a table (which can easily be converted to a CSV).
 #
@@ -65,13 +65,16 @@ Sunburst Plot of Synthetic Patient Enrolment Data Organised by Site and Country
 #
 # The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
 
+import io
 
-import io, pandas as pd
+import pandas as pd
+
 from isaricanalytics.visualisation import fig_sunburst
 
 # Load the CSV data from a string buffer
-data = pd.read_csv(io.StringIO(
-   """Site,Country,SubjectID\n
+data = pd.read_csv(
+    io.StringIO(
+        """Site,Country,SubjectID\n
       0,COL,21\n2,COL,25\n
       3,GBR,199\n
       5,CAN,31\n
@@ -86,14 +89,16 @@ data = pd.read_csv(io.StringIO(
       15,KEN,15\n
       16,KEN,1\n
       18,NLD,102\n""",
-), skipinitialspace=True)
+    ),
+    skipinitialspace=True,
+)
 
 # Create and display the figure
 fig = fig_sunburst(
-   data,
-   title="Sunburst Plot of Synthetic Patient Enrolment by Site",
-   path=["Country", "Site"],
-   values="SubjectID",
+    data,
+    title="Sunburst Plot of Synthetic Patient Enrolment by Site",
+    path=["Country", "Site"],
+    values="SubjectID",
 )
 fig.update_layout(height=600)
 fig
