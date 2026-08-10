@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
 from datetime import datetime
 
 # -- 3rd party libraries --
-# import plotly.io as pio
-# pio.renderers.default = "sphinx_gallery"
+import plotly.io as pio
+pio.renderers.default = "sphinx_gallery"
 
 from docutils import nodes
 from sphinx.addnodes import pending_xref
@@ -56,14 +56,17 @@ release = __version__
 # Define master TOC
 master_doc = "index"
 
+
 # Native docs language
 language = "en"
+
 
 # Minimum required version of Sphinx - not required
 # needs_sphinx >= '7.2.5'
 
 # Set primary domain to null
 primary_domain = None
+
 
 # Global substitutions
 rst_epilog = f"""
@@ -76,8 +79,10 @@ rst_epilog = f"""
 .. |github_release_target|  replace:: https://github.com/ISARICResearch/ISARICAnalytics/releases/tag/{release}
 """
 
+
 # Publish author(s)
 show_authors = True
+
 
 # Sphinx extensions: not all of these are used or required, but they are still
 # listed here if requirements change.
@@ -107,10 +112,14 @@ extensions = [
     "sphinx_design",
 ]
 
-#
-# sphinx_gallery_conf = {
-#    "image_scrapers": ("matplotlib", "plotly.io._sg_scraper.plotly_sg_scraper")
-# }
+
+# Sphinx gallery conf.
+sphinx_gallery_conf = {
+     "examples_dirs": "sources/plot-gallery/examples",   # path to your example scripts
+     "gallery_dirs": "sources/plot-gallery/auto_examples",  # path to where to save gallery generated output
+     "image_scrapers": ("matplotlib", "plotly.io._sg_scraper.plotly_sg_scraper")
+}
+
 
 # Autodoc settings -
 #     For more on all available autodoc defaults see
@@ -122,8 +131,10 @@ autodoc_default_options = {
     "special-members": "",
 }
 
+
 # Sphinx autodoc autosummary settings
 autosummary_generate = False
+
 
 # Numpydoc settings
 numpydoc_show_class_members = True
@@ -131,6 +142,7 @@ numpydoc_show_inherited_class_members = False
 numpydoc_class_members_toctree = False
 numpydoc_attributes_as_param_list = False
 numpydoc_xref_param_type = False
+
 
 # Intersphinx mappings to reference external documentation domains - no
 # current references, but these have been listed in case relevant new
@@ -178,11 +190,14 @@ def setup(app: Sphinx) -> None:
 # Static template paths
 templates_path = ["_templates"]
 
+
 # The suffix of source filenames.
 source_suffix = ".rst"
 
+
 # The encoding of source files.
 source_encoding = "utf-8"
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -193,16 +208,20 @@ exclude_patterns = [
     ".DS_Store",
 ]
 
+
 # The name of the Pygments (syntax highlighting) style to use.
 # pygments_style = "sphinx"
+
 
 # A list of prefixes that are ignored when creating the module index.
 # (new in Sphinx 0.6)
 modindex_common_prefix = ["isaricanalytics."]
 
+
 # Not currently required but will be useful later once all public
 # library docstrings are complete, with doctest examples
 doctest_global_setup = "import isaricanalytics"
+
 
 # If this is True, the ``todo`` and ``todolist`` extension directives
 # produce output, else they produce nothing. The default is ``False``.
@@ -228,12 +247,14 @@ html_context = {
     "release_target": f"https://github.com/ISARICResearch/ISARICAnalytics/releases/tag/{release}",
 }
 
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # General (non-theme) HTML output options
 # Custom deployment domain required here
 # html_baseurl = ''
+
 
 # HTML theme options
 html_theme = "furo"
@@ -293,6 +314,7 @@ html_theme_options = {
     ],
 }
 
+
 # Override the default sidebar listing by commenting out the ethical ads sidebar.
 html_sidebars = {
     "**": [
@@ -305,28 +327,35 @@ html_sidebars = {
     ]
 }
 
+
 # Force pygments style in dark mode back to the light variant
 pygments_dark_style = "tango"
 
 html_logo = "_static/isaric-logo.png"
 
+
 # Relative path (from the ``docs`` folder) to the static files folder - so
 # ``_static`` should be one level below ``docs``.
 html_static_path = ["_static"]
+
 
 # Custom CSS file(s)
 html_css_files = [
     "css/custom.css",
 ]
 
+
 # Timestamp format for the last page updated time
 html_last_updated_fmt = "%b %d, %Y"
+
 
 # Show link to ReST source on HTML pages
 html_show_sourcelink = True
 
+
 # If true, the reST sources are included in the HTML build as _sources/<name>.
 html_copy_source = True
+
 
 # Output file base name for HTML help builder - use the project name
 htmlhelp_basename = "isaricanalytics"
