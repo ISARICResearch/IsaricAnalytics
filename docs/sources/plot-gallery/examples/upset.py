@@ -110,9 +110,7 @@ Upset Plots
 # * ``"label"`` - a string form of the descriptive labels associated with the complications, e.g. ``"('Shock ', 'Meningitis', 'Acute renal injury / acute renal failure', 'Cardiac arrest', 'Focal neurological signs')"``
 # * ``"count"`` - the complication intersection count
 #
-# The data source(s) can be in any appropriate form, such as, typically, CSVs. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_upset` function:
-#
-# Here are the Python steps you need to generate the plot.
+# The data source(s) can be in any appropriate form, such as, typically, CSVs. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_upset` function:
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_upset
 # Load the CSV data from a string buffer

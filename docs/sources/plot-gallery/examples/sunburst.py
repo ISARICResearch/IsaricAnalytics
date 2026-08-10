@@ -63,9 +63,7 @@ Sunburst Plots
 #     - NLD
 #     - 102
 #
-# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot above using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
-#
-# Here are the Python steps you need to generate the plot.
+# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
 import io
 
 import pandas as pd

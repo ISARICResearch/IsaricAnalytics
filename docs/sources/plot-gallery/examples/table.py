@@ -50,9 +50,7 @@ Table Plots
 #      - 70 (24.1%, N=291)
 #      - 107 (26.1%, N=410)
 #
-# The :py:func:`~isaricanalytics.visualisation.fig_table` function does not expect a dataframe in any particular format, except that it should correspond to the kind of table shown in the example above. If the cell values require **formatting** then formatting should be applied either to the dataframe or the source file from which it was loaded.
-#
-# Here are the Python steps you need to generate the plot.
+# The :py:func:`~isaricanalytics.visualisation.fig_table` function does not expect a dataframe in any particular format, except that it should correspond to the kind of table shown in the example above. If the cell values require **formatting** then formatting should be applied either to the dataframe or the source file from which it was loaded. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_table` function:
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_table
 # Load the CSV data from a string buffer

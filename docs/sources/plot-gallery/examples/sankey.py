@@ -40,8 +40,6 @@ Sankey Plots
 #      - 50
 #
 # The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
-#
-# Here are the Python steps you need to generate the plot.
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_sankey
 # Load the CSV data from a string buffer
