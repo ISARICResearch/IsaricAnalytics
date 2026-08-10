@@ -96,7 +96,7 @@ data = pd.read_csv(
 # Create and display the figure
 fig = fig_sunburst(
     data,
-    title="Sunburst Plot of Synthetic Patient Enrolment by Site",
+    title="Sunburst Plot of Synthetic Patient Enrolment Data Organised by Site and Country",
     path=["Country", "Site"],
     values="SubjectID",
 )
