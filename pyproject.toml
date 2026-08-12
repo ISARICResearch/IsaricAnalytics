@@ -16,6 +16,7 @@ authors = [
     { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
     { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
     { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
+    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
 ]
 
 maintainers = [
@@ -63,6 +64,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+
+docs = [
+    "Sphinx",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-gallery",
+    "sphinx-design",
+    "myst-parser",
+    "pylint",
+    "furo",
+    "numpydoc",
+    "nb2plots",
+    "jupyter-sphinx"
+]
+
+[dependency-groups]
 pre-commit = [
     "pre-commit",
 ]
