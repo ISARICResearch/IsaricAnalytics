@@ -63,6 +63,22 @@ dependencies = [
     "statsmodels>=0.14.1",
 ]
 
+[project.optional-dependencies]
+
+docs = [
+    "Sphinx",
+    "sphinx-autobuild",
+    "sphinx-copybutton",
+    "sphinx-gallery",
+    "sphinx-design",
+    "myst-parser",
+    "pylint",
+    "furo",
+    "numpydoc",
+    "nb2plots",
+    "jupyter-sphinx"
+]
+
 [dependency-groups]
 pre-commit = [
     "pre-commit",
