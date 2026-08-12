@@ -36,7 +36,7 @@ jobs:
 
       - name: Run doctests (example snippets in docstrings)
         run: |
-            PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/*.py
+            PYTHONPATH="isaricanalytics" uv run python3 -m doctest -v isaricanalytics/*.py
 
       - name: Upload coverage.xml artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
