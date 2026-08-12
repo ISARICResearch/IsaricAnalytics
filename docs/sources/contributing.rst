@@ -53,7 +53,13 @@ Set up a dedicated development environment that is appropriate for the project, 
 
 The tools used to set up the development environment and manage dependencies are entirely at the contributor's discretion. For managing dependencies something as simple as `pip <https://pip.pypa.io/en/>`_ could be sufficient, but something more advanced such as `Astral uv <https://docs.astral.sh/uv/>`_ is recommended.
 
-The development dependencies are specified as named groups of dependencies in the ``dependency-groups`` section of the project TOML, each group listing the (third-party) dependencies specific to some aspect of project development, such as pre-commit hooks, testing, or documentation. Specific dependency groups can be installed by name, for example, test dependencies with :program:`pip` using:
+If using :program:`uv` note that it creates, on installation, its own virtual environment in a subfolder in the working directory named :file:`.venv`, and applies all dependency changes inside :file:`.venv`. If a different, pre-existing virtual environment is preferred when using :program:`uv` then this can be done by setting the `UV_PROJECT_ENVIRONMENT <https://docs.astral.sh/uv/reference/environment/#uv_project_environment>`_ environment variable to the pre-existing environment folder path:
+
+.. code:: shell
+
+   $ export UV_PROJECT_ENVIRONMENT="/path/to/your/preexisting/env"
+
+The project's development dependencies are specified as named groups of dependencies in the ``dependency-groups`` section of the project TOML, each group listing the (third-party) dependencies specific to some aspect of project development, such as pre-commit hooks, testing, or documentation. Specific dependency groups can be installed by name, for example, test dependencies with :program:`pip` using:
 
 .. code:: shell
 
@@ -79,15 +85,7 @@ or the :program:`uv` command:
 
    uv sync --verbose --all-groups
 
-Note that by default :program:`uv` creates, on installation, its own virtual environment in a subfolder in the working directory named :file:`.venv`, and applies all dependency changes inside :file:`.venv`. If a different, pre-existing virtual environment is preferred when using :program:`uv` then this can be done by setting the `UV_PROJECT_ENVIRONMENT <https://docs.astral.sh/uv/reference/environment/#uv_project_environment>`_ environment variable to the pre-existing environment folder path. Below is an example of how to do this with the :command:`uv sync` command and the option not to install the project itself:
-
-.. code:: shell
-
-   # One-time command to set the UV project environment variable.
-   $ export UV_PROJECT_ENVIRONMENT="/path/to/your/preexisting/env"
-   #
-   # Sync the environment with all the project development deps, excluding the project itself.
-   $ uv sync --verbose --all-groups --no-install-project
+As noted above, if using :command:`uv sync` the project itself will be installed in the environment - if this is not wanted add the ``no-install-project`` flag.
 
 .. _pr-workflow:
 
