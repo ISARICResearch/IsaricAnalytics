@@ -117,8 +117,8 @@ extensions = [
 # Sphinx gallery conf.
 sphinx_gallery_conf = {
     "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
-    "gallery_dirs": "sources/plot-gallery/auto_examples",  # path to where to save gallery generated output
-    "image_scrapers": ("plotly.io._sg_scraper.plotly_sg_scraper",),
+    "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
+    "image_scrapers": ("plotly",),
 }
 
 

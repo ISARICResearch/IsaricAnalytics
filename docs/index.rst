@@ -54,7 +54,7 @@ See the linked pages below for more information on how to use the libraries or t
 
    sources/redcap-data
    sources/analytics
-   sources/plot-gallery/auto_examples/index
+   sources/visualisation/index
    sources/api-reference
    sources/contributing
 

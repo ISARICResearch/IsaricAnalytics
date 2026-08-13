@@ -57,7 +57,7 @@ dependencies = [
     "lifelines==0.30.0",
     "numpy==1.26.4",
     "pandas==2.2.1",
-    "plotly==6.1.1",
+    "plotly@git+https://github.com/larsoner/plotly.py@sgthumb",
     "requests>=2.32.4",
     "scikit-learn==1.5.2",
     "scipy>=1.12.0",

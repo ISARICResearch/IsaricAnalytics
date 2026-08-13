@@ -172,4 +172,4 @@ cython_debug/
 
 docs/_build
 docs/sg_execution_times.rst
-docs/sources/plot-gallery/auto_examples
+docs/sources/visualisation/
