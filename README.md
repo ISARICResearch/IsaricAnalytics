@@ -12,6 +12,8 @@ Refer to the [documentation](https://isaricanalytics.readthedocs.io/en/latest/in
 
 ---
 
-**Note**: ISARICAnalytics is maintained by ISARIC. For inquiries, support, or collaboration, please [contact us](mailto:data@isaric.org).
+**Note**: ISARICAnalytics is maintained by ISARIC. For inquiries, support, or collaboration, please [contact us](mailto:data@isaric.org). For help with specific issues relating to access and/or version control please contact one of the maintainers below:
 
-
+- Esteban Garcia-Gallo - esteban.garcia@ndm.ox.ac.uk
+- Sandeep Murthy - sandeep.murthy@ndm.ox.ac.uk
+- Alasdair Wilson - alasdair.wilson@rse.ox.ac.uk
