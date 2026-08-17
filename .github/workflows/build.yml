@@ -19,13 +19,13 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          pip install -U pip build
+          python3 -m pip install uv
 
       - name: Build package artifacts and install wheel
         run: |
-          python -m build
+          uv build --verbose
           pip install dist/isaricanalytics*.whl
 
       - name: Test wheel import
         run: |
-          python -c "import isaricanalytics; print(isaricanalytics.__version__)"
+          python3 -c "import isaricanalytics; print(isaricanalytics.__version__)"

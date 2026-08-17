@@ -30,7 +30,7 @@ jobs:
 
       - name: Run doctests (example snippets in docstrings)
         run: |
-            PYTHONPATH="src" uv run python3 -m doctest -v isaricanalytics/*.py
+            uv run python3 -m doctest -v src/isaricanalytics/*.py
 
       - name: Run pytest with coverage
         env:
