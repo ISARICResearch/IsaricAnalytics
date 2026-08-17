@@ -30,13 +30,13 @@ jobs:
 
       - name: Run doctests (example snippets in docstrings)
         run: |
-            PYTHONPATH="isaricanalytics" uv run python3 -m doctest -v isaricanalytics/*.py
+            PYTHONPATH="src" uv run python3 -m doctest -v isaricanalytics/*.py
 
       - name: Run pytest with coverage
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
         run: |
-          uv run python3 -m pytest \
+          PYTHONPATH="src" uv run python3 -m pytest \
                          --code-highlight=yes \
                          --color=yes \
                          --verbosity=3 \

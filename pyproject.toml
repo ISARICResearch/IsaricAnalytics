@@ -106,7 +106,7 @@ docs = [
 
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["isaricanalytics*"]
 exclude = ["tests*", "examples*", "schemas*"]
 
