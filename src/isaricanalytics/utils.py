@@ -124,7 +124,7 @@ def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
 if __name__ == "__main__":  # pragma: no cover
     # Doctest the module from the project root using
     #
-    #     PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/utils.py  # noqa : E501
+    #     PYTHONPATH="src" python3 -m doctest -v isaricanalytics/*.py  # noqa : E501
     #
     import doctest
 
