@@ -119,6 +119,7 @@ sphinx_gallery_conf = {
     "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
     "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
     "image_scrapers": ("plotly",),
+    "line_numbers": True,
 }
 
 
