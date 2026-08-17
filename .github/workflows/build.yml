@@ -26,7 +26,7 @@ jobs:
       - name: Install build dependencies
         run: |
           python3 -m pip install uv
-          uv sync --verbose --active --group build --no-install-project --no-cache --refresh
+          uv sync --verbose --active --group build --no-install-project --no-cache --refresh --no-managed-python
 
       - name: Build package artifacts and install wheel
         run: |
