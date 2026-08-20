@@ -7,7 +7,7 @@ Upset Plots
 # `Upset plots <https://en.wikipedia.org/wiki/UpSet_plot>`_ can be generated using the :py:func:`~isaricanalytics.visualisation.fig_upset` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 
 # %%
-# The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of five complications and their patient counts, as well counts for the intersections (conjoint occurrences) of the complication subsets. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+# The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of five complications and their patient counts, as well as counts for the intersections (conjoint occurrences) of the complication subsets. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 #
 # The synthetic dataset is given below in the form of two tables (which can easily be converted to CSVs), the first showing the individual complications and their patient counts:
 #
