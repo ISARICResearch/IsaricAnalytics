@@ -37,7 +37,7 @@ Citation
 
 ISARICAnalytics can be cited as follows:
 
-  Edinburgh T, Garcia-Gallo E, Peres I, Gusberti T, Raffaini L, Murthy SR, Wilson A. IsaricAnalytics (v0.2.0). *ISARIC* 2026. https://github.com/ISARICResearch/IsaricAnalytics
+  Edinburgh T, Garcia-Gallo E, Peres I, Gusberti T, Raffaini L, Murthy SR, Wilson AD. IsaricAnalytics (v0.2.0). *ISARIC* 2026. https://github.com/ISARICResearch/IsaricAnalytics
 
 All contributors listed in the citation file should be included.
 

@@ -31,8 +31,9 @@ authors:
     orcid: https://orcid.org/0009-0006-8277-9389
 
   - family-names: Wilson
-    given-names: Alasdair
+    given-names: Alasdair D
     email: alasdair.wilson@dtc.ox.ac.uk
+    orcid: https://orcid.org/0000-0003-0820-8159
 
 repository-code: 'https://github.com/ISARICResearch/IsaricAnalytics'
 url: 'https://github.com/ISARICResearch/IsaricAnalytics'
