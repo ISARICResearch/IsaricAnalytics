@@ -9,7 +9,7 @@ Upset Plots
 # %%
 # The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of five complications and their patient counts, as well counts for the intersections (conjoint occurrences) of the complication subsets. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
 #
-# The sythetic dataset is given below in the form of two tables (which can easily be converted to CSVs), the first showing the individual complications and their patient counts:
+# The synthetic dataset is given below in the form of two tables (which can easily be converted to CSVs), the first showing the individual complications and their patient counts:
 #
 # .. list-table:: Synthetic dataset of Dengue patient treatment complications - patient counts
 #    :header-rows: 1
