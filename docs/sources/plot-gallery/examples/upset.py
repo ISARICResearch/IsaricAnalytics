@@ -99,7 +99,7 @@ Upset Plots
 #
 # The :py:func:`~isaricanalytics.visualisation.fig_upset` function expects these tables in the form of **a pair** of two dataframes, the first dataframe containing the complication counts data with the following columns (in no particular order):
 #
-# * ``"index"`` - a label internal to the function denoting the complication, and prefixed with ``"compl"``, e.g. ``"compl_shock"`` for shock, ``"compl_meningitis"`` for meningitis, ``"compl_acuterenal"`` for acute renal injury / failre etc.
+# * ``"index"`` - a label internal to the function denoting the complication, and prefixed with ``"compl"``, e.g. ``"compl_shock"`` for shock, ``"compl_meningitis"`` for meningitis, ``"compl_acuterenal"`` for acute renal injury / failure etc.
 # * ``"label"`` - a descriptive label for the complication
 # * ``"short_label"`` - a more concise descriptive label for the complication, which could be the same as the value of ``"label"``
 # * ``"count"`` - the complication count
