@@ -1,0 +1,9 @@
+source,target,value
+Community,Hospitalised,1200
+Hospitalised,ICU,300
+Hospitalised,Ward,900
+ICU,Death,80
+ICU,Recovered,220
+Ward,Recovered,850
+Ward,Death,50
+
