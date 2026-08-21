@@ -122,10 +122,13 @@ sphinx_gallery_conf = {
     "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
     "within_subsection_order": "ExampleTitleSortKey",  # Sort the plot/figure panels by title
     "image_scrapers": ("plotly",),  # Only Plotly SG scraper required
-    "thumbnail_size": (600, 400),  # This doesn't seem to have a visible effect, but it's the desired size.
+    "thumbnail_size": (
+        600,
+        400,
+    ),  # This doesn't seem to have a visible effect, but it's the desired size.
     "line_numbers": True,  # Controls line numbering in code blocks on rendered figure HTMLs - should
-                           # actually start from 1, but this cannot be overridden in Sphinx Gallery;
-                           # have raised this as an issue https://github.com/sphinx-gallery/sphinx-gallery/issues/1636
+    # actually start from 1, but this cannot be overridden in Sphinx Gallery;
+    # have raised this as an issue https://github.com/sphinx-gallery/sphinx-gallery/issues/1636
 }
 
 
