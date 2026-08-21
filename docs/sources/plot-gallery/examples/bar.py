@@ -30,7 +30,7 @@ Bar Charts
 #     - 100
 #
 # Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_bar_chart` function:
-import io, pandas as pd
+import pandas as pd
 from isaricanalytics.visualisation import fig_bar_chart
 
 # Load the CSV
@@ -39,7 +39,7 @@ data = pd.read_csv("./csv/bar.csv")
 # Create and display the figure
 fig = fig_bar_chart(
     data,
-    title="Bar Chart of Cumulative Patient Enrolment at a Clinical Site between January-June 2026",
+    title="Bar Chart of Cumulative Patient Enrolment",
     xlabel="Month-Year",
     ylabel="Cumulative Patients Enrolled",
     index_column="month_year"

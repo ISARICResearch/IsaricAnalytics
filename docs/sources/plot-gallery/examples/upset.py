@@ -111,7 +111,7 @@ Upset Plots
 # * ``"count"`` - the complication intersection count
 #
 # Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_upset` function:
-import io, pandas as pd
+import pandas as pd
 from isaricanalytics.visualisation import fig_upset
 
 # Load the CSV data from a string buffer

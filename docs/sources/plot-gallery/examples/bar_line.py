@@ -45,7 +45,7 @@ Bar Line Charts
 # * ``"line_column"`` - the column representing the line values, which should be labelled with ``"ylabel_right"``
 #
 # Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_bar_line_chart` function:
-import io, pandas as pd
+import pandas as pd
 from isaricanalytics.visualisation import fig_bar_line_chart
 
 # Load the CSV
@@ -54,7 +54,7 @@ data = pd.read_csv("./csv/bar_line.csv")
 # Create and display the figure
 fig = fig_bar_line_chart(
     data,
-    title="Bar-Line Chart of Monthly and Cumulative Patient Enrolment at a Clinical Site between January-June 2026",
+    title="Bar-Line Chart of Monthly and Cumulative Patient Enrolment",
     xlabel="Month-Year",
     ylabel_left="Cumulative Patients Enrolled",
     ylabel_right="Patients Enrolled",

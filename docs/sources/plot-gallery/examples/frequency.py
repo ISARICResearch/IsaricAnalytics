@@ -40,7 +40,7 @@ Frequency Plots
 # * ``"proportion"`` - the frequency column of the table
 #
 # Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
-import io, pandas as pd
+import pandas as pd
 from isaricanalytics.visualisation import fig_frequency_chart
 
 # Load the CSV
