@@ -6,11 +6,11 @@ Frequency Plots
 # %%
 # Frequency plots/charts refer to `stacked horizontal bar charts <https://en.wikipedia.org/wiki/Bar_chart#Stacked_bar_chart>`_ which show frequency distribution of data across labelled and segmented subgroups, with segment widths representing the proportion or frequency of the subgroup. These can be generated using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 #
-# The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of ten patients and five complications. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+# The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of ten patients and five complications.
 #
-# The synthetic dataset is given below as a table (which can easily be converted to a CSV).
+# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/frequency.csv` file).
 #
-# .. list-table:: Synthetic dataset for Dengue patient treatment complications
+# .. list-table:: Table of Dengue patient treatment complications
 #    :header-rows: 1
 #    :widths: auto
 #
@@ -39,19 +39,13 @@ Frequency Plots
 # * ``"short_label"`` - the description column of the table
 # * ``"proportion"`` - the frequency column of the table
 #
-# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
+# Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_frequency_chart` function:
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_frequency_chart
-# Load the CSV data from a string buffer
-data = pd.read_csv(io.StringIO(
-   """label,short_label,proportion\n
-      Dengue Haemorrhagic Fever,DHF,0.4\n
-      Dengue Shock Syndrome,DSS,0.2\n
-      Thrombocytopenia,Low Platelets,0.6\n
-      Hepatomegaly,Hepatomegaly,0.3\n
-      Plasma Leakage,Plasma Leakage,0.1\n
-   """
-), skipinitialspace=True)
+
+# Load the CSV
+data = pd.read_csv("./csv/frequency.csv")
+
 # Create and display the figure
 fig = fig_frequency_chart(
    data,
@@ -61,7 +55,6 @@ fig.update_layout(autosize=True)
 fig
 
 # %%
-# You should see the plot appearing as given above.
 #
 # .. note::
 #

@@ -118,7 +118,9 @@ extensions = [
 sphinx_gallery_conf = {
     "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
     "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
+    "within_subsection_order": "ExampleTitleSortKey",
     "image_scrapers": ("plotly",),
+    "thumbnail_size": (600, 400),
     "line_numbers": True,
 }
 

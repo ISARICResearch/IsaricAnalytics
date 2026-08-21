@@ -6,11 +6,11 @@ Sankey Plots
 # %%
 # Sankey plots (often called `Sankey diagrams <https://en.wikipedia.org/wiki/Sankey_diagram>`_) can be generated using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 #
-# The plot below was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised. **Click** the image to view the full interactive and fully annotated Plotly Go figure.
+# The plot below was generated using a synthetic dataset for a hypothetical community of 1200 people who are hospitalised.
 #
-# The synthetic dataset is given as a table (which can easily be converted to a CSV).
+# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/sankey.csv` file).
 #
-# .. list-table:: Synthetic dataset for a disease outbreak response in a small community
+# .. list-table:: Disease outbreak response in a small community
 #    :widths: 33 33 33
 #    :header-rows: 1
 #
@@ -39,20 +39,12 @@ Sankey Plots
 #      - Death
 #      - 50
 #
-# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
+# Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sankey` function:
 import io, pandas as pd
 from isaricanalytics.visualisation import fig_sankey
-# Load the CSV data from a string buffer
-data = pd.read_csv(io.StringIO(
-   """source,target,value\n
-      Community,Hospitalised,1200\n
-      Hospitalised,ICU,300\n
-      Hospitalised,Ward,900\n
-      ICU,Death,80\n
-      ICU,Recovered,220\n
-      Ward,Recovered,850\n
-      Ward,Death,50"""
-), skipinitialspace=True)
+
+# Load the CSV
+data = pd.read_csv("./csv/sankey.csv")
 
 # Create the labels, nodes, flows/arrows and annotations
 labels = pd.Series(pd.unique(data[["source", "target"]].values.ravel()))
@@ -84,7 +76,6 @@ fig.update_layout(autosize=True)
 fig
 
 # %%
-# You should see the plot appearing as given above.
 #
 # .. note::
 #

@@ -8,15 +8,15 @@ Sunburst Plots
 #
 # The plot below was generated using a synthetic dataset of patient enrolment data organised by site and country.
 #
-# The synthetic dataset is given as a table (which can easily be converted to a CSV).
+# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/sunburst.csv` file).
 #
-# .. list-table:: Synthetic dataset for patient enrolment at clinical sites filtered by country
+# .. list-table:: Patient enrolment at clinical sites by country and site
 #   :header-rows: 1
 #   :widths: auto
 #
-#   * - Site
+#   * - Site ID
 #     - Country
-#     - Subject Id
+#     - Patient Enrolment Count
 #   * - 0
 #     - COL
 #     - 21
@@ -63,34 +63,12 @@ Sunburst Plots
 #     - NLD
 #     - 102
 #
-# The data source can be in any appropriate form, such as, typically, a CSV. Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
-import io
-
-import pandas as pd
-
+# Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
+import io, pandas as pd
 from isaricanalytics.visualisation import fig_sunburst
 
-# Load the CSV data from a string buffer
-data = pd.read_csv(
-    io.StringIO(
-        """Site,Country,SubjectID\n
-      0,COL,21\n2,COL,25\n
-      3,GBR,199\n
-      5,CAN,31\n
-      6,BRA,156\n
-      7,BRA,27\n
-      8,BRA,8\n
-      9,FRA,174\n
-      10,POL,89\n
-      11,POL,30\n
-      13,RWA,121\n
-      14,KEN,1\n
-      15,KEN,15\n
-      16,KEN,1\n
-      18,NLD,102\n""",
-    ),
-    skipinitialspace=True,
-)
+# Load the CSV
+data = pd.read_csv("./csv/sunburst.csv")
 
 # Create and display the figure
 fig = fig_sunburst(
@@ -103,7 +81,6 @@ fig.update_layout(autosize=True)
 fig
 
 # %%
-# You should see the plot appearing as given above.
 #
 # .. note::
 #
