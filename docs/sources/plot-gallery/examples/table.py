@@ -1,10 +1,10 @@
 """
-Table Plots
-===========
+Descriptive Tables
+==================
 """
 
 # %%
-# Table plots are simply plots of descriptive tables, with optional formatting, and can be generated using the :py:func:`~isaricanalytics.visualisation.fig_table` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+# Descriptive tables, with optional formatting, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_table` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 #
 # The plot below was generated using a synthetic dataset of selected patient treatment complications for Dengue.
 #
