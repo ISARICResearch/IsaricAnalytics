@@ -4,7 +4,7 @@ Bar Line Charts
 """
 
 # %%
-# Bar-line charts, which combine `line charts <https://en.wikipedia.org/wiki/Line_chart>`_, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_bar_line_chart` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
+# Bar-line charts, which combine `bar charts <https://en.wikipedia.org/wiki/Bar_chart>`_ and `line charts <https://en.wikipedia.org/wiki/Line_chart>`_, can be generated using the :py:func:`~isaricanalytics.visualisation.fig_bar_line_chart` function, which returns a :py:class:`Plotly Go Figure <plotly.graph_objs._figure.Figure>` object.
 #
 # The plot below was generated using a synthetic dataset of monthly and cumulative patient enrolment data for a clinical site.
 #
@@ -36,7 +36,7 @@ Bar Line Charts
 #     - 5
 #     - 100
 #
-# In addition to the data(frame) itself, note some of the other key columns required :py:func:`~isaricanalytics.visualisation.fig_bar_line` function:
+# In addition to the data(frame) itself, note some of the other key columns required for the :py:func:`~isaricanalytics.visualisation.fig_bar_line` function:
 #
 # * ``"xlabel"`` - the ``x``-axis label
 # * ``"ylabel_left"`` - the left ``y``-axis label, which should correspond to the bar column (see below)
