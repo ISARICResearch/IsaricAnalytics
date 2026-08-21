@@ -40,7 +40,8 @@ from isaricanalytics import __version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 author = "ISARIC"
-copyright = f"ISARIC, {datetime.now().year}"
+year = datetime.now().year
+copyright = f"ISARIC, {year}"
 description = """
               Data analysis toolkit to support fast analysis of clinical data
               during emerging infectious disease outbreaks."""
@@ -72,6 +73,7 @@ primary_domain = None
 # Global substitutions
 rst_epilog = f"""
 .. |author|                 replace:: **{author}**
+.. |year|                   replace:: **{year}**
 .. |copyright|              replace:: **{copyright}**
 .. |docs_url|               replace:: ''
 .. |project|                replace:: **{project}**
@@ -118,10 +120,12 @@ extensions = [
 sphinx_gallery_conf = {
     "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
     "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
-    "within_subsection_order": "ExampleTitleSortKey",
-    "image_scrapers": ("plotly",),
-    "thumbnail_size": (600, 400),
-    "line_numbers": True,
+    "within_subsection_order": "ExampleTitleSortKey",  # Sort the plot/figure panels by title
+    "image_scrapers": ("plotly",),  # Only Plotly SG scraper required
+    "thumbnail_size": (600, 400),  # This doesn't seem to have a visible effect, but it's the desired size.
+    "line_numbers": True,  # Controls line numbering in code blocks on rendered figure HTMLs - should
+                           # actually start from 1, but this cannot be overridden in Sphinx Gallery;
+                           # have raised this as an issue https://github.com/sphinx-gallery/sphinx-gallery/issues/1636
 }
 
 
@@ -319,7 +323,8 @@ html_theme_options = {
 }
 
 
-# Override the default sidebar listing by commenting out the ethical ads sidebar.
+# Make sidebar listing and composition explicitly clear - try to remove ethical
+# ads sidebar, but seems to have no effect
 html_sidebars = {
     "**": [
         "sidebar/scroll-start.html",

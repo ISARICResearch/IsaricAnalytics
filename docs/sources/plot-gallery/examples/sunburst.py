@@ -64,7 +64,7 @@ Sunburst Plots
 #     - 102
 #
 # Here are the Python steps you need to generate the plot using the :py:func:`~isaricanalytics.visualisation.fig_sunburst` function:
-import io, pandas as pd
+import pandas as pd
 from isaricanalytics.visualisation import fig_sunburst
 
 # Load the CSV

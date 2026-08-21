@@ -24,4 +24,4 @@ repos:
       - id: trailing-whitespace      # removes trailing spaces
       - id: check-added-large-files  # blocks large files from being committed
         exclude: |
-          ^docs/_static/github-issues.png|^docs/_static/plot_gallery/.*\\.html$
+          ^docs/_static/github-issues.png$
