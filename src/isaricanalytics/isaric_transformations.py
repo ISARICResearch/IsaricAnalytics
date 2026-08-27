@@ -133,7 +133,7 @@ def values_strip_missing(field: str) -> str | None:
 if __name__ == "__main__":  # pragma: no cover
     # Doctest the module from the project root using
     #
-    #     PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/isaric_transformations.py  # noqa : E501
+    #     python3 -m doctest -v src/isaricanalytics/isaric_transformations.py  # noqa : E501
     #
     import doctest
 
