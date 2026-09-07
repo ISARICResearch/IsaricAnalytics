@@ -10,6 +10,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
 from datetime import datetime
 
 # -- 3rd party libraries --
+import plotly.io as pio
+
+pio.renderers.default = "sphinx_gallery_png"
+
 from docutils import nodes
 from sphinx.addnodes import pending_xref
 from sphinx.application import Sphinx
@@ -36,7 +40,8 @@ from isaricanalytics import __version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 author = "ISARIC"
-copyright = f"ISARIC, {datetime.now().year}"
+year = datetime.now().year
+copyright = f"ISARIC, {year}"
 description = """
               Data analysis toolkit to support fast analysis of clinical data
               during emerging infectious disease outbreaks."""
@@ -53,8 +58,10 @@ release = __version__
 # Define master TOC
 master_doc = "index"
 
+
 # Native docs language
 language = "en"
+
 
 # Minimum required version of Sphinx - not required
 # needs_sphinx >= '7.2.5'
@@ -62,9 +69,11 @@ language = "en"
 # Set primary domain to null
 primary_domain = None
 
+
 # Global substitutions
 rst_epilog = f"""
 .. |author|                 replace:: **{author}**
+.. |year|                   replace:: **{year}**
 .. |copyright|              replace:: **{copyright}**
 .. |docs_url|               replace:: ''
 .. |project|                replace:: **{project}**
@@ -73,8 +82,10 @@ rst_epilog = f"""
 .. |github_release_target|  replace:: https://github.com/ISARICResearch/ISARICAnalytics/releases/tag/{release}
 """
 
+
 # Publish author(s)
 show_authors = True
+
 
 # Sphinx extensions: not all of these are used or required, but they are still
 # listed here if requirements change.
@@ -85,6 +96,7 @@ extensions = [
     "nb2plots",
     "numpydoc",
     "sphinx.ext.autodoc",
+    "sphinx_gallery.gen_gallery",
     #'sphinx.ext.autosectionlabel',
     #'sphinx.ext.autosummary',
     "sphinx.ext.coverage",
@@ -103,6 +115,20 @@ extensions = [
     "sphinx_design",
 ]
 
+
+# Sphinx gallery conf.
+sphinx_gallery_conf = {
+    "examples_dirs": "sources/plot-gallery/examples",  # path to your example scripts
+    "gallery_dirs": "sources/visualisation",  # path to where to save gallery generated output
+    "within_subsection_order": "ExampleTitleSortKey",  # Sort the plot/figure panels by title
+    "image_scrapers": ("plotly",),  # Only Plotly SG scraper required
+    "line_numbers": True,  # Controls line numbering in code blocks on rendered figure HTMLs - should
+    # actually start from 1, but this cannot be overridden in Sphinx Gallery;
+    # have raised this as an issue https://github.com/sphinx-gallery/sphinx-gallery/issues/1636
+    "compress_images": ("images", "thumbnails"),  # Optimise PNGs
+}
+
+
 # Autodoc settings -
 #     For more on all available autodoc defaults see
 #         https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
@@ -113,8 +139,10 @@ autodoc_default_options = {
     "special-members": "",
 }
 
+
 # Sphinx autodoc autosummary settings
 autosummary_generate = False
+
 
 # Numpydoc settings
 numpydoc_show_class_members = True
@@ -122,6 +150,7 @@ numpydoc_show_inherited_class_members = False
 numpydoc_class_members_toctree = False
 numpydoc_attributes_as_param_list = False
 numpydoc_xref_param_type = False
+
 
 # Intersphinx mappings to reference external documentation domains - no
 # current references, but these have been listed in case relevant new
@@ -169,11 +198,14 @@ def setup(app: Sphinx) -> None:
 # Static template paths
 templates_path = ["_templates"]
 
+
 # The suffix of source filenames.
 source_suffix = ".rst"
 
+
 # The encoding of source files.
 source_encoding = "utf-8"
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -184,16 +216,20 @@ exclude_patterns = [
     ".DS_Store",
 ]
 
+
 # The name of the Pygments (syntax highlighting) style to use.
 # pygments_style = "sphinx"
+
 
 # A list of prefixes that are ignored when creating the module index.
 # (new in Sphinx 0.6)
 modindex_common_prefix = ["isaricanalytics."]
 
+
 # Not currently required but will be useful later once all public
 # library docstrings are complete, with doctest examples
 doctest_global_setup = "import isaricanalytics"
+
 
 # If this is True, the ``todo`` and ``todolist`` extension directives
 # produce output, else they produce nothing. The default is ``False``.
@@ -219,12 +255,14 @@ html_context = {
     "release_target": f"https://github.com/ISARICResearch/ISARICAnalytics/releases/tag/{release}",
 }
 
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # General (non-theme) HTML output options
 # Custom deployment domain required here
 # html_baseurl = ''
+
 
 # HTML theme options
 html_theme = "furo"
@@ -284,7 +322,9 @@ html_theme_options = {
     ],
 }
 
-# Override the default sidebar listing by commenting out the ethical ads sidebar.
+
+# Make sidebar listing and composition explicitly clear - try to remove ethical
+# ads sidebar, but seems to have no effect
 html_sidebars = {
     "**": [
         "sidebar/scroll-start.html",
@@ -296,28 +336,35 @@ html_sidebars = {
     ]
 }
 
+
 # Force pygments style in dark mode back to the light variant
 pygments_dark_style = "tango"
 
 html_logo = "_static/isaric-logo.png"
 
+
 # Relative path (from the ``docs`` folder) to the static files folder - so
 # ``_static`` should be one level below ``docs``.
 html_static_path = ["_static"]
+
 
 # Custom CSS file(s)
 html_css_files = [
     "css/custom.css",
 ]
 
+
 # Timestamp format for the last page updated time
 html_last_updated_fmt = "%b %d, %Y"
+
 
 # Show link to ReST source on HTML pages
 html_show_sourcelink = True
 
+
 # If true, the reST sources are included in the HTML build as _sources/<name>.
 html_copy_source = True
+
 
 # Output file base name for HTML help builder - use the project name
 htmlhelp_basename = "isaricanalytics"

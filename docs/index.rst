@@ -5,8 +5,7 @@ ISARIC Analytics
 The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
 - REDCap data extraction
-- ISARIC data analytics
-- ISARIC data visualisation
+- ISARIC data analytics and/or visualisation
 
 ISARICAnalytics is licensed under the open source compliant `MIT license <https://opensource.org/license/mit>`_.
 
@@ -46,14 +45,17 @@ Documentation
 
 The documentation is currently limited to an API reference for all the core public libraries, but user tutorials, a visualisation gallery and additional documentation will be added in the future.
 
+See the linked pages below for more information on how to use the libraries or to contribute to their development. Some pages may still be under development.
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   sources/api-reference
    sources/redcap-data
    sources/analytics
-   sources/visualisation
+   sources/visualisation/index
+   sources/api-reference
    sources/contributing
 
 Indices and tables

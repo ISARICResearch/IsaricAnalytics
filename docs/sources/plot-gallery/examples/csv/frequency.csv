@@ -1,0 +1,7 @@
+label,short_label,proportion
+Dengue Haemorrhagic Fever,DHF,0.4
+Dengue Shock Syndrome,DSS,0.2
+Thrombocytopenia,Low Platelets,0.6
+Hepatomegaly,Hepatomegaly,0.3
+Plasma Leakage,Plasma Leakage,0.1
+

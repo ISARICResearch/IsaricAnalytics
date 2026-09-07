@@ -171,3 +171,5 @@ cython_debug/
 **/.DS_Store
 
 docs/_build
+docs/sg_execution_times.rst
+docs/sources/visualisation/
