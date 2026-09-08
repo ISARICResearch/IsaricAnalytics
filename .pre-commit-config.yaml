@@ -22,4 +22,4 @@ repos:
       - id: check-yaml               # checks YAML files for syntax errors
       - id: trailing-whitespace      # removes trailing spaces
       - id: check-added-large-files  # blocks large files from being committed
-        exclude: "^docs/_static/github-issues.png"
+        exclude: "^docs/_static/github-issues.png|tests/unit/assets/arc_v1.5.0.csv$"

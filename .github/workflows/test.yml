@@ -21,26 +21,30 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install project and unit test dependencies
         run: |
           python -m pip install uv
-          uv sync --verbose --group test --no-install-project
+          uv sync --verbose --all-groups --no-install-project
+
+      - name: Run doctests (example snippets in docstrings)
+        run: |
+            uv run python3 -m doctest -v src/isaricanalytics/*.py
 
       - name: Run pytest with coverage
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
         run: |
-          uv run python -m pytest \
-                        --code-highlight=yes \
-                        --color=yes \
-                        --verbosity=3 \
-                        -p pytest_cov \
-                        --cov=isaricanalytics \
-                        --cov-report=term-missing \
-                        --cov-report=xml \
-                        --cov-report=html
+          PYTHONPATH="src" uv run python3 -m pytest \
+                         --code-highlight=yes \
+                         --color=yes \
+                         --verbosity=3 \
+                         -p pytest_cov \
+                         --cov=isaricanalytics \
+                         --cov-report=term-missing \
+                         --cov-report=xml \
+                         --cov-report=html
 
       - name: Upload coverage.xml artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
