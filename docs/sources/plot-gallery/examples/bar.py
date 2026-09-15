@@ -8,7 +8,7 @@ Bar Charts
 #
 # The plot below was generated using a synthetic dataset of cumulative patient enrolment data for a clinical site.
 #
-# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/bar.csv` file).
+# The dataset is given below as a table (but can also be loaded from the `docs/sources/plot-gallery/examples/csv/bar.csv <https://github.com/ISARICResearch/IsaricAnalytics/blob/v0.3.0/docs/sources/plot-gallery/examples/csv/bar.csv>`_ file).
 #
 # .. list-table:: Cumulative patient enrolment at a clinical site between January and June, 2026
 #   :header-rows: 1

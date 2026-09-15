@@ -8,7 +8,7 @@ Descriptive Tables
 #
 # The plot below was generated using a synthetic dataset of selected patient treatment complications for Dengue.
 #
-# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/table.csv` file).
+# The dataset is given below as a table (but can also be loaded from the `docs/sources/plot-gallery/examples/csv/table.csv <https://github.com/ISARICResearch/IsaricAnalytics/blob/v0.3.0/docs/sources/plot-gallery/examples/csv/table.csv>`_ file).
 #
 # .. list-table:: Dengue patient treatment complications (selection)
 #    :header-rows: 1

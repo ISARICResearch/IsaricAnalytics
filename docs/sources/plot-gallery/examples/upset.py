@@ -9,7 +9,7 @@ Upset Plots
 # %%
 # The plot below was generated using a synthetic dataset of patient treatment complications for Dengue, consisting of five complications and their patient counts, as well as counts for the intersections (conjoint occurrences) of the complication subsets.
 #
-# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/upset.csv` file).
+# The dataset is given below as a table (but can also be loaded from the `docs/sources/plot-gallery/examples/csv/upset.csv <https://github.com/ISARICResearch/IsaricAnalytics/blob/v0.3.0/docs/sources/plot-gallery/examples/csv/upset.csv>`_ file).
 #
 # .. list-table:: Dengue patient treatment complications - patient counts
 #    :header-rows: 1

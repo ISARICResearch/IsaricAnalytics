@@ -9,7 +9,7 @@ Dual Stack Pyramid Plots
 #
 # The plot below was generated using a synthetic dataset of a patient population with subgroups indicating outcome (Death, Discharged, Censored).
 #
-# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/dual_stack_pyramid.csv` file).
+# The dataset is given below as a table (but can also be loaded from the `docs/sources/plot-gallery/examples/csv/dual_stack_pyramid.csv <https://github.com/ISARICResearch/IsaricAnalytics/blob/v0.3.0/docs/sources/plot-gallery/examples/csv/dual_stack_pyramid.csv>`_ file).
 #
 # .. list-table:: Patient population distribution by age group, sex and outcome
 #    :header-rows: 1

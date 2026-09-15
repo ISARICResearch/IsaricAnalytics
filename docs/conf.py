@@ -152,9 +152,9 @@ numpydoc_attributes_as_param_list = False
 numpydoc_xref_param_type = False
 
 
-# Intersphinx mappings to reference external documentation domains - no
-# current references, but these have been listed in case relevant new
-# new references are added.
+# Intersphinx mappings to reference external documentation domains - ATM
+# the only external references are to Plotly Go Figure class, but
+# potentially there could be many other external API references.
 intersphinx_mapping = {
     #'dash': ('https://dash.plotly.com/', None),
     "numpy": ("https://numpy.org/doc/stable/", None),
@@ -236,6 +236,8 @@ doctest_global_setup = "import isaricanalytics"
 todo_include_todos = True
 
 # -- Project file data variables ---------------------------------------------
+
+html_title = f"{project} {release}"
 
 # HTML global context for templates
 html_context = {

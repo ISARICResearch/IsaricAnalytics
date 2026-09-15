@@ -8,7 +8,7 @@ Sunburst Plots
 #
 # The plot below was generated using a synthetic dataset of patient enrolment data organised by site and country.
 #
-# The dataset is given below as a table (but can also be loaded from the static :file:`examples/csv/sunburst.csv` file).
+# The dataset is given below as a table (but can also be loaded from the `docs/sources/plot-gallery/examples/csv/sunburst.csv <https://github.com/ISARICResearch/IsaricAnalytics/blob/v0.3.0/docs/sources/plot-gallery/examples/csv/sunburst.csv>`_ file).
 #
 # .. list-table:: Patient enrolment at clinical sites by country and site
 #   :header-rows: 1
