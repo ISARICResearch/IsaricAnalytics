@@ -74,18 +74,18 @@
   build-backend = "hatchling.build"
 
 [tool.hatch.version]
-  path = "isaricanalytics/__init__.py"
+  path = "src/isaricanalytics/__init__.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.sdist]
-  packages = ["isaricanalytics", "docs/sources/plot-gallery/",]
+  packages = ["src/isaricanalytics", "docs/sources/plot-gallery/",]
 
 [tool.hatch.build.targets.sdist.force-include]
 
 [tool.hatch.build.targets.wheel]
-  packages = ["isaricanalytics", "docs/sources/plot-gallery",]
+  packages = ["src/isaricanalytics", "docs/sources/plot-gallery",]
 
 [tool.hatch.build.targets.wheel.force-include]
 
