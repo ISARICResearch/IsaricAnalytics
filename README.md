@@ -8,7 +8,7 @@
 
 IsaricAnalytics is a data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks. It supports medical statistics and traditional machine learning, with analysis pipelines that follow methodological best practices.
 
-Refer to the [documentation](https://isaricanalytics.readthedocs.io/en/latest/index.html) for more details.
+Refer to the [documentation](https://analytics.docs.isaric.org/) for more details.
 
 ---
 
