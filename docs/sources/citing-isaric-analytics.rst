@@ -7,7 +7,7 @@ ISARICAnalytics is **published** on `GitHub <https://github.com/ISARICResearch/I
 
 ISARICAnalytics can be **cited** as follows:
 
-	Edinburgh T, Garcia-Gallo E, Peres I, Gusberti T, Raffaini L, Murthy SR, Wilson AD. IsaricAnalytics (v0.2.0). *ISARIC* 2026. https://github.com/ISARICResearch/IsaricAnalytics
+	Edinburgh T, Garcia-Gallo E, Peres I, Gusberti T, Raffaini L, Murthy SR, Wilson AD. IsaricAnalytics (v0.3.0). *ISARIC* 2026. https://github.com/ISARICResearch/IsaricAnalytics
 
 .. _note-for-maintainers-and-contributors:
 
