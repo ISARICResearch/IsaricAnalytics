@@ -121,18 +121,9 @@ allow-direct-references = true
     "jupyter-sphinx",
   ]
 
-
-[tool.setuptools.packages.find]
-  where = ["."]
-  include = ["isaricanalytics*"]
-  exclude = ["tests*", "examples*", "schemas*"]
-
-[tool.setuptools.dynamic]
-  version = {attr = "isaricanalytics.__version__"}
-
 [tool.ruff]
   line-length = 88
-  target-version = "py311"
+  target-version = "py312"
   lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import sorting
   # Optional: exclude certain paths
   exclude = [
