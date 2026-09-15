@@ -49,10 +49,12 @@
 
   requires-python = ">=3.12"
   dependencies = [
+      "adtl>=0.13.3",
+      "isaric-bridge@git+https://github.com/ISARICResearch/BRIDGE@v1.2",
       "kaleido>=1.0.0",
       "lifelines==0.30.0",
-      "numpy==1.26.4",
-      "pandas==2.2.1",
+      "numpy==2.2.6",
+      "pandas==2.3.3",
       "plotly@git+https://github.com/plotly/plotly.py",
       "requests>=2.32.4",
       "scikit-learn==1.5.2",
@@ -72,18 +74,18 @@
   build-backend = "hatchling.build"
 
 [tool.hatch.version]
-  path = "isaricanalytics/__init__.py"
+  path = "src/isaricanalytics/__init__.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.sdist]
-  packages = ["isaricanalytics", "docs/sources/plot-gallery/",]
+  packages = ["src/isaricanalytics", "docs/sources/plot-gallery/",]
 
 [tool.hatch.build.targets.sdist.force-include]
 
 [tool.hatch.build.targets.wheel]
-  packages = ["isaricanalytics", "docs/sources/plot-gallery",]
+  packages = ["src/isaricanalytics", "docs/sources/plot-gallery",]
 
 [tool.hatch.build.targets.wheel.force-include]
 

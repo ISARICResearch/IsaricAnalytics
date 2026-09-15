@@ -31,7 +31,14 @@ def strip_html(value: typing.Any) -> str | typing.Any:
     str, typing.Any
         Either a string stripped of all HTML elements, or the original non-
         string value.
-    """
+
+    Examples
+    --------
+    >>> strip_html("<b><i>A value</i></b>")
+    'A value'
+    >>> strip_html("<p>This is a paragraph.</p>")
+    'This is a paragraph.'
+    """  # noqa : E501
     if isinstance(value, str):
         return re.sub(r"<.*?>", "", value)
 
@@ -55,7 +62,14 @@ def strip_nonstandard_unicode_chars(value: typing.Any) -> str | typing.Any:
     str, typing.Any
         Either a string stripped of all non-standard Unicode characters, or the
         original non- string value.
-    """
+
+    Examples
+    --------
+    >>> strip_nonstandard_unicode_chars("A value with a special Unicode ↳ character")
+    'A value with a special Unicode  character'
+    >>> strip_nonstandard_unicode_chars("<p>This is a paragraph ending with a special Unicode character ↳.</p>")
+    '<p>This is a paragraph ending with a special Unicode character .</p>'
+    """  # noqa : E501
     nonstandard_unicode_chars = "↳"
 
     if isinstance(value, str):
@@ -67,10 +81,13 @@ def strip_nonstandard_unicode_chars(value: typing.Any) -> str | typing.Any:
 def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
     """:py:class:`pandas.DataFrame` : A cleaned figure table dataframe.
 
-    The cleaning steps are unique to the Plotly graph object table format from
-    which the table CSVs were originally, which contain HTML styling elements
-    and non-standard (non-alphabetic) Unicode characters. The cleaning is the
-    removal of such characters.
+    This function is not intended to be highly generic, but was written with
+    the aim of producing clean dataframes for the plotting functions in the
+    :py:mod:`isaricanalytics.visualisation` library. The cleaning steps are:
+
+    * removal of HTML styling elements
+    * removal of non-standard (non-alphabetic) Unicode characters, currently
+      limited to ``↳``.
 
     Parameters
     ----------
@@ -81,10 +98,34 @@ def clean_figure_table(figure_table: pandas.DataFrame) -> pandas.DataFrame:
     -------
     pandas.DataFrame
         The cleaned figure table.
-    """
-    # The use of `pandas.DataFrame.map` here is not absolutely optimal, as
-    # `map` applies changes across the dataframe element-wise, but is the
-    # safer choice given that the dataframe may contain a number of non-string
-    # columns which cannot be known in advance, while the cleaning steps
-    # currently only apply to string values.
+
+    Examples
+    --------
+    >>> import io, pandas as pd
+    >>> pd.set_option("display.max_columns", None)
+    >>> data = pd.read_csv(io.StringIO(
+    ...     '''
+    ...     A,B,C
+    ...     <b>A1</b>,<i>A2</i>,<b><i>A3</i></b>
+    ...     <b>B1</b>,<i>B2</i>,<b><i>B3</i></b>
+    ...     <b>C1</b>,<i>C2</i>,<b><i>C3</i></b>
+    ...     '''
+    ... ), skipinitialspace=True)
+    >>> cleaned_data = clean_figure_table(data)
+    >>> cleaned_data
+        A   B   C
+    0  A1  A2  A3
+    1  B1  B2  B3
+    2  C1  C2  C3
+    """  # noqa : E501
     return figure_table.map(strip_html).map(strip_nonstandard_unicode_chars)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    # Doctest the module from the project root using
+    #
+    #     PYTHONPATH="src" python3 -m doctest -v isaricanalytics/*.py  # noqa : E501
+    #
+    import doctest
+
+    doctest.testmod()

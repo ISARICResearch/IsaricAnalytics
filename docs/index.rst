@@ -4,8 +4,9 @@ ISARIC Analytics
 
 The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
-- REDCap data extraction
-- Data analytics and/or visualisation
+- Raw data extraction and cleaning from `REDCap <https://projectredcap.org>`_ project databases
+- Transforming custom raw clinical datasets into the `ISARIC data schema <https://isaric-arc.readthedocs.io/en/latest/sources/isaric-data-schema.html>`_
+- Data analytics & visualisation with `Pandas <pandas.pydata.org>`_ and `Plotly <plotly.com/python>`_
 
 in the setting of clinical epidemiology.
 
@@ -40,12 +41,12 @@ The documentation is currently limited mainly to an :ref:`API reference <api-ref
 
 See the linked pages below for more information on how to use the libraries or to contribute to their development. Some pages may still be under development.
 
-
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
    sources/redcap-data
+   sources/isaric-data-schema
    sources/analytics
    sources/visualisation/index
    sources/citing-isaric-analytics
