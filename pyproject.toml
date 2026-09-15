@@ -1,95 +1,112 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "isaricanalytics"
-dynamic = ["version"]
-description = "Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks."
+  name = "isaricanalytics"
+  dynamic = ["version"]
+  description = "Data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks."
 
-# Contributors list includes VERTEX contributors of the code migrated from
-# VERTEX (`getREDCapData`, `IsaricAnalytics`, `IsaricDraw`)
-authors = [
-    { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
-    { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
-    { name = "Igor Peres", email = "igor.peres@puc-rio.br" },
-    { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
-    { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
-    { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
-    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
-]
+  # Contributors list includes VERTEX contributors of the code migrated from
+  # VERTEX (`getREDCapData`, `IsaricAnalytics`, `IsaricDraw`)
+  authors = [
+      { name = "Tom Edinburgh", email = "tom.edinburgh@ndm.ox.ac.uk" },
+      { name = "Esteban Garcia-Gallo", email = "esteban.garcia@ndm.ox.ac.uk" },
+      { name = "Igor Peres", email = "igor.peres@puc-rio.br" },
+      { name = "Carlos Lima", email = "carlos.jlima@ufpe.br" },
+      { name = "Tomoe Gusberti", email = "tomoegusberti@gmail.com" },
+      { name = "Luiz Raffaini", email = "lemraffaini@gmail.com" },
+      { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
+  ]
 
-maintainers = [
-    { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
-    { name = "Alasdair Wilson", email = "alasdair.wilson@dtc.ox.ac.uk" },
-]
+  maintainers = [
+      { name = "Sandeep Murthy", email = "sandeep.murthy@ndm.ox.ac.uk" },
+      { name = "Alasdair Wilson", email = "alasdair.wilson@dtc.ox.ac.uk" },
+  ]
 
-readme = "README.md"
-keywords = [
-    "isaric",
-    "infectious-diseases",
-    "disease-outbreaks",
-    "clinical-data",
-    "data-analysis",
-    "data-analytics",
-]
+  readme = "README.md"
+  keywords = [
+      "isaric",
+      "infectious-diseases",
+      "disease-outbreaks",
+      "clinical-data",
+      "data-analysis",
+      "data-analytics",
+  ]
 
 
-# Not strictly required as this isn't a public Python package, but still good
-# to have.
-classifiers = [
-        "Environment :: Console",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Programming Language :: Python :: 3.14",
-        "Development Status :: 5 - Production/Stable",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: MacOS",
-        "Operating System :: Microsoft :: Windows",
-]
+  # Not strictly required as this isn't a public Python package, but still good
+  # to have.
+  classifiers = [
+          "Environment :: Console",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Development Status :: 5 - Production/Stable",
+          "Operating System :: POSIX :: Linux",
+          "Operating System :: MacOS",
+          "Operating System :: Microsoft :: Windows",
+  ]
 
-requires-python = ">=3.11"
-dependencies = [
-    "lifelines==0.30.0",
-    "numpy==1.26.4",
-    "pandas==2.2.1",
-    "plotly==6.1.1",
-    "requests>=2.32.4",
-    "scikit-learn==1.5.2",
-    "scipy>=1.12.0",
-    "statsmodels>=0.14.1",
-]
+  requires-python = ">=3.12"
+  dependencies = [
+      "kaleido>=1.0.0",
+      "lifelines==0.30.0",
+      "numpy==1.26.4",
+      "pandas==2.2.1",
+      "plotly@git+https://github.com/plotly/plotly.py",
+      "requests>=2.32.4",
+      "scikit-learn==1.5.2",
+      "scipy>=1.12.0",
+      "statsmodels>=0.14.1",
+  ]
 
 [project.optional-dependencies]
 
-docs = [
-    "Sphinx",
-    "sphinx-autobuild",
-    "sphinx-copybutton",
-    "sphinx-gallery",
-    "sphinx-design",
-    "myst-parser",
-    "pylint",
-    "furo",
-    "numpydoc",
-    "nb2plots",
-    "jupyter-sphinx"
-]
+[project.urls]
+  Homepage = "https://github.com/ISARICResearch/ISARICAnalytics"
+  Repository = "https://github.com/ISARICResearch/ISARICAnalytics"
+  Documentation = "https://analytics.docs.isaric.org"
+
+[build-system]
+  requires = ["hatchling"]
+  build-backend = "hatchling.build"
+
+[tool.hatch.version]
+  path = "isaricanalytics/__init__.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.sdist]
+  packages = ["isaricanalytics", "docs/sources/plot-gallery/",]
+
+[tool.hatch.build.targets.sdist.force-include]
+
+[tool.hatch.build.targets.wheel]
+  packages = ["isaricanalytics", "docs/sources/plot-gallery",]
+
+[tool.hatch.build.targets.wheel.force-include]
 
 [dependency-groups]
-pre-commit = [
+  build = [
+    "hatchling",
+  ]
+
+  pre-commit = [
     "pre-commit",
-]
+  ]
 
-test = [
+  dev = [
+    "ipdb",
+    "ipython",
+  ]
+
+  test = [
     "pytest>=8.4.2",
-    "pytest-cov>=7.0.0"
-]
+    "pytest-cov>=7.0.0",
+  ]
 
-docs = [
+  docs = [
     "Sphinx",
     "sphinx-autobuild",
     "sphinx-copybutton",
@@ -100,29 +117,31 @@ docs = [
     "furo",
     "numpydoc",
     "nb2plots",
-    "jupyter-sphinx"
-]
+    "orca",
+    "jupyter-sphinx",
+  ]
 
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["isaricanalytics*"]
-exclude = ["tests*", "examples*", "schemas*"]
+  where = ["."]
+  include = ["isaricanalytics*"]
+  exclude = ["tests*", "examples*", "schemas*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "isaricanalytics.__version__"}
+  version = {attr = "isaricanalytics.__version__"}
 
 [tool.ruff]
-line-length = 88
-target-version = "py311"
-lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import sorting
-# Optional: exclude certain paths
-exclude = [
-    ".venv",
-    "build",
-    "dist"
-]
+  line-length = 88
+  target-version = "py311"
+  lint.select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, warnings, import sorting
+  # Optional: exclude certain paths
+  exclude = [
+      ".venv",
+      "build",
+      "dist",
+      "docs/sources/plot-gallery"
+  ]
 
 [tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
+  quote-style = "double"
+  indent-style = "space"

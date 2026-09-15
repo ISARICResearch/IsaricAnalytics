@@ -26,21 +26,13 @@ jobs:
       - name: Install project and unit test dependencies
         run: |
           python -m pip install uv
-          uv sync --verbose --group test --no-install-project
+          make sync-deps-exact
 
-      - name: Run pytest with coverage
+      - name: Run unit tests and measure code coverage
         env:
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
         run: |
-          uv run python -m pytest \
-                        --code-highlight=yes \
-                        --color=yes \
-                        --verbosity=3 \
-                        -p pytest_cov \
-                        --cov=isaricanalytics \
-                        --cov-report=term-missing \
-                        --cov-report=xml \
-                        --cov-report=html
+          make test
 
       - name: Upload coverage.xml artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
