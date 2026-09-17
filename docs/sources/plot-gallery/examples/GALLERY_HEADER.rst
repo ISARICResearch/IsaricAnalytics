@@ -8,7 +8,7 @@ A variety of figures / plots can be generated using figure functions in the :py:
 
 .. note::
 
-   All visible figures in the gallery are dynamically generated from Python scripts in the :file:`docs/sources/plot-gallery/examples` folder of this repository. These scripts can be obtained by clicking on the Download buttons presented on the bottom of this page. The scripts require CSVs, also contained in the :file:`docs/sources/plot-gallery/examples` folder, but are not included with the download options: you can obtain these manually from a clone of the repository or a fork/.
+   All visible figures in the gallery are dynamically generated from Python scripts in the `docs/sources/plot-gallery/examples/ <https://github.com/ISARICResearch/IsaricAnalytics/tree/v0.3.0/docs/sources/plot-gallery/examples/>`_ folder of this repository. These scripts can be obtained by clicking on the Download buttons presented on the bottom of this page. The scripts require CSVs that are also contained in the `docs/sources/plot-gallery/examples/ <https://github.com/ISARICResearch/IsaricAnalytics/tree/v0.3.0/docs/sources/plot-gallery/examples/>`_ folder, but not included with the download options: instead, you can obtain the CSVs manually from a clone of the repository or a fork/.
 
 .. note::
 
