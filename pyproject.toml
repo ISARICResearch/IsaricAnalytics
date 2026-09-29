@@ -53,8 +53,8 @@
       "isaric-bridge@git+https://github.com/ISARICResearch/BRIDGE@v1.2",
       "kaleido>=1.0.0",
       "lifelines==0.30.0",
-      "numpy==1.26.4",
-      "pandas==2.2.1",
+      "numpy==2.2.6",
+      "pandas==2.3.3",
       "plotly>=7.1.0",
       "requests>=2.32.4",
       "scikit-learn==1.5.2",
@@ -63,6 +63,9 @@
   ]
 
 [project.optional-dependencies]
+
+[tool.uv]
+  default-groups = "all"
 
 [project.urls]
   Homepage = "https://github.com/ISARICResearch/ISARICAnalytics"
