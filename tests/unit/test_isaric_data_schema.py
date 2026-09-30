@@ -7,7 +7,7 @@ import unittest.mock as mock
 import pytest
 
 # -- Internal libraries --
-from bridge.arc.arc_api import ArcApiClientError
+from arc.arc_api import ArcApiClientError
 
 from isaricanalytics.isaric_data_schema import (
     IsaricDataSchemaTransformationException,

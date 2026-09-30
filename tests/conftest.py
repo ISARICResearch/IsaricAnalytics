@@ -12,14 +12,14 @@ import pytest
 
 @pytest.fixture(scope="module")
 def countries() -> pd.DataFrame:
-    fp = Path(__file__).parent.joinpath("unit", "assets", "countries.csv")
+    fp = Path(__file__).parent.joinpath("assets", "countries.csv")
     assert fp.exists()
     return pd.read_csv(fp, encoding="latin-1")
 
 
 @pytest.fixture(scope="module")
 def conversion_table() -> pd.DataFrame:
-    fp = Path(__file__).parent.joinpath("unit", "assets", "conversion_table.csv")
+    fp = Path(__file__).parent.joinpath("assets", "conversion_table.csv")
     assert fp.exists()
     return pd.read_csv(fp, encoding="latin-1")
 
@@ -28,7 +28,7 @@ def conversion_table() -> pd.DataFrame:
 def isaric_data_schema_example_dataset_filepath() -> Path:
     return (
         Path(__file__)
-        .parent.joinpath("unit", "assets", "isaric_data_schema_example_dataset.csv")
+        .parent.joinpath("assets", "isaric_data_schema_example_dataset.csv")
         .resolve()
     )
 
@@ -37,7 +37,7 @@ def isaric_data_schema_example_dataset_filepath() -> Path:
 def isaric_data_schema_example_parser_filepath() -> Path:
     return (
         Path(__file__)
-        .parent.joinpath("unit", "assets", "isaric_data_schema_example_parser.toml")
+        .parent.joinpath("assets", "isaric_data_schema_example_parser.toml")
         .resolve()
     )
 
@@ -46,7 +46,7 @@ def isaric_data_schema_example_parser_filepath() -> Path:
 def isaric_data_schema_example_core_table_filepath() -> Path:
     return (
         Path(__file__)
-        .parent.joinpath("unit", "assets", "isaric_data_schema_example_core_table.csv")
+        .parent.joinpath("assets", "isaric_data_schema_example_core_table.csv")
         .resolve()
     )
 
@@ -55,13 +55,20 @@ def isaric_data_schema_example_core_table_filepath() -> Path:
 def isaric_data_schema_example_long_table_filepath() -> Path:
     return (
         Path(__file__)
-        .parent.joinpath("unit", "assets", "isaric_data_schema_example_long_table.csv")
+        .parent.joinpath("assets", "isaric_data_schema_example_long_table.csv")
         .resolve()
     )
 
 
 @pytest.fixture(scope="module")
 def arc_data_dictionary_v1_5_0() -> pd.DataFrame:
-    fp = Path(__file__).parent.joinpath("unit", "assets", "arc_v1.5.0.csv").resolve()
+    fp = Path(__file__).parent.joinpath("assets", "arc-v1.5.0.csv").resolve()
+    assert fp.exists()
+    return pd.read_csv(fp)
+
+
+@pytest.fixture(scope="module")
+def arc_data_dictionary_v1_6_0() -> pd.DataFrame:
+    fp = Path(__file__).parent.joinpath("assets", "arc-v1.6.0.csv").resolve()
     assert fp.exists()
     return pd.read_csv(fp)
