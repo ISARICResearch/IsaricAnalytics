@@ -17,8 +17,8 @@ import adtl
 import pandas as pd
 
 # -- Internal ISARIC libraries --
-from bridge.arc.arc_api import ArcApiClient, ArcApiClientError
-from bridge.arc.arc_core import get_arc
+from arc.arc_api import ArcApiClient, ArcApiClientError
+from arc.arc_core import get_arc
 
 import isaricanalytics.isaric_transformations as tf
 
