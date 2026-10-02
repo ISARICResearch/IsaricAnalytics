@@ -72,3 +72,10 @@ def arc_data_dictionary_v1_6_0() -> pd.DataFrame:
     fp = Path(__file__).parent.joinpath("assets", "arc-v1.6.0.csv").resolve()
     assert fp.exists()
     return pd.read_csv(fp)
+
+
+@pytest.fixture(scope="module")
+def arc_data_dictionary_v1_6_1() -> pd.DataFrame:
+    fp = Path(__file__).parent.joinpath("assets", "arc-v1.6.1.csv").resolve()
+    assert fp.exists()
+    return pd.read_csv(fp)
