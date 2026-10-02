@@ -42,8 +42,11 @@ def transform_to_isaric_data_schema(
     parser_file: str | pathlib.Path,
     data_file: str | pathlib.Path,
     arc_version: str | None = None,
+    /,
+    *,
+    as_vertex_data: bool = False,
 ) -> dict[str, pd.DataFrame]:
-    """:py:class:`dict` : A dict of ISARIC schema-compliant short/core- and long-format datasets as Pandas dataframes.
+    """:py:class:`dict` : ISARIC schema-compliant short/core- and long-format datasets as Pandas dataframes, with optional VERTEX-style output.
 
     Parameters
     ----------
@@ -57,12 +60,36 @@ def transform_to_isaric_data_schema(
         Optional ARC version string used to fetch the ARC data dictionary
         associated with the ARC version; defaults to ``None``.
 
+    as_vertex_data : bool, default=False
+        Optional indicator of whether to return the data as a VERTEX-style
+        dictionary in the format:
+        ::
+
+            {
+                "df_map": <one-row-per-patient dataframe>,
+                "daily": <patient observations dataframe>,
+                "dictionary": <ARC data dictionary>
+            }
+
     Returns
     -------
     dict
-        A dict of two Pandas dataframes representing short- and long-format
-        ISARIC schema-compliant transforms of the original dataset.
+        A dict which could be in one of two forms:
+        ::
 
+            {
+                "core": <ISARIC data schema core table>,
+                "long": <ISARIC data schema long table>
+            }
+
+        or, if ``as_vertex_data``:
+        ::
+
+            {
+                "df_map": <one-row-per-patient dataframe>,
+                "daily": <patient observations dataframe>,
+                "dictionary": <ARC data dictionary>
+            }
     Raises
     ------
     IsaricDataSchemaTransformationException
@@ -115,4 +142,11 @@ def transform_to_isaric_data_schema(
             non_arc_long_columns, "long", arc_version, stacklevel=2
         )
 
-    return ids_tables
+    if not as_vertex_data:
+        return ids_tables
+
+    return {
+        "df_map": ids_tables["core"],
+        "daily": ids_tables["long"],
+        "dictionary": arc_dd,
+    }
