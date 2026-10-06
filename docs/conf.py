@@ -4,8 +4,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
+sys.path.insert(0, os.path.abspath(os.path.join("../src")))
 
 from datetime import datetime
 
@@ -156,6 +156,9 @@ numpydoc_xref_param_type = False
 # the only external references are to Plotly Go Figure class, but
 # potentially there could be many other external API references.
 intersphinx_mapping = {
+    "isaric-arc": ("https://arc.docs.isaric.org/en/latest", None),
+    "isaric-bridge": ("https://bridge.docs.isaric.org/en/latest", None),
+    "isaric-vertex": ("https://vertex.docs.isaric.org/en/latest", None),
     #'dash': ('https://dash.plotly.com/', None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
