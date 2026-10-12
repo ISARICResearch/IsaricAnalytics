@@ -2,6 +2,10 @@
 ISARIC Analytics
 ================
 
+.. image:: _static/isaric-analytics-logo.png
+   :height: 201.8
+   :width:  325
+
 The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
 - REDCap data extraction
