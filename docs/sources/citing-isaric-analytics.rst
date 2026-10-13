@@ -3,7 +3,9 @@
 Citing ISARICAnalytics
 ======================
 
-ISARICAnalytics is **published** on `GitHub <https://github.com/ISARICResearch/ISARICAnalytics/releases>`_. It currently does not have a DOI, although this is planned.
+ISARICAnalytics is **published** on `GitHub <https://github.com/ISARICResearch/ISARICAnalytics/releases>`_ and `Zenodo <https://zenodo.org/records/23340915>`_. It has the DOI:
+
+`10.5281/zenodo.23340915 <https://doi.org/10.5281/zenodo.23340915>`_
 
 ISARICAnalytics can be **cited** as follows:
 
@@ -19,5 +21,11 @@ Maintainers and contributors should note that the `citation file <https://github
 .. code:: shell
 
    cffconvert --validate
+
+You should see validation succeeding:
+
+.. code:: shell
+
+   Citation metadata are valid according to schema version 1.2.0.
 
 Any reported errors should be fixed, and the file staged and committed in the normal way. Citation file validation is included in the pre-commit status checks that happen automatically in GitHub on branch and PR updates.

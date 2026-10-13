@@ -88,6 +88,10 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel.force-include]
 
 [dependency-groups]
+  citation = [
+    "cffconvert",
+  ]
+
   build = [
     "hatchling",
   ]
