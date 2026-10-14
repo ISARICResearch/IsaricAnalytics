@@ -32,11 +32,12 @@ Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/
 
 .. code:: python
 
+   >>> import warnings; warnings.filterwarnings('ignore')
    >>> tables = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1')
-   [covid-study] parsing example_data.csv: 100%|███████████████████████████████████████████| 5/5 [00:00<00:00, 51.04it/s]
-   [covid-study] validating core table: 5it [00:00, 52038.51it/s]
-   [covid-study] validating long table: 109it [00:00, 128819.14it/s]
-   2026-10-06 16:36:32 [INFO] arc.arc_core: version: v1.6.1
+  [covid-study] parsing example_data.csv: 100%|█████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 915.59it/s]
+  [covid-study] validating core table: 5it [00:00, 46707.17it/s]
+  [covid-study] validating long table: 109it [00:00, 191528.75it/s]
+  2026-10-14 16:09:08 [INFO] arc.arc_core: version: v1.6.
 
    >>> tables['core']
      subjid       siteid  ... adtl_valid                                         adtl_error
@@ -64,7 +65,41 @@ Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/
 
    [109 rows x 12 columns]
 
-The core table contians individual patient records, that is, with each row representing a distinct patient record, while the long table contains multiple records per patient, with each record representing an observation about a patient.
+The core table contains individual patient records, that is, with each row representing a distinct patient record, while the long table contains multiple records per patient, with each record representing an observation about a patient.
+
+.. _schema-transformation-warnings:
+
+Warnings
+++++++++
+
+If the raw dataset contains non-ARC columns or columns that are not mapped to any core or long table in the parser file warnings are displayed that include the mismatched column sets, as shown in the snippet below, with :py:mod:`warnings` turned on, as shown in the following snippet below:
+
+.. code:: python
+
+   >>> import warnings; warnings.filterwarnings('always')
+   >>> tables = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1')
+   [covid-study] parsing example_data.csv: 100%|█████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 915.59it/s]
+   [covid-study] validating core table: 5it [00:00, 46707.17it/s]
+   [covid-study] validating long table: 109it [00:00, 191528.75it/s]
+   2026-10-14 16:09:08 [INFO] arc.arc_core: version: v1.6.1
+   /Users/smurthy/Documents/srm/dev/ISARICAnalytics/src/isaricanalytics/isaric_data_schema.py:162: DeprecationWarning:
+
+   The following core table columns are not in ARC v1.6.1: "adtl_error", "adtl_valid", "dataset_disease", "dataset_id", "demog_age_days", "demog_country_iso3", "siteid"
+
+   Please check these columns.
+   ...
+
+   The following long table columns are not in ARC v1.6.1: "adtl_valid", "arcver", "attribute", "attribute_status", "attribute_unit", "dataset_id", "date", "duration", "phase", "value", "value_num"
+
+   Please check these columns.
+   ...
+
+   The following source columns are not mapped to any core or long table columns: "ethnic", "icu_in", "icu_out", "icu_treat_antiviral_agents", "icu_treat_corticosteroids", "treat_antiviral_agents", "treat_corticosteroids"
+
+   Please check these columns.
+   ...
+
+These should be addressed appropriately, which may include either removing some or all of the columns in question, or replacing them the equivalent ARC columns, and/or adding mappings in the parser file.
 
 .. _schema-transformation-vertex-outputs:
 

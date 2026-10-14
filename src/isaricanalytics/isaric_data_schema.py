@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 __all__ = [
+    "get_parser_toml_map",
+    "IsaricDataSchemaTransformationException",
     "transform_to_isaric_data_schema",
 ]
 
@@ -9,6 +11,7 @@ __all__ = [
 
 # -- Standard libraries --
 import pathlib
+import tomllib
 import typing
 import warnings as warnings_
 
@@ -36,6 +39,35 @@ def _warn_on_non_arc_columns(
         f"{arc_version}: {columns_str}\n\nPlease check these columns."
     )
     warnings_.warn(msg, DeprecationWarning, stacklevel=stacklevel)
+
+
+def _warn_on_non_mapped_source_columns(
+    column_set: typing.Iterable, stacklevel=2
+) -> None:
+    """Warns on the transform function detecting source columns that are not mapped to any core or long table column."""  # noqa: E501
+    columns_str = ", ".join(map(lambda s: f'"{s}"', sorted(column_set)))
+    msg = (
+        f"\n\nThe following source columns are not mapped to any core or "
+        f"long table columns: {columns_str}\n\nPlease check these columns."
+    )
+    warnings_.warn(msg, DeprecationWarning, stacklevel=stacklevel)
+
+
+def get_parser_toml_map(parser_file: str | pathlib.Path, /) -> dict[str, typing.Any]:
+    """:py:class:`dict` : The parser TOML as a map/dict.
+
+    Parameters
+    ----------
+    parser_file : str or pathlib.Path
+        The parser file path (relative or absolute).
+
+    Returns
+    -------
+    dict
+        The parser TOML as a map/dict.
+    """
+    with pathlib.Path(parser_file).resolve().open(mode="rb") as fp:
+        return tomllib.load(fp)
 
 
 def transform_to_isaric_data_schema(
@@ -141,6 +173,31 @@ def transform_to_isaric_data_schema(
         _warn_on_non_arc_columns(
             non_arc_long_columns, "long", arc_version, stacklevel=2
         )
+
+    # Checking the source file for any columns that are not mapped to data
+    # columns in the parser file.
+    toml_map = get_parser_toml_map(parser_file)
+    toml_core_table_source_fields = set(
+        val.get("field") for val in toml_map["core"].values() if isinstance(val, dict)
+    )
+    toml_long_table_source_fields = set(
+        filter(
+            lambda s: s,
+            set(
+                di["value"].get("field")
+                if "value" in di
+                else di["value_num"].get("field")
+                for di in toml_map["long"]
+            ),
+        )
+    )
+    toml_source_fields = toml_core_table_source_fields.union(
+        toml_long_table_source_fields
+    )
+    src_data = pd.read_csv(data_file)
+    non_mapped_source_columns = set(src_data.columns).difference(toml_source_fields)
+    if non_mapped_source_columns:
+        _warn_on_non_mapped_source_columns(non_mapped_source_columns)
 
     if not as_vertex_data:
         return ids_tables
