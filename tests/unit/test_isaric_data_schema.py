@@ -18,12 +18,17 @@ from isaricanalytics.isaric_data_schema import (
 class TestTransformToIsaricDataSchema:
     def test__no_arc_version__arc_api_exception_on_version_request__isaric_data_schema_transformation_exception_raised(  # noqa: E501
         self,
+        isaric_data_schema_example_core_table,
+        isaric_data_schema_example_long_table,
     ):
         mock_arc_api_client = mock.MagicMock()
         mock_arc_api_client.get_arc_version_list(side_effect=ArcApiClientError)
         with mock.patch(
             "isaricanalytics.isaric_data_schema.adtl.parse",
-            return_value="test_ids_tables",
+            return_value={
+                "core": isaric_data_schema_example_core_table,
+                "long": isaric_data_schema_example_long_table,
+            },
         ) as _:
             with mock.patch(
                 "isaricanalytics.isaric_data_schema.ArcApiClient",
@@ -36,12 +41,17 @@ class TestTransformToIsaricDataSchema:
 
     def test__no_arc_version__arc_version_list_from_version_request_is_empty__isaric_data_schema_transformation_exception_raised(  # noqa: E501
         self,
+        isaric_data_schema_example_core_table,
+        isaric_data_schema_example_long_table,
     ):
         mock_arc_api_client = mock.MagicMock()
         mock_arc_api_client.get_arc_version_list(return_value=[])
         with mock.patch(
             "isaricanalytics.isaric_data_schema.adtl.parse",
-            return_value="test_ids_tables",
+            return_value={
+                "core": isaric_data_schema_example_core_table,
+                "long": isaric_data_schema_example_long_table,
+            },
         ) as _:
             with mock.patch(
                 "isaricanalytics.isaric_data_schema.ArcApiClient",
@@ -54,10 +64,15 @@ class TestTransformToIsaricDataSchema:
 
     def test__arc_version__arc_api_exception_on_data_dictionary_request__isaric_data_schema_transformation_exception_raised(  # noqa: E501
         self,
+        isaric_data_schema_example_core_table,
+        isaric_data_schema_example_long_table,
     ):
         with mock.patch(
             "isaricanalytics.isaric_data_schema.adtl.parse",
-            return_value="test_ids_tables",
+            return_value={
+                "core": isaric_data_schema_example_core_table,
+                "long": isaric_data_schema_example_long_table,
+            },
         ) as _:
             with mock.patch(
                 "isaricanalytics.isaric_data_schema.get_arc",
@@ -70,10 +85,15 @@ class TestTransformToIsaricDataSchema:
 
     def test__arc_version__response_from_arc_data_dictionary_request_is_empty__isaric_data_schema_transformation_exception_raised(  # noqa: E501
         self,
+        isaric_data_schema_example_core_table,
+        isaric_data_schema_example_long_table,
     ):
         with mock.patch(
             "isaricanalytics.isaric_data_schema.adtl.parse",
-            return_value="test_ids_tables",
+            return_value={
+                "core": isaric_data_schema_example_core_table,
+                "long": isaric_data_schema_example_long_table,
+            },
         ) as _:
             with mock.patch(
                 "isaricanalytics.isaric_data_schema.get_arc", return_value=tuple()
