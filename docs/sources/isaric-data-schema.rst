@@ -244,4 +244,4 @@ These dataframes can be exported to input CSVs (via the :py:meth:`pandas.DataFra
 * ``observation.csv`` - a CSV export ``vertex_static_data["during_observation"]
 * ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]
 
-Please refer to :doc:`VERTEX project <isaric-vertex:sources/app#project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
+Please refer to the :ref:`VERTEX project <isaric-vertex:project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
