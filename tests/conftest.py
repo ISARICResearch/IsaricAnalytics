@@ -52,12 +52,26 @@ def isaric_data_schema_example_core_table_filepath() -> Path:
 
 
 @pytest.fixture(scope="module")
+def isaric_data_schema_example_core_table(
+    isaric_data_schema_example_core_table_filepath,
+) -> Path:
+    return pd.read_csv(isaric_data_schema_example_core_table_filepath)
+
+
+@pytest.fixture(scope="module")
 def isaric_data_schema_example_long_table_filepath() -> Path:
     return (
         Path(__file__)
         .parent.joinpath("assets", "isaric_data_schema_example_long_table.csv")
         .resolve()
     )
+
+
+@pytest.fixture(scope="module")
+def isaric_data_schema_example_long_table(
+    isaric_data_schema_example_long_table_filepath,
+) -> Path:
+    return pd.read_csv(isaric_data_schema_example_long_table_filepath)
 
 
 @pytest.fixture(scope="module")
