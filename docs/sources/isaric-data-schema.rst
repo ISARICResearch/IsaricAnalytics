@@ -28,7 +28,7 @@ To produce the basic ISARIC data schema outputs call the :py:func:`~isaricanalyt
 
 * ``arc_version`` - the **ARC release version/tag**, which can also be obtained from the new :doc:`ARC Python package <isaric-arc:sources/arc-python>` using the :py:func:`isaric-arc:arc.arc_core.get_arc_versions` function.
 
-Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/ARC>`_ side-by-side with your project, then the following snippet shows the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function at work:
+Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/ARC>`_ side-by-side with your project, then the following snippet shows the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function at work, using a very simple `ARC example COVID-19 clinical dataset <https://github.com/ISARICResearch/ARC/tree/main/docs/examples>`_:
 
 .. code:: python
 
@@ -106,45 +106,114 @@ These should be addressed appropriately, which may include either removing some 
 VERTEX-style Outputs
 ~~~~~~~~~~~~~~~~~~~~
 
-If you're a `VERTEX <https://vertex.isaric.org>`_ user, and interested in writing insight panels for a VERTEX dashboard then with the additional optional argument of ``as_vertex_data=True`` the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function will return a dictionary of the main VERTEX dashboard input file dataframes (``df_map``, ``daily``, and ``dictiomary``) as shown in the snippet below, that can be used to set up a compatible :doc:`VERTEX project <isaric-vertex:sources/app#project-structure>`.
+If you're a `VERTEX <https://vertex.isaric.org>`_ user, and interested in writing insight panels for a VERTEX dashboard then with the additional optional argument of ``as_vertex_data=True`` the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function will return a dictionary of dataframes required for VERTEX dashboard visualisation, namely, ``"daily"``, and other dataframes representing patient interaction phase data, one dataframe per phase.
+
+The snippet below, using the same example COVID-19 example dataset from ARC, shows the transformation pipeline for VERTEX-style output.
 
 .. code:: python
 
-   >>> vertex_project_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1', as_vertex_data=True)
-   [covid-study] parsing example_data.csv: 100%|██████████████████████████████████████████| 5/5 [00:00<00:00, 530.95it/s]
-   [covid-study] validating core table: 5it [00:00, 36986.81it/s]
-   [covid-study] validating long table: 109it [00:00, 180774.67it/s]
-   >>>
-   >>> vertex_project_data.keys()
-   dict_keys(['df_map', 'daily', 'dictionary'])
-   >>>
-   >>> vertex_project_data['df_map']
-     subjid       siteid  ... adtl_valid                                         adtl_error
-   0   C001  SITE-GBR-01  ...       True                                                NaN
-   1   C002  SITE-DEU-01  ...       True                                                NaN
-   2   C003  SITE-USA-01  ...       True                                                NaN
-   3   C004  SITE-GBR-02  ...      False  data must contain ['subjid', 'siteid', 'datase...
-   4   C005  SITE-ESP-01  ...       True                                                NaN
+   >>> import warnings; warnings.filterwarnings('ignore')
+   >>> vertex_static_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1', as_vertex_data=True)
+   [covid-study] parsing example_data.csv: 100%|███████████████████████████████████████████| 5/5 [00:00<00:00, 771.58it/s]
+   [covid-study] validating core table: 5it [00:00, 45100.04it/s]
+   [covid-study] validating long table: 109it [00:00, 217084.11it/s]
+   2026-10-15 15:22:19 [INFO] arc.arc_core: version: v1.6.1
+   INFO:arc.arc_core:version: v1.6.1
+   >>> vertex_static_data.keys()
+   dict_keys(['df_map', 'df_forms_dict', 'dictionary', 'quality_report'])
 
-   [5 rows x 13 columns]
-   >>>
-   >>> vertex_project_data['daily']
-              date   dataset_id attribute_status subjid  ... adtl_valid attribute_unit value_num duration
-   0    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   1    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   2    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   3    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   4    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   ..          ...          ...              ...    ...  ...        ...            ...       ...      ...
-   104  2023-01-21  COVID-STUDY              VAL   C005  ...       True         10^9/L       9.2      NaN
-   105  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   106         NaN  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   107  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   108  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
+The transformation pipeline here works almost identically to non-VERTEX output option, except that there are additional steps to build the VERTEX-style output dataframes. The first and most important of these is named ``"df_map"``, which contains only one-row-per-patient data, organised by the ``subjid`` column, with list-valued observations data in all the other columns.
 
-   [109 rows x 12 columns]
+.. code:: python
+
+   >>> vertex_static_data['df_map']
+     subjid  ...                                          value_num
+   0   C001  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 38.1,...
+   1   C002  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 39.4,...
+   2   C003  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 37.8,...
+   3   C004  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 38.9,...
+   4   C005  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 37.6,...
+
+  [5 rows x 20 columns]
+
+There is also a ``"df_forms_dict"`` that is keyed by patient interaction phase, implemented via the unique values of the ``phase`` column:
+
+.. code:: python
+
+   >>> vertex_static_data['df_forms_dict'].keys()
+   dict_keys([('during_observation',), ('outcome',), ('presentation',)])
    >>>
-   >>> vertex_project_data['dictionary']
+   >>> vertex_static_data['df_forms_dict']['presentation']
+   subjid       siteid   dataset_id dataset_disease demog_country_iso3  ... arcver value value_num attribute_unit  duration
+   0    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
+   1    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
+   2    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
+   3    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2    No       NaN            NaN       NaN
+   4    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
+   ..    ...          ...          ...             ...                ...  ...    ...   ...       ...            ...       ...
+   64   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2   NaN      82.0            NaN       NaN
+   65   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2   NaN      20.0            NaN       NaN
+   66   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2   NaN      95.0            NaN       NaN
+   67   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2   NaN     132.0            NaN       NaN
+   68   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2   NaN      82.0            NaN       NaN
+
+   [69 rows x 20 columns]
+   >>>
+   >>> vertex_static_data['df_forms_dict']['during_observation']
+   subjid       siteid   dataset_id dataset_disease demog_country_iso3  ... arcver value value_num attribute_unit  duration
+   0   C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2    No       NaN            NaN       NaN
+   1   C002  SITE-DEU-01  COVID-STUDY        COVID-19                DEU  ...  1.2.2   Yes       NaN            NaN      12.0
+   2   C003  SITE-USA-01  COVID-STUDY        COVID-19                USA  ...  1.2.2    No       NaN            NaN       NaN
+   3   C004  SITE-GBR-02  COVID-STUDY        COVID-19                GBR  ...  1.2.2    No       NaN            NaN       NaN
+   4   C005  SITE-ESP-01  COVID-STUDY        COVID-19                ESP  ...  1.2.2    No       NaN            NaN       NaN
+
+   [5 rows x 20 columns]
+   >>>
+   >>> vertex_static_data['df_forms_dict']['outcome']
+   subjid       siteid   dataset_id dataset_disease  ...           value value_num attribute_unit duration
+   0    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...             NaN      42.3           mg/L      NaN
+   1    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...             NaN       1.2         10^9/L      NaN
+   2    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...             NaN       7.8         10^9/L      NaN
+   3    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   4    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   5    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   6    C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             NaN     187.6           mg/L      NaN
+   7    C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             NaN       0.4         10^9/L      NaN
+   8    C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             NaN      12.3         10^9/L      NaN
+   9    C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...  Corticosteroid       NaN            NaN      NaN
+   10   C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...       Antiviral       NaN            NaN      NaN
+   11   C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             Yes       NaN            NaN      NaN
+   12   C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             Yes       NaN            NaN      NaN
+   13   C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...             Yes       NaN            NaN      NaN
+   14   C002  SITE-DEU-01  COVID-STUDY        COVID-19  ...       Bacterial       NaN            NaN      NaN
+   15   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...             NaN      28.7           mg/L      NaN
+   16   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...             NaN       0.9         10^9/L      NaN
+   17   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...             NaN       8.1         10^9/L      NaN
+   18   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...       Antiviral       NaN            NaN      NaN
+   19   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...             Yes       NaN            NaN      NaN
+   20   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   21   C003  SITE-USA-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   22   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...             NaN     134.2           mg/L      NaN
+   23   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...             NaN       0.6         10^9/L      NaN
+   24   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...             NaN      10.9         10^9/L      NaN
+   25   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...  Corticosteroid       NaN            NaN      NaN
+   26   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...             Yes       NaN            NaN      NaN
+   27   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   28   C004  SITE-GBR-02  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   29   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...             NaN      67.8           mg/L      NaN
+   30   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...             NaN       1.1         10^9/L      NaN
+   31   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...             NaN       9.2         10^9/L      NaN
+   32   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   33   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+   34   C005  SITE-ESP-01  COVID-STUDY        COVID-19  ...              No       NaN            NaN      NaN
+
+   [35 rows x 20 columns]
+
+The ARC data dictionary associated with the given ARC version is also returned via the ``"dictionary"`` key:
+
+.. code:: python
+
+   >>> vertex_static_data['dictionary']
                  Form             Section  ... Branch                                   Question_english
    0     presentation                 NaN  ...                   Participant Identification Number (PIN)
    1     presentation  INCLUSION CRITERIA  ...         Suspected or confirmed infection, condition, o...
@@ -160,4 +229,19 @@ If you're a `VERTEX <https://vertex.isaric.org>`_ user, and interested in writin
 
    [1757 rows x 38 columns]
 
-These VERTEX project data files should be exported to CSVs via the :py:meth:`pandas.DataFrame.to_csv` method (without the dataframe index, i.e. with ``index=False``) first in order to set up the VERTEX project.
+The ``quality_report`` isn't strictly required by VERTEX, and is thus empty.
+
+.. code:: python
+
+   >>> vertex_static_data['quality_report']
+   {}
+
+These dataframes can be exported to input CSVs (via the :py:meth:`pandas.DataFrame.to_csv` method) in order to set up a static VERTEX dashboard. For the example presented above, the CSVs can be named as follows:
+
+* ``df_map.csv`` - a CSV export of ``vertex_static_data["df_map"]``
+* ``daily.csv`` - a CSV export of ``vertex_static_data["daily"]``
+* ``presentation.csv`` - a CSV export of ``vertex_static_data["presentation"]
+* ``observation.csv`` - a CSV export ``vertex_static_data["during_observation"]
+* ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]
+
+Please refer to :doc:`VERTEX project <isaric-vertex:sources/app#project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
