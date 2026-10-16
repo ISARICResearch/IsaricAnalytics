@@ -2466,7 +2466,7 @@ def execute_glm_regression(
 
 
 def execute_cox_model(
-    data: pandas.DataFrame,
+    df: pandas.DataFrame,
     duration_col: str,
     event_col: str,
     predictors: typing.Iterable[str],
@@ -2476,7 +2476,7 @@ def execute_cox_model(
 
     Parameters
     ----------
-    data : pandas.DataFrame
+    df : pandas.DataFrame
         The incoming data.
 
     duration_col : str
@@ -2497,31 +2497,31 @@ def execute_cox_model(
         The model results.
     """  # noqa : E501
     # Ensure categorical variables are treated appropriately
-    categorical_vars = data.select_dtypes(
+    categorical_vars = df.select_dtypes(
         include=["object", "category"]
     ).columns.intersection(predictors)
     for var in categorical_vars:
-        data[var] = data[var].astype("category")
+        df[var] = df[var].astype("category")
 
     # Convert categorical variables to dummies
-    data = pd.get_dummies(data, columns=categorical_vars, drop_first=True)
+    df = pd.get_dummies(df, columns=categorical_vars, drop_first=True)
 
     # Ensure numerical variables have the correct type
-    data[duration_col] = pd.to_numeric(data[duration_col], errors="coerce")
-    data[event_col] = pd.to_numeric(data[event_col], errors="coerce")
+    df[duration_col] = pd.to_numeric(df[duration_col], errors="coerce")
+    df[event_col] = pd.to_numeric(df[event_col], errors="coerce")
 
     # Update predictors to include one-hot encoded columns
     predictors = [
         c
-        for c in data.columns
+        for c in df.columns
         if c in predictors or any(c.startswith(p + "_") for p in categorical_vars)
     ]
 
     # Remove rows with missing values in essential columns
-    data = data.dropna(subset=[duration_col, event_col] + predictors)
+    df = df.dropna(subset=[duration_col, event_col] + predictors)
 
     # Select relevant columns
-    df_cox = data[[duration_col, event_col] + predictors]
+    df_cox = df[[duration_col, event_col] + predictors]
 
     # Fit the Cox model
     cph = CoxPHFitter()
