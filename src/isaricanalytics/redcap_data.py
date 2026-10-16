@@ -1077,7 +1077,7 @@ def harmonise_age(
 def map_variable(
     variable: pandas.Series,
     mapping_dict: dict[str, typing.Any],
-    non_nan_value: str = "Other / Unknown",
+    other_value_str: str = "Other / Unknown",
 ) -> pandas.Series:
     """:py:class:`pandas.Series` : Map a variable column using a dict.
 
@@ -1096,9 +1096,9 @@ def map_variable(
         Optional value with which to replace non-NaN values not in the dict
         keys.
     """
-    non_nan_value_ind = (variable.isin(mapping_dict.keys()) == 0) & variable.notna()
+    other_value_ind = (variable.isin(mapping_dict.keys()) == 0) & variable.notna()
     variable = variable.map(mapping_dict)
-    variable.loc[non_nan_value_ind] = non_nan_value
+    variable.loc[other_value_ind] = other_value_str
 
     return variable
 
