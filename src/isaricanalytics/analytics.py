@@ -1856,8 +1856,8 @@ def variance_influence_factor_backwards_elimination(
 def remove_single_binary_outcome_predictors(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
-    predictors: typing.Iterable[str],
-    outcome: str,
+    predictors_list: typing.Iterable[str],
+    outcome_str: str,
 ) -> typing.Iterable[str]:
     """:py:class:`typing.Iterable` : Returns a list of retained columns in the data after removing single binary outcome predictor columns.
 
@@ -1866,16 +1866,16 @@ def remove_single_binary_outcome_predictors(
 
     Parameters
     ----------
-    data: pandas.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary: pandas.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
-    predictors: typing.Iterable
+    predictors_list : typing.Iterable
         Iterable of predictor variable column names.
 
-    outcome : str
+    outcome_str : str
         The outcome string.
 
     Returns
@@ -1889,15 +1889,15 @@ def remove_single_binary_outcome_predictors(
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
     numeric_columns = [col for col in numeric_columns if col in _data.columns]
-    numeric_columns = [col for col in numeric_columns if col in predictors]
+    numeric_columns = [col for col in numeric_columns if col in predictors_list]
 
     categorical_ind = dictionary["field_type"].isin(["binary"])
     categorical_columns = dictionary.loc[categorical_ind, "field_name"].tolist()
     categorical_columns = [col for col in categorical_columns if col in data.columns]
-    categorical_columns = [col for col in categorical_columns if col in predictors]
+    categorical_columns = [col for col in categorical_columns if col in predictors_list]
 
     result = (
-        _data.groupby(outcome)[categorical_columns]
+        _data.groupby(outcome_str)[categorical_columns]
         .apply(
             lambda x: x.isin([True]).any() & x.isin([False]).any(), include_groups=False
         )
