@@ -902,6 +902,8 @@ def format_pvalue(
 def get_descriptive_data(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
+    /,
+    *,
     by_column: str | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
