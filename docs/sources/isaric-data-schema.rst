@@ -13,7 +13,7 @@ Before proceeding further, it is recommended to consult the ARC :doc:`ISARIC dat
 The Schema Transformation Pipeline
 ----------------------------------
 
-The transformation pipeline is implemented as a single function :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`, which can produce either the basic ISARIC data schema outputs, or a VERTEX-style outputs, as described below.
+The transformation pipeline is implemented as a single function :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`, which can produce either the basic ISARIC data schema outputs, or VERTEX-style outputs, as described below.
 
 .. _schema-transformation-basic:
 
@@ -240,8 +240,8 @@ These dataframes can be exported to input CSVs (via the :py:meth:`pandas.DataFra
 
 * ``df_map.csv`` - a CSV export of ``vertex_static_data["df_map"]``
 * ``daily.csv`` - a CSV export of ``vertex_static_data["daily"]``
-* ``presentation.csv`` - a CSV export of ``vertex_static_data["presentation"]
-* ``observation.csv`` - a CSV export ``vertex_static_data["during_observation"]
-* ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]
+* ``presentation.csv`` - a CSV export of ``vertex_static_data["presentation"]``
+* ``observation.csv`` - a CSV export ``vertex_static_data["during_observation"]``
+* ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]``
 
 Please refer to the :ref:`VERTEX project <isaric-vertex:project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
