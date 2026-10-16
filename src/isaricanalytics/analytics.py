@@ -186,12 +186,10 @@ def extend_dictionary(
 def get_variables_by_section_and_type(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
-    /,
-    *,
     required_variables: typing.Iterable[str] | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
-    exclude_suffixes: typing.Iterable[str] = [
+    exclude_suffix: typing.Iterable[str] = [
         "_units",
         "addi",
         "otherl2",
@@ -248,7 +246,7 @@ def get_variables_by_section_and_type(
     #     lambda x: x.endswith(tuple('___' + x for x in exclude_suffix))) == 0)
     include_ind &= (
         dictionary["field_name"].apply(
-            lambda x: x.endswith(tuple(x for x in exclude_suffixes))
+            lambda x: x.endswith(tuple(x for x in exclude_suffix))
         )
         == 0
     )
@@ -902,8 +900,6 @@ def format_pvalue(
 def get_descriptive_data(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
-    /,
-    *,
     by_column: str | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
