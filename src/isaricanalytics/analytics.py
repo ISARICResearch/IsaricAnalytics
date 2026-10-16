@@ -186,6 +186,8 @@ def extend_dictionary(
 def get_variables_by_section_and_type(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
+    /,
+    *,
     required_variables: typing.Iterable[str] | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
