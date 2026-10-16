@@ -2040,8 +2040,8 @@ def regression_summary_table(
 
 def execute_glmm_regression(
     elr_dataframe_df: pandas.DataFrame,
-    elr_outcome: str,
-    elr_predictors: typing.Iterable[str],
+    elr_outcome_str: str,
+    elr_predictors_list: typing.Iterable[str],
     elr_groups: str,
     model_type: str = "linear",
     print_results: bool = True,
@@ -2055,10 +2055,10 @@ def execute_glmm_regression(
     elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
-    elr_outcome : str
+    elr_outcome_str : str
         Name of the response variable.
 
-    elr_predictors : typing.Iterable
+    elr_predictors_list : typing.Iterable
         Iterable of predictor variable names.
 
     elr_groups : str
@@ -2086,14 +2086,14 @@ def execute_glmm_regression(
         The model results.
     """  # noqa : E501
     # Builds the formula
-    elr_formula_str = elr_outcome + " ~ " + " + ".join(elr_predictors)
+    elr_formula_str = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
 
     # Converts predictor categorical variables
     elr_categorical_vars_list = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
     )
     elr_categorical_vars_list = elr_categorical_vars_list.columns.intersection(
-        elr_predictors
+        elr_predictors_list
     )
     for elr_var_str in elr_categorical_vars_list:
         elr_dataframe_df[elr_var_str] = elr_dataframe_df[elr_var_str].astype("category")
@@ -2280,8 +2280,8 @@ def execute_glmm_regression(
 
 def execute_glm_regression(
     elr_dataframe_df: pandas.DataFrame,
-    elr_outcome: str,
-    elr_predictors: typing.Iterable,
+    elr_outcome_str: str,
+    elr_predictors_list: typing.Iterable,
     model_type: str = "linear",
     print_results: bool = True,
     labels: dict[str, str] | None = None,
@@ -2294,10 +2294,10 @@ def execute_glm_regression(
     elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
-    elr_outcome : str
+    elr_outcome_str : str
         Name of the response variable.
 
-    elr_predictors: typing.Iterable
+    elr_predictors_list: typing.Iterable
         Iterable of predictor variable names.
 
     model_type : str, default="linear"
@@ -2331,12 +2331,12 @@ def execute_glm_regression(
         raise ValueError("model_type must be 'linear' or 'logistic'")
 
     # Builds the formula
-    formula = elr_outcome + " ~ " + " + ".join(elr_predictors)
+    formula = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
 
     # Converts categorical variables to 'category' type
     categorical_vars = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
-    ).columns.intersection(elr_predictors)
+    ).columns.intersection(elr_predictors_list)
     for var in categorical_vars:
         elr_dataframe_df[var] = elr_dataframe_df[var].astype("category")
 
