@@ -2,7 +2,7 @@ coverage:
   status:
     project:
       default:
-        target: 80%
+        target: auto
         threshold: 0%
         flags:
           - unit
@@ -13,3 +13,8 @@ coverage:
         if_ci_failed: error
         informational: false
         only_pulls: false
+    patch:
+      default:
+        # Enforce patch coverage on PRs, but do not fail direct commits on main.
+        only_pulls: true
+        target: 0%

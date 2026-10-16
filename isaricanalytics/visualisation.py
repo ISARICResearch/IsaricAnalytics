@@ -27,6 +27,7 @@ __all__ = [
 # -- IMPORTS --
 
 # -- Standard libraries --
+import sys
 import typing
 
 # -- 3rd party libraries --
@@ -50,14 +51,24 @@ pd = pandas  # An alias to allow Pandas code refs to work independently
 ############################################
 
 
+def _get_vertex_graph_id(suffix: str, /, *, frame: int = 1) -> str:
+    fig_name = sys._getframe(frame).f_code.co_name
+    graph_id = suffix + "/" + fig_name
+
+    return graph_id
+
+
 def fig_placeholder(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Placeholder scatter plot",
     xlabel: str = "",
     ylabel: str = "",
     height: int = 450,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a placeholder scatter plot.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a placeholder scatter plot.
 
     Parameters
     ----------
@@ -65,21 +76,34 @@ def fig_placeholder(
         Incoming data.
 
     title : str, default="Placeholder scatter plot"
-        Figure title.
+        Optional figure title, defaults to ``"Placeholder scatter plot"``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     height : int, default=450
-        Figure height.
+        Optional figure height, defaults to ``450``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     if data is None:
         x = [1, 2, 3, 4, 5]
@@ -103,11 +127,25 @@ def fig_placeholder(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_pie(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Pie chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -115,8 +153,9 @@ def fig_pie(
     names: str | int | pd.Series | typing.Iterable = "",
     values: str | int | pd.Series | typing.Iterable = "",
     height: int = 450,
-):
-    """:py:class:`plotly.graph_objs.Figure` : Returns a pie chart figure.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a pie chart figure.
 
     Parameters
     ----------
@@ -124,30 +163,43 @@ def fig_pie(
         Incoming data.
 
     title : str, default="Placeholder scatter plot"
-        Figure title.
+        Optional figure title, defaults to ``"Placeholder scatter plot"``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     base_color_map : dict
-        Map of sector values and colours.
+        Optional map of sector values and colours, defaults to ``None``.
 
     names : str, int, pd.Series, typing.Iterable, default=""
-        Sector name(s)/label(s).
+        Optional sector name(s)/label(s), defaults to ``""``.
 
     values : str, int, pd.Series, typing.Iterable, default=""
-        Sector values.
+        Optional sector values, defaults to ``""``.
 
     height : int, default=450
-        Figure height.
+        Optional figure height, defaults to ``450``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -168,11 +220,25 @@ def fig_pie(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_timelines(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Timeline",
     label_col: str = "",
     group_col: str = "",
@@ -182,8 +248,9 @@ def fig_timelines(
     min_width: int = 2,
     max_width: int = 10,
     height: int = 500,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a timeline figure.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a timeline figure.
 
     Parameters
     ----------
@@ -191,36 +258,49 @@ def fig_timelines(
         Incoming data.
 
     title : str, default="Timeline"
-        Figure title.
+        Optional figure title, defaults to ``"Timeline"``.
 
     label_col : str, default=""
-        Label column.
+        Optional label column, defaults to ``""``.
 
     group_col : str, default=""
-        Group column.
+        Optional group column, defaults to ``""``.
 
     start_date : str, default="start_date"
-        Start date column.
+        Optional start date column, defaults to ``"start_date"``.
 
     end_date : str, default="end_date"
-        End date column.
+        Optional end date column, defaults to ``"end_date"``.
 
     size_col : str, None, default=None
-        Size column.
+        Optional size column, defaults to ``None``.
 
     min_width : int, default=2
-        Figure minimum width.
+        Optional figure minimum width, defaults to ``2``.
 
     max_width : int, default=10
-        Figure maximum width.
+        Optional figure maximum width, defaults to ``10``.
 
     height : int, default=500
-        Figure height.
+        Optional figure height, defaults to ``500``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
     df[start_date] = pd.to_datetime(df[start_date])
@@ -292,18 +372,33 @@ def fig_timelines(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_sunburst(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Sunburst Chart",
     path: list[str | int] | pd.Series | typing.Iterable | None = ["level0", "level1"],
     values: str | int | pd.Series | typing.Iterable = "values",
     base_color_map: dict[str, str] | None = None,
     height: int = 430,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a sunburst plot.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a sunburst plot.
 
     Parameters
     ----------
@@ -311,25 +406,40 @@ def fig_sunburst(
         Incoming data.
 
     title : str, default="Sunburst Chart"
-        Figure title.
+        Optional figure title, defaults to ``"Sunburst Chart"``.
 
     path : str, int, pd.Series, typing.Iterable, None, default=["level0", "level1"]
-        Column names defining a hierarhy of sectors, from root to leaves.
+        Optional column names defining sector hierarchy, from root to leaves;
+        defaults to ``["level0", "level1"]``.
 
     values : str, int, pd.Series, typing.Iterable, default="values"
-        A column name in the data defining sector values, or a Pandas Series
-        or an iterable containing sector values.
+        Optional column name in the data defining sector values, or a Pandas
+        Series, or an iterable containing sector values; defaults to
+        ``"values"``.
 
     base_color_map : dict, default=None
-        Map of sector values/marks and colours.
+        Optional map of sector values/marks and colours, defaults to ``None``.
 
     height : int, default=430
-        Figure height.
+        Optional figure height, defaults to ``430``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -353,11 +463,25 @@ def fig_sunburst(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_bar_chart(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Bar Chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -366,8 +490,9 @@ def fig_bar_chart(
     xaxis_tickformat: str = "%m-%Y",
     base_color_map: dict[str, str] | None = None,
     height: int = 340,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a bar chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a bar chart.
 
     Parameters
     ----------
@@ -375,35 +500,55 @@ def fig_bar_chart(
         Incoming data.
 
     title : str, default="Bar Chart"
-        Figure title.
+        Optional figure title, defaults to ``"Bar Chart"``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     index_column : str, default="index"
-        Index column.
+        Optional index column, defaults to ``"index"``.
 
     barmode : str, default="stack"
-        How bars with the same location coordinate are displayed: possible
-        values are `"stack"`, `"relative"`, `"group"`, `"overlay"``. For
-        reference see the `Plotly documentation <https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html>`_.
+        Optional indicator of how bars with the same location coordinate are
+        displayed: possible values are:
+
+        * ``"stack"``
+        * ``"relative"``
+        * ``"group"``
+        * ``"overlay"``.
+
+        Defaults to ``"stack"``. For reference see the
+        `Plotly documentation <https://plotly.com/python-api-reference/generated/plotly.graph_objects.Layout.html>`_.
 
     xaxis_tickformat : str, default="%m-%Y"
-        x-axis tick format.
+        Optional ``x``-axis tick format, defaults to ``"%m-%Y"``.
 
     base_color_map : dict, default=None
-        Map of bar values and colours.
+        Optional map of bar values and colours, defaults to ``None``.
 
     height : int, default=340
-        Figure height.
+        Optional figure height, defaults to ``340``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -457,15 +602,30 @@ def fig_bar_chart(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_upset(
     data: tuple[pd.DataFrame],
+    /,
+    *,
     title: str = "Upset Plot",
     height: int = 480,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns an upset plot.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns an upset plot.
 
     Parameters
     ----------
@@ -474,15 +634,28 @@ def fig_upset(
         second for intersections.
 
     title : str, default="Upset Plot"
-        Figure title.
+        Optional figure title, defaults to ``"Upset Plot"``.
 
     height : int, default=480
-        Figure height.
+        Optional figure height, defaults to ``480``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     counts = data[0].copy()
     intersections = data[1].copy()
@@ -642,18 +815,33 @@ def fig_upset(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_count_chart(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Count Chart",
     xlabel: str = "Count",
     ylabel: str = "Variable",
     base_color_map: dict[str, str] | None = None,
     height: int = 350,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a count chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a count chart.
 
     Parameters
     ----------
@@ -661,24 +849,37 @@ def fig_count_chart(
         Incoming data.
 
     title : str, default="Count Chart"
-        Figure title.
+        Optional figure title, defaults to ``"Count Chart"``.
 
     xlabel : str, default="Count"
-        Figure x-axis label.
+        Optional fgure x-axis label, defaults to ``"Count"``.
 
     ylabel : str, default="Variable"
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``"Variable"``.
 
     base_color_map : dict, default=None
-        Map of bar values and colours.
+        Optional map of bar values and colours, defaults to ``None``.
 
     height : int, default=350
-        Figure height.
+        Optional figure height, defaults to ``350``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
     column_names = ["label", "count", "short_label"]
@@ -744,18 +945,33 @@ def fig_count_chart(
 
     fig = go.Figure(data=traces, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_frequency_chart(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Frequency Chart",
     xlabel: str = "Proportion",
     ylabel: str = "Variable",
     base_color_map: dict[str, str] | None = None,
     height: int = 350,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a frequency chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a frequency chart.
 
     Parameters
     ----------
@@ -763,24 +979,37 @@ def fig_frequency_chart(
         Incoming data.
 
     title : str, default="Frequency Chart"
-        Figure title.
+        Optional figure title, defaults to ``"Frequency Chart"``.
 
     xlabel : str, default="Proportion"
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``"Proportion"``.
 
     ylabel : str, default="Variable"
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``"Variable"``.
 
-    base_color_map : dict
-        Map of bar values and colours.
+    base_color_map : dict, default=None
+        Optional map of bar values and colours, defaults to ``None``.
 
     height : int, default=350
-        Figure height.
+        Optional figure height, defaults to ``350``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -870,16 +1099,31 @@ def fig_frequency_chart(
 
     fig = go.Figure(data=traces, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_table(
     data: pandas.DataFrame,
+    /,
+    *,
     table_key: str = "",
     columnwidth: typing.Iterable[int | float] | None = None,
     height: int = 500,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a table figure.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a table figure.
 
     Parameters
     ----------
@@ -887,18 +1131,31 @@ def fig_table(
         Incoming data.
 
     table_key : str, default=""
-        Table key.
+        Optional table key, defaults to ``""``.
 
     columnwidth : typing.Iterable, default=None
-        An iterable of column widths.
+        Optonal iterable of column widths, defaults to ``None``.
 
     height : int, default=500
-        Figure height.
+        Optional figure height, defaults to ``500``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -941,18 +1198,33 @@ def fig_table(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_dual_stack_pyramid(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Dual-Sided Stacked Pyramid Chart",
     xlabel: str = "Count",
     ylabel: str = "Category",
     base_color_map: dict[str, str] | None = None,
     height: int = 430,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a dual-sided stacked pyramid chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a dual-sided stacked pyramid chart.
 
     Parameters
     ----------
@@ -960,7 +1232,7 @@ def fig_dual_stack_pyramid(
         Incoming data.
 
     title : str, default="Dual-Sided Stacked Pyramid Chart"
-        Figure title.
+        Optional figure title.
 
     xlabel : str, default="Count"
         Figure x-axis label.
@@ -974,10 +1246,23 @@ def fig_dual_stack_pyramid(
     height : int, default=430
         Figure height.
 
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
+
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """  # noqa : E501
     df = data.copy()
 
@@ -1115,14 +1400,25 @@ def fig_dual_stack_pyramid(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_flowchart(
-    data: pandas.DataFrame,
-    height: int = 430,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a flowchart.
+    data: pandas.DataFrame, /, *, height: int = 430, **kwargs: typing.Any
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a flowchart.
 
     Parameters
     ----------
@@ -1132,10 +1428,23 @@ def fig_flowchart(
     height : int, default=430
         Figure height.
 
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
+
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -1197,11 +1506,25 @@ def fig_flowchart(
 
     fig = go.Figure(layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_forest_plot(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Forest Plot",
     xlabel: str = "Odds Ratio (95% CI)",
     ylabel: str = "",
@@ -1210,8 +1533,9 @@ def fig_forest_plot(
     marker: dict[str, typing.Any] | None = None,
     noeffect_line: bool = True,
     height: int = 600,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a forest plot.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a forest plot.
 
     Parameters
     ----------
@@ -1219,33 +1543,47 @@ def fig_forest_plot(
         Incoming data.
 
     title : str, default="Forest Plot"
-        Figure title.
+        Optional figure title, defaults to ``"Forest Plot"``.
 
     xlabel : str, default="Odds Ratio (95% CI)"
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``"Odds Ratio (95% CI)"``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     reorder : bool, default=True
-        Sort values.
+        Optional indicator of value sorting, defaults to ``True``.
 
     labels : typing.Iterable, default=["Variable", "OddsRatio", "LowerCI", "UpperCI"]
-        Column of labels.
+        Optional column of labels, defaults to
+        ``["Variable", "OddsRatio", "LowerCI", "UpperCI"]``.
 
     marker : dict, default=None
-        Marker properties dict.
+        Optional marker properties dict, defaults to ``None``.
 
     no_effect_line : bool, default=True
-        Add no effect line.
+        Optional no effect line, defaults to ``True``.
 
     height : int, default=600
-        Figure height.
+        Optional figure height, defaults to ``600``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -1327,14 +1665,25 @@ def fig_forest_plot(
     )
     fig = go.Figure(data=traces, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_text(
-    data: pandas.DataFrame,
-    height: int = 430,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a figure with an annotation.
+    data: pandas.DataFrame, /, *, height: int = 430, **kwargs: typing.Any
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a figure with an annotation.
 
     Parameters
     ----------
@@ -1342,12 +1691,25 @@ def fig_text(
         Incoming data.
 
     height : int, default=430
-        Figure height.
+        Optional figure height, defaults to ``430``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     fig = go.Figure()
 
@@ -1364,11 +1726,25 @@ def fig_text(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_kaplan_meier(
     data: tuple[pd.DataFrame],
+    /,
+    *,
     title: str = "Kaplan-Meier Plot",
     xlabel: str = "Time (days)",
     ylabel: str = "Survival Probability",
@@ -1378,8 +1754,9 @@ def fig_kaplan_meier(
     xlim: typing.Iterable[float | int] | None = None,
     p_value: float | None = None,
     height: int = 480,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a Kaplan-Meier plot.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a Kaplan-Meier plot.
 
     Parameters
     ----------
@@ -1388,36 +1765,49 @@ def fig_kaplan_meier(
         second for the risk table.
 
     title : str, default="Kaplan-Meier Plot"
-        Figure title.
+        Optional figure title, defaults to ``"Kaplan-Meier Plot"``.
 
     xlabel : str, default="Time (days)"
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``"Time (days)"``.
 
     ylabel : str, default="Survival Probability"
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``"Survival Probability"``.
 
     groups : typing.Iterable, default=None
-        Groups.
+        Optional groups, defaults to ``None``.
 
     index_column : str, default="index"
-        Index column.
+        Optional index column, defaults to ``"index"``.
 
     base_color_map : dict, default=None
-        Colour map.
+        Optional colour map, defaults to ``None``.
 
     xlim : typing.Iterable, default=None
-        xlim.
+        Optional xlim, defaults to ``None``.
 
     p_value : float, default=None
-        p-value.
+        Optional :math:`p`-value, defaults to ``None``.
 
     height : int, default=480
-        Figure height.
+        Optional figure height, defaults to ``480``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df_km = data[0].copy()
     risk_table = data[1].copy()
@@ -1620,11 +2010,25 @@ def fig_kaplan_meier(
         minreducedwidth=500,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_line_chart(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Line chart",
     xlabel: str = "",
     ylabel: str = "",
@@ -1634,8 +2038,9 @@ def fig_line_chart(
     lower_column: str | None = None,
     upper_column: str | None = None,
     line_color: str | None = None,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a line chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a line chart.
 
     Parameters
     ----------
@@ -1643,36 +2048,49 @@ def fig_line_chart(
         Incoming data.
 
     title : str, default="Line chart"
-        Figure title.
+        Optional figure title, defaults to ``"Line chart"``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     height : int, default=480
-        Figure height.
+        Optional figure height, defaults to ``480``.
 
     line_column : str, default=""
-        Line column.
+        Optional line column, defaults to ``""``.
 
     index_column : str, default="index"
-        Index column.
+        Optional index column, defaults to ``"index"``.
 
     lower_column : str, default=None
-        Lower column.
+        Optional lower column, defaults to ``None``.
 
     upper_column : str, default=None
-        Upper column.
+        Optional upper column, defaults to ``None``.
 
     line_color : str, default=None
-        Line colour.
+        Optional line colour, defaults to ``None``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -1728,11 +2146,25 @@ def fig_line_chart(
 
     fig = go.Figure(data=data, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_bar_line_chart(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "Combined bar line chart",
     xlabel: str = "",
     ylabel_left: str = "",
@@ -1745,8 +2177,9 @@ def fig_bar_line_chart(
     bar_color: str | None = None,
     line_color: str | None = None,
     height: int = 500,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a bar-line chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a bar-line chart.
 
     Parameters
     ----------
@@ -1754,42 +2187,55 @@ def fig_bar_line_chart(
         Incoming data.
 
     title : str, default="Combined bar line chart"
-        Figure title.
+        Optional figure title, defaults to ``"Combined bar line chart"``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     bar_column : str, default=""
-        Bar column.
+        Optional bar column, defaults to ``""``.
 
     line_column : str, default=""
-        Line column.
+        Optional line column, defaults to ``""``.
 
     index_column : str, default="index"
-        Index column.
+        Optional index column, defaults to ``""``.
 
     lower_column : str, default=None
-        Lower column.
+        Optional lower column, defaults to ``None``.
 
     upper_column : str, default=None
-        Upper column.
+        Optional upper column, defaults to ``None``.
 
     bar_color : str, default=None
-        Bar colour.
+        Optional bar colour, defaults to ``None``.
 
     line_color : str, default=None
-        Line colour.
+        Optional line colour, defaults to ``None``.
 
     height : int, default=500
-        Figure height.
+        Optional figure height, defaults to ``500``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     df = data.copy()
 
@@ -1867,11 +2313,25 @@ def fig_bar_line_chart(
     )
     fig = go.Figure(data=data, layout=layout)
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_heatmaps(
     data: pandas.DataFrame,
+    /,
+    *,
     title: str = "",
     subplot_titles: list[str] | None = None,
     ylabel: str = "",
@@ -1883,8 +2343,9 @@ def fig_heatmaps(
     include_annotations: bool = False,
     base_color_map: dict[str, str] | None = None,
     height: int = 750,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a heatmaps chart.
+    **kwargs: typing.Any,
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a heatmaps chart.
 
     Parameters
     ----------
@@ -1892,42 +2353,56 @@ def fig_heatmaps(
         Incoming data.
 
     title : str, default=""
-        Figure title.
+        Optional figure title, defaults to ``""``.
 
     subplot_titles : list, default=None
-        Subplot titles.
+        Optional iterable of subplot titles, defaults to ``None``.
 
     xlabel : str, default=""
-        Figure x-axis label.
+        Optional figure x-axis label, defaults to ``""``.
 
     ylabel : str, default=""
-        Figure y-axis label.
+        Optional figure y-axis label, defaults to ``""``.
 
     colorbar_label : str, default=""
-        Colour bar label.
+        Optional colour bar label, defaults to ``""``.
 
     index_column : str, default="index"
-        Index column.
+        Optional index column, defaults to ``""``.
 
     zmin : float, default=None
-        zmin.
+        Optional zmin, defaults to ``None``.
 
     zmax : float, default=None
-        zmax.
+        Optional zmax, defaults to ``None``.
 
     include_annotations : bool, default=False
-        Include annotations.
+        Optional indicator of whether to include annotations, defaults to
+        ``False``.
 
     base_color_map : dict, default=None
-        Colour map.
+        Optional colour map, defaults to ``None``.
 
     height : int, default=750
-        Figure height.
+        Optional figure height, defaults to ``750``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     if isinstance(data, tuple) is False:
         data = (data,)
@@ -1997,14 +2472,25 @@ def fig_heatmaps(
         col=1,
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 def fig_sankey(
-    data: pandas.DataFrame,
-    height: int = 500,
-) -> plotly.graph_objs.Figure:
-    """:py:class:`plotly.graph_objs.Figure` : Returns a Sankey plot.
+    data: pandas.DataFrame, /, *, height: int = 500, **kwargs: typing.Any
+) -> plotly.graph_objs.Figure | tuple[plotly.graph_objs.Figure, str, str, str]:
+    """Returns a Sankey plot.
 
     Parameters
     ----------
@@ -2012,12 +2498,25 @@ def fig_sankey(
         Incoming data.
 
     height : int, default=500
-        Figure height.
+        Optional figure height, defaults to ``500``.
+
+    **kwargs : typing.Any
+        Additional optional string args for compatibility with older versions
+        of VERTEX insight panels, including the specific named arguments:
+
+        * ``suffix``       - suffix of insight panel in which figure appears,
+                             defaults to ``""``
+        * ``graph_id``     - figure ID, defaults to ``None``
+        * ``graph_label``  - figure label, defaults to ``""``
+        * ``graph_about``  - figure text that pops up for the About button,
+                             defaults to ``""``
 
     Returns
     -------
-    plotly.graph_objs.Figure
-        The Plotly figure.
+    plotly.graph_objs.Figure or tuple
+        Just the Plotly figure, if no insight panel suffix is provided, or a
+        4-tuple consisting of the Plotly figure, figure ID (``graph_id``),
+        figure label (``graph_label``), and figure text (``graph_about``).
     """
     node = data[0].copy()
     link = data[1].copy()
@@ -2050,7 +2549,19 @@ def fig_sankey(
         ),
     )
 
-    return fig
+    if not kwargs.get("suffix", ""):
+        return fig
+
+    # For VERTEX dashboard insight panel compatibility
+    suffix = kwargs["suffix"]
+    graph_id = kwargs.get("graph_id")
+    graph_label = kwargs.get("graph_label", "")
+    graph_about = kwargs.get("graph_about", "")
+    graph_id = (
+        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    )
+
+    return fig, graph_id, graph_label, graph_about
 
 
 ############################################
