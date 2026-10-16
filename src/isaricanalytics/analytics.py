@@ -1513,7 +1513,6 @@ def get_proportions(
 def get_upset_counts_intersections(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
-    proportions=None,  # Deprecated
     variables: list[str] | None = None,
     n_variables: int = 5,
     sep: str = "___",
