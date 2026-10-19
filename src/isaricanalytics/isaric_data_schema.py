@@ -299,17 +299,25 @@ def get_vertex_df_map_proxy(
         columns=[col for col in merged.columns if col.endswith("_y")], inplace=True
     )
 
-    # Get an iterable (Pandas Index) of all non-patient ID columns.
-    non_patient_id_cols = merged.columns.difference(["subjid"])
-
-    # Group rows by patient ID, and for each group "implode" column values for
-    # each column in the group to a list, and reset the index to ensure that
-    # the patient ID index is put back as a column, before returning.
-    return (
-        merged.groupby(["subjid"])
-        .agg({col: lambda values: values.tolist() for col in non_patient_id_cols})
-        .reset_index()
+    # An intermediate step to convert all non-patient ID columns to list-valued
+    # columns.
+    non_patient_id_cols = merged.columns.difference(["subjid"]).tolist()
+    merged = merged.groupby(["subjid"]).agg(
+        {col: lambda values: values.tolist() for col in non_patient_id_cols}
     )
+
+    # Identify and drop any non-patient ID column with more than one (unique)
+    # value per patient.
+    multivalued_cols = [
+        col
+        for col in non_patient_id_cols
+        if all(len(set(v)) > 1 for v in merged[col].values)
+    ]
+    merged.drop(columns=multivalued_cols, inplace=True)
+
+    return merged.explode(
+        merged.columns.difference(["subjid"]).tolist()
+    ).drop_duplicates()
 
 
 def get_vertex_df_forms_proxy(
@@ -332,31 +340,16 @@ def get_vertex_df_forms_proxy(
         from both the core table and long table, and converting multi-valued
         columns in the merged table to list-valued columns.
     """  # noqa : E501
-    coretb = ids_core_table.drop(
-        columns=[col for col in ids_core_table.columns if col.startswith("adtl")]
-    )
     longtb = ids_long_table.drop(
-        columns=[col for col in ids_long_table.columns if col.startswith("adtl")]
-    )
-
-    # Inner-merge the core and long tables on patient ID (``subjid``) and keep
-    # core table columns without suffixes.
-    merged = coretb.merge(longtb, on=["subjid"], how="inner", suffixes=(None, "_y"))
-
-    # Drop any columns with ``"_y"`` suffixes (from the long table) because
-    # there must be unsuffixed versions of these from the core table from the
-    # merge above.
-    merged.drop(
-        columns=[col for col in merged.columns if col.endswith("_y")], inplace=True
+        columns=[
+            col for col in ids_long_table.columns if col.lower().startswith("adtl")
+        ]
     )
 
     # Build the ``df_forms_dict`` proxy using the merged dataframe (``daily``),
     # and the dataframes obtained by grouping the merged dataframe by patient
     # interaction phase (``phase`` column).
-    df_forms_proxy = {
+    return {
         phase[0]: phase_data.reset_index(drop=True)
-        for phase, phase_data in merged.groupby(["phase"])
+        for phase, phase_data in longtb.groupby(["phase"])
     }
-    df_forms_proxy.update({"daily": merged})
-
-    return df_forms_proxy
