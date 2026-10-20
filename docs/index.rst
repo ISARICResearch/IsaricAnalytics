@@ -6,12 +6,15 @@ ISARIC Analytics
    :height: 201.8
    :width:  325
 
+.. role:: raw-html(raw)
+   :format: html
+
 The `ISARIC Analytics <https://github.com/ISARICResearch/IsaricAnalytics/>`_ library (:code:`isaricanalytics`) is for users requiring or interested in:
 
 - REDCap data extraction
 - Data analytics and/or visualisation
 
-in the setting of clinical epidemiology.
+in the setting of clinical epidemiology, and is a core component of the :raw-html:`<a href="https://docs.isaric.org" target="_blank">ISARIC Clinical Epidemiology Platform</a>`.
 
 ISARICAnalytics is licensed under the `MIT license <https://opensource.org/license/mit>`_.
 
