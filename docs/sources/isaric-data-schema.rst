@@ -13,7 +13,7 @@ Before proceeding further, it is recommended to consult the ARC :doc:`ISARIC dat
 The Schema Transformation Pipeline
 ----------------------------------
 
-The main transformation pipeline, that converts a raw, custom clinical dataset and an associated parser to the ISARIC data schema format, is implemented by  :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`. This function can produce either the basic ISARIC data schema outputs, or, optionally, VERTEX-style, analysis-ready outputs, as described below.
+The main transformation pipeline, that converts a raw, custom clinical dataset with an associated parser file to the ISARIC data schema format, is implemented by  :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`. This function can produce either the basic ISARIC data schema outputs, or, optionally, VERTEX-style, analysis-ready outputs, as described below.
 
 .. _schema-transformation-basic:
 
