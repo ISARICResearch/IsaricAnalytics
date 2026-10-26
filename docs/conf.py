@@ -133,7 +133,7 @@ sphinx_gallery_conf = {
 #     For more on all available autodoc defaults see
 #         https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
-    "exclude-members": "",
+    "exclude-members": "__weakref__",
     "member-order": "alphabetical",
     "private-members": False,
     "special-members": "",

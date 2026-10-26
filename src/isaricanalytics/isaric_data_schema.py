@@ -30,7 +30,8 @@ from arc.arc_core import get_arc
 import isaricanalytics.isaric_transformations as tf
 
 
-class IsaricDataSchemaTransformationException(Exception): ...
+class IsaricDataSchemaTransformationException(Exception):
+    """Base exception class for the ISARIC data schema library."""
 
 
 def _warn_on_non_arc_columns(
@@ -287,6 +288,15 @@ def transform_to_vertex(
 
     Returns
     -------
+    dict
+        VERTEX dataframes in a dict of the form:
+        ::
+
+            {
+                "df_map": <one-row-per-patient dataframe>,
+                "daily": <patient observations dataframe>,
+                "dictionary": <ARC data dictionary>
+            }
     """
     # An ARC version is required to fetch the ARC data dictionary. If no ARC
     # version is provided by the caller, fetch the latest directly from ARC @
