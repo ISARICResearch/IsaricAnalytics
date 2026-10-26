@@ -7,6 +7,7 @@ __all__ = [
     "get_parser_toml_map",
     "IsaricDataSchemaTransformationException",
     "transform_to_isaric_data_schema",
+    "transform_to_vertex",
 ]
 
 
@@ -140,9 +141,9 @@ def get_parser_source_field_map(
 def transform_to_isaric_data_schema(
     parser_file: str | pathlib.Path,
     data_file: str | pathlib.Path,
-    arc_version: str | None = None,
     /,
     *,
+    arc_version: str | None = None,
     as_vertex_data: bool = False,
 ) -> dict[str, pd.DataFrame]:
     """:py:class:`dict` : ISARIC schema-compliant short/core- and long-format datasets as Pandas dataframes, with optional VERTEX-style output.
@@ -157,7 +158,8 @@ def transform_to_isaric_data_schema(
 
     arc_version : str or None, default=None
         Optional ARC version string used to fetch the ARC data dictionary
-        associated with the ARC version; defaults to ``None``.
+        associated with the ARC version; defaults to ``None`` in which
+        case the latest ARC version is used.
 
     as_vertex_data : bool, default=False
         Optional indicator of whether to return the data as a VERTEX-style
@@ -173,7 +175,7 @@ def transform_to_isaric_data_schema(
     Returns
     -------
     dict
-        A dict which could be in one of two forms:
+        A dict of the form:
         ::
 
             {
@@ -240,7 +242,7 @@ def transform_to_isaric_data_schema(
         )
 
     # Checking the source file for any columns that are not mapped to data
-    # columns in the parser file.
+    # columns in the parser file, and in that case issuing warnings.
     parser_source_field_map = get_parser_source_field_map(parser_file)
     toml_source_fields = set(parser_source_field_map["core"]).union(
         parser_source_field_map["long"]
@@ -255,37 +257,94 @@ def transform_to_isaric_data_schema(
 
     return {
         "df_map": get_vertex_df_map_proxy(core_table, long_table),
-        "df_forms_dict": get_vertex_df_forms_proxy(core_table, long_table),
+        "df_forms_dict": get_vertex_df_forms_proxy(long_table),
+        "dictionary": arc_dd,
+        "quality_report": {},
+    }
+
+
+def transform_to_vertex(
+    isaric_core_table: pd.DataFrame,
+    isaric_long_table: pd.DataFrame,
+    /,
+    *,
+    arc_version: str | None = None,
+) -> dict[str, typing.Any]:
+    """:py:class:`dict` : A dict of VERTEX-compatible dataframes for analytics.
+
+    Parameters
+    ----------
+    isaric_core_table : pandas.DataFrame
+        The ISARIC data schema core table.
+
+    isaric_long_table : pandas.DataFrame
+        The ISARIC data schema long table.
+
+    arc_version : str or None, default=None
+        Optional ARC version string used to fetch the ARC data dictionary
+        associated with the ARC version; defaults to ``None`` in which
+        case the latest ARC version is used.
+
+    Returns
+    -------
+    """
+    # An ARC version is required to fetch the ARC data dictionary. If no ARC
+    # version is provided by the caller, fetch the latest directly from ARC @
+    # GitHub - in case of an exception raise it.
+    if not arc_version:
+        try:
+            arc_version = ArcApiClient().get_arc_version_list()[0]
+        except (ArcApiClientError, IndexError) as e:
+            raise IsaricDataSchemaTransformationException(
+                f'Exception fetching ARC version "{arc_version}": '
+                f"{e}.\n\n Please check that you have provided a valid "
+                "ARC version. If you have then there may be a network- "
+                "related error, so please retry after some time."
+            )
+
+    # Fetch the ARC data dictionary associated with the ARC version - in case
+    # of an exception raise it.
+    try:
+        arc_dd = get_arc(arc_version)[0]
+    except (ArcApiClientError, IndexError) as e:
+        raise IsaricDataSchemaTransformationException(
+            "Exception fetching ARC data dictionary for ARC version "
+            f'"{arc_version}": {e}.\n\n Please check that you have provided a '
+            "valid ARC version. If you have, then please retry after some "
+            "time."
+        )
+
+    return {
+        "df_map": get_vertex_df_map_proxy(isaric_core_table, isaric_long_table),
+        "df_forms_dict": get_vertex_df_forms_proxy(isaric_long_table),
         "dictionary": arc_dd,
         "quality_report": {},
     }
 
 
 def get_vertex_df_map_proxy(
-    ids_core_table: pd.DataFrame, ids_long_table: pd.DataFrame, /
+    isaric_core_table: pd.DataFrame, isaric_long_table: pd.DataFrame, /
 ) -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_map`` containing one-row-per-patient data from an inner merge of the ISARIC data schema core and long tables on patient ID.
 
     Parameters
     ----------
-    ids_core_table : pandas.DataFrame
+    isaric_core_table : pandas.DataFrame
         The ISARIC data schema core table.
 
-    ids_long_table : pandas.DataFrame
+    isaric_long_table : pandas.DataFrame
         The ISARIC data schema long table.
 
     Returns
     -------
     pandas.DataFrame
-        A single dataframe with only one row per patient, combining columns
-        from both the core table and long table, and converting multi-valued
-        columns in the merged table to list-valued columns.
+        A single dataframe with only one row per patient.
     """  # noqa : E501
-    coretb = ids_core_table.drop(
-        columns=[col for col in ids_core_table.columns if col.startswith("adtl")]
+    coretb = isaric_core_table.drop(
+        columns=[col for col in isaric_core_table.columns if col.startswith("adtl")]
     )
-    longtb = ids_long_table.drop(
-        columns=[col for col in ids_long_table.columns if col.startswith("adtl")]
+    longtb = isaric_long_table.drop(
+        columns=[col for col in isaric_long_table.columns if col.startswith("adtl")]
     )
 
     # Inner-merge the core and long tables on patient ID (``subjid``) and keep
@@ -320,29 +379,22 @@ def get_vertex_df_map_proxy(
     ).drop_duplicates()
 
 
-def get_vertex_df_forms_proxy(
-    ids_core_table: pd.DataFrame, ids_long_table: pd.DataFrame, /
-) -> pd.DataFrame:
+def get_vertex_df_forms_proxy(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
 
     Parameters
     ----------
-    ids_core_table : pandas.DataFrame
-        The ISARIC data schema core table.
-
-    ids_long_table : pandas.DataFrame
+    isaric_long_table : pandas.DataFrame
         The ISARIC data schema long table.
 
     Returns
     -------
     pandas.DataFrame
-        A single dataframe with only one row per patient, combining columns
-        from both the core table and long table, and converting multi-valued
-        columns in the merged table to list-valued columns.
+        A single dataframe with one or more rows per patient.
     """  # noqa : E501
-    longtb = ids_long_table.drop(
+    longtb = isaric_long_table.drop(
         columns=[
-            col for col in ids_long_table.columns if col.lower().startswith("adtl")
+            col for col in isaric_long_table.columns if col.lower().startswith("adtl")
         ]
     )
 
