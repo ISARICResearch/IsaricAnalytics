@@ -13,7 +13,7 @@ Before proceeding further, it is recommended to consult the ARC :doc:`ISARIC dat
 The Schema Transformation Pipeline
 ----------------------------------
 
-The transformation pipeline is implemented as a single function :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`, which can produce either the basic ISARIC data schema outputs, or a VERTEX-style outputs, as described below.
+The main transformation pipeline, that converts a raw, custom clinical dataset and an associated parser to the ISARIC data schema format, is implemented by  :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`. This function can produce either the basic ISARIC data schema outputs, or, optionally, VERTEX-style, analysis-ready outputs, as described below.
 
 .. _schema-transformation-basic:
 
@@ -33,6 +33,7 @@ Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/
 .. code:: python
 
    >>> import warnings; warnings.filterwarnings('ignore')
+   >>> from isaricanalytics.isaric_data_schema import *
    >>> tables = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1')
   [covid-study] parsing example_data.csv: 100%|█████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 915.59it/s]
   [covid-study] validating core table: 5it [00:00, 46707.17it/s]
@@ -40,30 +41,30 @@ Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/
   2026-10-14 16:09:08 [INFO] arc.arc_core: version: v1.6.
 
    >>> tables['core']
-     subjid       siteid  ... adtl_valid                                         adtl_error
-   0   C001  SITE-GBR-01  ...       True                                                NaN
-   1   C002  SITE-DEU-01  ...       True                                                NaN
-   2   C003  SITE-USA-01  ...       True                                                NaN
-   3   C004  SITE-GBR-02  ...      False  data must contain ['subjid', 'siteid', 'datase...
-   4   C005  SITE-ESP-01  ...       True                                                NaN
+   subjid       siteid   dataset_id  ...               outco_outcome adtl_valid                                         adtl_error
+ 0   C001  SITE-GBR-01  COVID-STUDY  ...            Discharged alive       True                                                NaN
+ 1   C002  SITE-DEU-01  COVID-STUDY  ...                       Death       True                                                NaN
+ 2   C003  SITE-USA-01  COVID-STUDY  ...            Discharged alive       True                                                NaN
+ 3   C004  SITE-GBR-02  COVID-STUDY  ...          Still hospitalised      False  data must contain ['subjid', 'siteid', 'datase...
+ 4   C005  SITE-ESP-01  COVID-STUDY  ...  Transfer to other facility       True                                                NaN
 
-   [5 rows x 13 columns]
+ [5 rows x 13 columns]
 
    >>> tables['long']
-              date   dataset_id attribute_status subjid  ... adtl_valid attribute_unit value_num duration
-   0    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   1    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   2    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   3    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   4    2023-01-10  COVID-STUDY              VAL   C001  ...       True            NaN       NaN      NaN
-   ..          ...          ...              ...    ...  ...        ...            ...       ...      ...
-   104  2023-01-21  COVID-STUDY              VAL   C005  ...       True         10^9/L       9.2      NaN
-   105  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   106         NaN  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   107  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
-   108  2023-01-21  COVID-STUDY              VAL   C005  ...       True            NaN       NaN      NaN
+   subjid   dataset_id attribute_status         attribute arcver  ... value adtl_valid attribute_unit  value_num duration
+ 0     C001  COVID-STUDY              VAL    pres_symptpres  1.2.2  ...   Yes       True            NaN        NaN      NaN
+ 1     C001  COVID-STUDY              VAL       adsym_fever  1.2.2  ...   Yes       True            NaN        NaN      NaN
+ 2     C001  COVID-STUDY              VAL       adsym_cough  1.2.2  ...   Yes       True            NaN        NaN      NaN
+ 3     C001  COVID-STUDY              VAL  adsym_shortbreat  1.2.2  ...    No       True            NaN        NaN      NaN
+ 4     C001  COVID-STUDY              VAL     adsym_fatigue  1.2.2  ...   Yes       True            NaN        NaN      NaN
+ ..     ...          ...              ...               ...    ...  ...   ...        ...            ...        ...      ...
+ 104   C005  COVID-STUDY              VAL     labs_wbccount  1.2.2  ...   NaN       True         10^9/L        9.2      NaN
+ 105   C005  COVID-STUDY              VAL    inter_suppleo2  1.2.2  ...    No       True            NaN        NaN      NaN
+ 106   C005  COVID-STUDY              VAL         crito_icu  1.2.2  ...    No       True            NaN        NaN      NaN
+ 107   C005  COVID-STUDY              VAL        compl_ards  1.2.2  ...    No       True            NaN        NaN      NaN
+ 108   C005  COVID-STUDY              VAL       compl_pneum  1.2.2  ...    No       True            NaN        NaN      NaN
 
-   [109 rows x 12 columns]
+ [109 rows x 12 columns]
 
 The core table contains individual patient records, that is, with each row representing a distinct patient record, while the long table contains multiple records per patient, with each record representing an observation about a patient.
 
@@ -98,6 +99,32 @@ If the raw dataset contains non-ARC columns or columns that are not mapped to an
 
    Please check these columns.
    ...
+   >>>
+   >>> tables['core']
+     subjid       siteid   dataset_id  ...               outco_outcome adtl_valid                                         adtl_error
+   0   C001  SITE-GBR-01  COVID-STUDY  ...            Discharged alive       True                                                NaN
+   1   C002  SITE-DEU-01  COVID-STUDY  ...                       Death       True                                                NaN
+   2   C003  SITE-USA-01  COVID-STUDY  ...            Discharged alive       True                                                NaN
+   3   C004  SITE-GBR-02  COVID-STUDY  ...          Still hospitalised      False  data must contain ['subjid', 'siteid', 'datase...
+   4   C005  SITE-ESP-01  COVID-STUDY  ...  Transfer to other facility       True                                                NaN
+
+   [5 rows x 13 columns]
+   >>>
+   >>> tables['long']
+     subjid   dataset_id attribute_status         attribute arcver  ... value adtl_valid attribute_unit  value_num duration
+   0     C001  COVID-STUDY              VAL    pres_symptpres  1.2.2  ...   Yes       True            NaN        NaN      NaN
+   1     C001  COVID-STUDY              VAL       adsym_fever  1.2.2  ...   Yes       True            NaN        NaN      NaN
+   2     C001  COVID-STUDY              VAL       adsym_cough  1.2.2  ...   Yes       True            NaN        NaN      NaN
+   3     C001  COVID-STUDY              VAL  adsym_shortbreat  1.2.2  ...    No       True            NaN        NaN      NaN
+   4     C001  COVID-STUDY              VAL     adsym_fatigue  1.2.2  ...   Yes       True            NaN        NaN      NaN
+   ..     ...          ...              ...               ...    ...  ...   ...        ...            ...        ...      ...
+   104   C005  COVID-STUDY              VAL     labs_wbccount  1.2.2  ...   NaN       True         10^9/L        9.2      NaN
+   105   C005  COVID-STUDY              VAL    inter_suppleo2  1.2.2  ...    No       True            NaN        NaN      NaN
+   106   C005  COVID-STUDY              VAL         crito_icu  1.2.2  ...    No       True            NaN        NaN      NaN
+   107   C005  COVID-STUDY              VAL        compl_ards  1.2.2  ...    No       True            NaN        NaN      NaN
+   108   C005  COVID-STUDY              VAL       compl_pneum  1.2.2  ...    No       True            NaN        NaN      NaN
+
+   [109 rows x 12 columns]
 
 These should be addressed appropriately, which may include either removing some or all of the columns in question, or replacing them the equivalent ARC columns, and/or adding mappings in the parser file.
 
@@ -106,9 +133,14 @@ These should be addressed appropriately, which may include either removing some 
 VERTEX-style Outputs
 ~~~~~~~~~~~~~~~~~~~~
 
-If you're a `VERTEX <https://vertex.isaric.org>`_ user, and interested in writing insight panels for a VERTEX dashboard then with the additional optional argument of ``as_vertex_data=True`` the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function will return a dictionary of dataframes required for VERTEX dashboard visualisation, namely, ``"daily"``, and other dataframes representing patient interaction phase data, one dataframe per phase.
+If you're a `VERTEX <https://vertex.isaric.org>`_ user, and interested in writing insight panels for a VERTEX dashboard, then you will need VERTEX-compatible dataframes representing one-row-per-patient data, as well as multi-row-per-patient observations data organised by patient interaction phase, and also the corresponding ARC data dictionary. This can be done in two ways depending on the format of the source data, as described below.
 
-The snippet below, using the same example COVID-19 example dataset from ARC, shows the transformation pipeline for VERTEX-style output.
+.. _vertex-outputs-from-raw-data:
+
+From Raw Data
++++++++++++++
+
+With the additional optional argument of ``as_vertex_data=True`` the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function will return a dictionary of dataframes required for VERTEX dashboard visualisation, as shown in the snippet below.
 
 .. code:: python
 
@@ -245,3 +277,15 @@ These dataframes can be exported to input CSVs (via the :py:meth:`pandas.DataFra
 * ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]
 
 Please refer to the :ref:`VERTEX project <isaric-vertex:project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
+
+.. _vertex-outputs-from-isaric-data-schema:
+
+From ISARIC Data Schema
++++++++++++++++++++++++
+
+VERTEX outputs can also be obtained if you already have data in ISARIC data schema format via the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_vertex` function, as shown in the snippet below.
+
+.. code:: python
+
+   >>> import warnings; warnings.filterwarnings('ignore')
+   >>> vertex_static_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
