@@ -20,13 +20,13 @@ The main transformation pipeline, that converts a raw, custom clinical dataset w
 Basic Schema Outputs
 ~~~~~~~~~~~~~~~~~~~~
 
-To produce the basic ISARIC data schema outputs call the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function with three required arguments:
+To produce the basic ISARIC data schema outputs call the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function with two required arguments:
 
 * ``parser_file`` - the (relative or absolute) file path of the :file:`.toml` **parser file** that describes how columns in the source dataset map to columns in the core or long table versions of the ISARIC data schema. If both core and long table outputs are required the parser file will need to define both sets of mappings.
 
 * ``data_file`` - the (relative or absolute) file path of the **data file** containing the raw data.
 
-* ``arc_version`` - the **ARC release version/tag**, which can also be obtained from the new :doc:`ARC Python package <isaric-arc:sources/arc-python>` using the :py:func:`isaric-arc:arc.arc_core.get_arc_versions` function.
+There is an optional argument ``arc_version`` for ARC version that takes version strings of the form ``"vx.y.z"`` - if this is null the latest version will be fetched from ARC.
 
 Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/ARC>`_ side-by-side with your project, then the following snippet shows the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function at work, using a very simple `ARC example COVID-19 clinical dataset <https://github.com/ISARICResearch/ARC/tree/main/docs/examples>`_:
 
@@ -38,7 +38,7 @@ Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/
   [covid-study] parsing example_data.csv: 100%|█████████████████████████████████████████████████████████| 5/5 [00:00<00:00, 915.59it/s]
   [covid-study] validating core table: 5it [00:00, 46707.17it/s]
   [covid-study] validating long table: 109it [00:00, 191528.75it/s]
-  2026-10-14 16:09:08 [INFO] arc.arc_core: version: v1.6.
+  2026-10-14 16:09:08 [INFO] arc.arc_core: version: v1.6.1
 
    >>> tables['core']
    subjid       siteid   dataset_id  ...               outco_outcome adtl_valid                                         adtl_error
@@ -145,7 +145,7 @@ With the additional optional argument of ``as_vertex_data=True`` the :py:func:`~
 .. code:: python
 
    >>> import warnings; warnings.filterwarnings('ignore')
-   >>> vertex_static_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', 'v1.6.1', as_vertex_data=True)
+   >>> vertex_static_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', as_vertex_data=True)
    [covid-study] parsing example_data.csv: 100%|███████████████████████████████████████████| 5/5 [00:00<00:00, 771.58it/s]
    [covid-study] validating core table: 5it [00:00, 45100.04it/s]
    [covid-study] validating long table: 109it [00:00, 217084.11it/s]
@@ -289,3 +289,5 @@ VERTEX outputs can also be obtained if you already have data in ISARIC data sche
 
    >>> import warnings; warnings.filterwarnings('ignore')
    >>> vertex_static_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
+
+Note that the ``arc_version`` is purely optional - if this is null the latest version will be fetched from ARC.
