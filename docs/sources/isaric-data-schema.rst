@@ -28,7 +28,7 @@ To produce the basic ISARIC data schema outputs call the :py:func:`~isaricanalyt
 
 There is an optional argument ``arc_version`` for ARC version that takes version strings of the form ``"vx.y.z"`` - if this is null the latest version will be fetched from ARC.
 
-Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/ARC>`_ side-by-side with your project, then the following snippet shows the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function at work, using a very simple `ARC example COVID-19 clinical dataset <https://github.com/ISARICResearch/ARC/tree/main/docs/examples>`_:
+Provided you have cloned the `ARC repository <https://github.com/ISARICResearch/ARC>`_ side-by-side with your project, then the following snippet shows the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` function at work, using a small `synthetic COVID-19 clinical dataset <https://github.com/ISARICResearch/ARC/tree/main/docs/examples>`_ from ARC:
 
 .. code:: python
 
