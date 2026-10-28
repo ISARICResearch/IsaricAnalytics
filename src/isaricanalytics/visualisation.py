@@ -63,8 +63,8 @@ def _get_vertex_graph_id(suffix: str, /, *, frame: int = 1) -> tuple[str]:
 
 def _export_vertex_figure_metadata(
     data: pd.DataFrame,
-    filepath: str | pathlib.Path,
     graph_id: str,
+    filepath: str | pathlib.Path,
     suffix: str,
 ):
     data = data if isinstance(data, tuple) else (data,)
@@ -74,10 +74,9 @@ def _export_vertex_figure_metadata(
         "fig_id": graph_id,
         "fig_name": fig_name,
         "fig_arguments": {
-            "graph_id": None,
+            "graph_id": graph_id,
             "filepath": filepath,
             "suffix": suffix,
-            "save_inputs": False,
         },
         "fig_data": fig_data,
     }
