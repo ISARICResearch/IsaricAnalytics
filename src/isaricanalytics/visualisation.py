@@ -27,6 +27,9 @@ __all__ = [
 # -- IMPORTS --
 
 # -- Standard libraries --
+import json
+import os
+import pathlib
 import sys
 import typing
 
@@ -51,11 +54,44 @@ pd = pandas  # An alias to allow Pandas code refs to work independently
 ############################################
 
 
-def _get_vertex_graph_id(suffix: str, /, *, frame: int = 1) -> str:
+def _get_vertex_graph_id(suffix: str, /, *, frame: int = 1) -> tuple[str]:
     fig_name = sys._getframe(frame).f_code.co_name
     graph_id = suffix + "/" + fig_name
 
     return graph_id
+
+
+def _export_vertex_figure_metadata(
+    data: pd.DataFrame,
+    filepath: str | pathlib.Path,
+    graph_id: str,
+    suffix: str,
+):
+    data = data if isinstance(data, tuple) else (data,)
+    fig_data = [graph_id + "_data___" + str(ii) + ".csv" for ii in range(len(data))]
+    fig_name = sys._getframe(1).f_code.co_name
+    metadata = {
+        "fig_id": graph_id,
+        "fig_name": fig_name,
+        "fig_arguments": {
+            "graph_id": None,
+            "filepath": filepath,
+            "suffix": suffix,
+            "save_inputs": False,
+        },
+        "fig_data": fig_data,
+    }
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    metadata_json_file = os.path.join(filepath, graph_id + "_metadata.json")
+    with open(metadata_json_file, "w") as file:
+        json.dump(metadata, file, indent=4)
+        file.write("\n")
+    for ii in range(len(data)):
+        data[ii].to_csv(
+            os.path.join(filepath, graph_id + "_data___" + str(ii) + ".csv"),
+            index=False,
+        )
+    return data, metadata
 
 
 def fig_placeholder(
@@ -138,6 +174,10 @@ def fig_placeholder(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -231,6 +271,10 @@ def fig_pie(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -384,6 +428,10 @@ def fig_timelines(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -474,6 +522,10 @@ def fig_sunburst(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -613,6 +665,10 @@ def fig_bar_chart(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -827,6 +883,10 @@ def fig_upset(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -956,6 +1016,10 @@ def fig_count_chart(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -1111,6 +1175,10 @@ def fig_frequency_chart(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -1209,6 +1277,10 @@ def fig_table(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -1412,6 +1484,10 @@ def fig_dual_stack_pyramid(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -1517,6 +1593,10 @@ def fig_flowchart(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -1677,6 +1757,10 @@ def fig_forest_plot(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -1737,6 +1821,10 @@ def fig_text(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -2022,6 +2110,10 @@ def fig_kaplan_meier(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -2157,6 +2249,10 @@ def fig_line_chart(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
@@ -2325,6 +2421,10 @@ def fig_bar_line_chart(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -2484,6 +2584,10 @@ def fig_heatmaps(
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
 
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
+
     return fig, graph_id, graph_label, graph_about
 
 
@@ -2560,6 +2664,10 @@ def fig_sankey(
     graph_id = (
         _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
     )
+
+    if kwargs.get("save_inputs", False):
+        filepath = kwargs.get("filepath")
+        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
 
     return fig, graph_id, graph_label, graph_about
 
