@@ -27,11 +27,12 @@ __all__ = [
 # -- IMPORTS --
 
 # -- Standard libraries --
+import inspect
 import json
 import os
-import pathlib
 import sys
 import typing
+from collections.abc import Callable
 
 # -- External libraries --
 import numpy as np
@@ -61,36 +62,66 @@ def _get_vertex_graph_id(suffix: str, /, *, frame: int = 1) -> tuple[str]:
     return graph_id
 
 
-def _export_vertex_figure_metadata(
-    data: pd.DataFrame,
-    graph_id: str,
-    filepath: str | pathlib.Path,
-    suffix: str,
-):
-    data = data if isinstance(data, tuple) else (data,)
-    fig_data = [graph_id + "_data___" + str(ii) + ".csv" for ii in range(len(data))]
-    fig_name = sys._getframe(1).f_code.co_name
-    metadata = {
-        "fig_id": graph_id,
-        "fig_name": fig_name,
-        "fig_arguments": {
-            "graph_id": graph_id,
-            "filepath": filepath,
-            "suffix": suffix,
-        },
-        "fig_data": fig_data,
+def _get_vertex_figure_args(
+    fig_func_sig: inspect.Signature, fig_locals: dict[str, typing.Any], /
+) -> dict[str, typing.Any]:
+    fig_kwargs = fig_locals.pop("kwargs") or {}
+    fig_args = {
+        **{key: fig_locals.get(key) for key in fig_func_sig.parameters},
+        **fig_kwargs,
     }
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    metadata_json_file = os.path.join(filepath, graph_id + "_metadata.json")
-    with open(metadata_json_file, "w") as file:
-        json.dump(metadata, file, indent=4)
-        file.write("\n")
-    for ii in range(len(data)):
-        data[ii].to_csv(
-            os.path.join(filepath, graph_id + "_data___" + str(ii) + ".csv"),
-            index=False,
-        )
-    return data, metadata
+    fig_args.pop("kwargs")
+
+    return fig_args
+
+
+def _process_vertex_figure(
+    fig_func: Callable, fig_locals: dict[str, typing.Any]
+) -> tuple[typing.Any]:
+    fig_name = sys._getframe(1).f_code.co_name
+    fig_args = _get_vertex_figure_args(inspect.signature(fig_func), fig_locals)
+    suffix = fig_args["suffix"]
+
+    if fig_args.get("graph_id") is None:
+        graph_id = _get_vertex_graph_id(suffix, frame=2)
+    else:
+        graph_id = suffix + "/" + fig_args["graph_id"]
+    graph_label = fig_args.get("graph_label", "")
+    graph_about = fig_args.get("graph_about", "")
+
+    save_inputs = fig_args.get("save_inputs", False)
+
+    if save_inputs:
+        filepath = fig_args["filepath"]
+        data = fig_args.pop("data")
+        [
+            fig_args.pop(key)
+            for key, val in fig_args.items()
+            if isinstance(val, pd.DataFrame)
+        ]
+        fig_args["graph_id"] = None
+        fig_args["filepath"] = ""
+        fig_args["save_inputs"] = False
+        data = data if isinstance(data, tuple) else (data,)
+        fig_data = [graph_id + "_data___" + str(ii) + ".csv" for ii in range(len(data))]
+        metadata = {
+            "fig_id": graph_id,
+            "fig_name": fig_name,
+            "fig_arguments": fig_args,
+            "fig_data": fig_data,
+        }
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        metadata_json_file = os.path.join(filepath, graph_id + "_metadata.json")
+        with open(metadata_json_file, "w") as file:
+            json.dump(metadata, file, indent=4)
+            file.write("\n")
+        for ii in range(len(data)):
+            data[ii].to_csv(
+                os.path.join(filepath, graph_id + "_data___" + str(ii) + ".csv"),
+                index=False,
+            )
+
+    return graph_id, graph_label, graph_about
 
 
 def fig_placeholder(
@@ -166,19 +197,11 @@ def fig_placeholder(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_placeholder, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_pie(
@@ -263,19 +286,11 @@ def fig_pie(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_pie, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_timelines(
@@ -419,19 +434,11 @@ def fig_timelines(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_timelines, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_sunburst(
@@ -514,19 +521,11 @@ def fig_sunburst(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_sunburst, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_bar_chart(
@@ -657,19 +656,11 @@ def fig_bar_chart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_bar_chart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_upset(
@@ -874,19 +865,11 @@ def fig_upset(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_upset, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_count_chart(
@@ -1008,19 +991,11 @@ def fig_count_chart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_count_chart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_frequency_chart(
@@ -1166,19 +1141,11 @@ def fig_frequency_chart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_frequency_chart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_table(
@@ -1269,19 +1236,11 @@ def fig_table(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_table, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_dual_stack_pyramid(
@@ -1475,19 +1434,11 @@ def fig_dual_stack_pyramid(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_dual_stack_pyramid, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_flowchart(
@@ -1585,19 +1536,11 @@ def fig_flowchart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_flowchart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_forest_plot(
@@ -1748,19 +1691,11 @@ def fig_forest_plot(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_forest_plot, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_text(
@@ -1813,19 +1748,11 @@ def fig_text(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_text, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_kaplan_meier(
@@ -2101,19 +2028,11 @@ def fig_kaplan_meier(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_kaplan_meier, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_line_chart(
@@ -2241,19 +2160,11 @@ def fig_line_chart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_line_chart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_bar_line_chart(
@@ -2412,19 +2323,11 @@ def fig_bar_line_chart(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_bar_line_chart, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_heatmaps(
@@ -2575,19 +2478,11 @@ def fig_heatmaps(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_heatmaps, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 def fig_sankey(
@@ -2656,19 +2551,11 @@ def fig_sankey(
         return fig
 
     # For VERTEX dashboard insight panel compatibility
-    suffix = kwargs["suffix"]
-    graph_id = kwargs.get("graph_id")
-    graph_label = kwargs.get("graph_label", "")
-    graph_about = kwargs.get("graph_about", "")
-    graph_id = (
-        _get_vertex_graph_id(suffix) if graph_id is None else f"{suffix}/{graph_id}"
+    vertex_graph_id, vertex_graph_label, vertex_graph_about = _process_vertex_figure(
+        fig_sankey, locals()
     )
 
-    if kwargs.get("save_inputs", False):
-        filepath = kwargs.get("filepath")
-        _export_vertex_figure_metadata(data, graph_id, filepath, suffix)
-
-    return fig, graph_id, graph_label, graph_about
+    return fig, vertex_graph_id, vertex_graph_label, vertex_graph_about
 
 
 ############################################
