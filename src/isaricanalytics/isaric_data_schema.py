@@ -257,10 +257,12 @@ def transform_to_isaric_data_schema(
     if not as_vertex_data:
         return ids_tables
 
+    df_map, vertex_dictionary = get_vertex_df_map_proxy(core_table, long_table, arc_dd)
+
     return {
-        "df_map": get_vertex_df_map_proxy(core_table, long_table),
+        "df_map": df_map,
         "df_forms_dict": get_vertex_df_forms_proxy(long_table),
-        "dictionary": arc_dd,
+        "dictionary": vertex_dictionary,
         "quality_report": {},
     }
 
@@ -330,6 +332,7 @@ def transform_to_vertex(
         isaric_long_table,
         arc_dd,
     )
+
     return {
         "df_map": df_map,
         "df_forms_dict": get_vertex_df_forms_proxy(isaric_long_table),
@@ -341,7 +344,7 @@ def transform_to_vertex(
 def get_vertex_df_map_proxy(
     isaric_core_table: pd.DataFrame,
     isaric_long_table: pd.DataFrame,
-    arc_dd: pd.DataFrame,
+    arc_data_dictionary: pd.DataFrame,
     /,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_map`` containing one-row-per-patient data from an inner merge of the ISARIC data schema core and long tables on patient ID.
@@ -354,11 +357,15 @@ def get_vertex_df_map_proxy(
     isaric_long_table : pandas.DataFrame
         The ISARIC data schema long table.
 
+    arc_data_dictionary : pandas.DataFrame
+        ARC data dictionary.
+
     Returns
     -------
     pandas.DataFrame
         A single dataframe with only one row per patient.
     """  # noqa : E501
+    arc_dd = arc_data_dictionary
     coretb = isaric_core_table.drop(
         columns=[col for col in isaric_core_table.columns if col.startswith("adtl")]
     )
