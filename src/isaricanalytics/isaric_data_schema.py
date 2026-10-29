@@ -23,10 +23,11 @@ from itertools import chain, product
 # -- 3rd party libraries --
 import adtl
 import pandas as pd
+
+# -- Internal ISARIC libraries --
 from arc.arc_api import ArcApiClient, ArcApiClientError
 from arc.arc_core import get_arc
 
-# -- Internal ISARIC libraries --
 import isaricanalytics.isaric_transformations as tf
 
 
