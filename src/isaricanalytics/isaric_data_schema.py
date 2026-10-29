@@ -28,6 +28,7 @@ from arc.arc_core import get_arc
 
 # -- Internal ISARIC libraries --
 import isaricanalytics.isaric_transformations as tf
+import numpy as np
 
 
 class IsaricDataSchemaTransformationException(Exception):
@@ -324,17 +325,22 @@ def transform_to_vertex(
             "time."
         )
 
+    df_map, vertex_dictionary = get_vertex_df_map_proxy(
+        isaric_core_table,
+        isaric_long_table,
+        arc_dd,
+    )
     return {
-        "df_map": get_vertex_df_map_proxy(isaric_core_table, isaric_long_table),
+        "df_map": df_map,
         "df_forms_dict": get_vertex_df_forms_proxy(isaric_long_table),
-        "dictionary": arc_dd,
+        "dictionary": vertex_dictionary,
         "quality_report": {},
     }
 
 
 def get_vertex_df_map_proxy(
-    isaric_core_table: pd.DataFrame, isaric_long_table: pd.DataFrame, /
-) -> pd.DataFrame:
+    isaric_core_table: pd.DataFrame, isaric_long_table: pd.DataFrame, arc_dd: pd.DataFrame,/
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_map`` containing one-row-per-patient data from an inner merge of the ISARIC data schema core and long tables on patient ID.
 
     Parameters
@@ -357,36 +363,370 @@ def get_vertex_df_map_proxy(
         columns=[col for col in isaric_long_table.columns if col.startswith("adtl")]
     )
 
-    # Inner-merge the core and long tables on patient ID (``subjid``) and keep
-    # core table columns without suffixes.
-    merged = coretb.merge(longtb, on=["subjid"], how="inner", suffixes=(None, "_y"))
 
-    # Drop any columns with ``"_y"`` suffixes (from the long table) because
-    # there must be unsuffixed versions of these from the core table from the
-    # merge above.
-    merged.drop(
-        columns=[col for col in merged.columns if col.endswith("_y")], inplace=True
-    )
+    # Retain one copy of each identical observation.
+    longtb = longtb.drop_duplicates()
 
-    # An intermediate step to convert all non-patient ID columns to list-valued
-    # columns.
-    non_patient_id_cols = merged.columns.difference(["subjid"]).tolist()
-    merged = merged.groupby(["subjid"]).agg(
-        {col: lambda values: values.tolist() for col in non_patient_id_cols}
-    )
+    # Count observations per patient and attribute.
+    counts = longtb.groupby(["dataset_id", "subjid", "attribute"],dropna=False,).size()
 
-    # Identify and drop any non-patient ID column with more than one (unique)
-    # value per patient.
-    multivalued_cols = [
-        col
-        for col in non_patient_id_cols
-        if all(len(set(v)) > 1 for v in merged[col].values)
+    # An attribute qualifies only if no patient has multiple observations.
+    maximum_count = counts.groupby(level="attribute").max()
+    eligible_attributes_dfmap = maximum_count[maximum_count <= 1].index
+
+    #subset the long table to only those attributes that are eligible for inclusion in the df_map (happening exactly once per patint in the observatin period)
+    single_observation_long = longtb.loc[longtb["attribute"].isin(eligible_attributes_dfmap)].copy()
+
+##
+
+    observations = single_observation_long.copy()
+
+    # Ensure optional columns exist and convert blank cells to missing.
+    for column in ("attribute_unit", "value", "value_num", "duration"):
+        if column not in observations.columns:
+            observations[column] = pd.NA
+
+        observations[column] = observations[column].replace( r"^\s*$", pd.NA, regex=True)
+
+    observations["_unit"] = (observations["attribute_unit"].fillna("").astype(str).str.strip())
+
+    observations["_value"] = observations["value"].combine_first(observations["value_num"])
+
+    observations["_duration"] = observations["duration"]    
+
+    patient_keys = ["dataset_id", "subjid"]
+
+    wide = observations.pivot(index=patient_keys,columns=["attribute", "_unit"],values="_value",)
+    
+    # Convert attribute/unit pairs into simple column names.
+    wide.columns = [
+        f"{attribute}_{unit}" if unit else attribute
+        for attribute, unit in wide.columns
     ]
-    merged.drop(columns=multivalued_cols, inplace=True)
 
-    return merged.explode(
-        merged.columns.difference(["subjid"]).tolist()
-    ).drop_duplicates()
+    wide.columns.name = None    
+    # Create independent attribute_duration columns.
+    duration_rows = observations.loc[
+        observations["_duration"].notna()
+    ]
+
+    if not duration_rows.empty:
+        wide_duration = duration_rows.pivot(
+            index=patient_keys,
+            columns="attribute",
+            values="_duration",
+        )
+
+        wide_duration.columns = [
+            f"{attribute}_duration"
+            for attribute in wide_duration.columns
+        ]
+
+        wide = pd.concat([wide, wide_duration], axis=1)
+
+    # Prevent ambiguous or overlapping column names.
+    if not wide.columns.is_unique:
+        raise ValueError("Generated df_map column names are not unique")
+
+    overlaps = sorted(set(wide.columns).intersection(coretb.columns))
+    if overlaps:
+        raise ValueError(
+            f"Generated columns overlap core fields: {overlaps}"
+        )
+
+    wide.columns.name = None
+
+    # Convert patient identifiers from the index into columns,
+    # then attach the observations to every core record.
+    df_map = coretb.merge(
+        wide.reset_index(),
+        on=patient_keys,
+        how="left",
+        validate="one_to_one",
+    )
+
+    df_map['country_iso']=df_map['demog_country_iso3']
+        # Convert age in days to approximate years.
+    df_map["demog_age"] = (pd.to_numeric(df_map["demog_age_days"], errors="coerce") / 365.25)
+    df_map["demog_age_units"] = "Years"
+
+    df_map['inclu_disease']=df_map['dataset_disease']
+
+    outcome = df_map["outco_outcome"].astype("string").str.strip()
+
+    df_map["outco_binary_outcome"] = outcome.map({
+        "Discharged alive": "Discharged",
+        "Death": "Death",
+        "": "Censored"
+    })
+    df_map.loc[outcome.isna(), "outco_binary_outcome"] = "Censored"
+    df_map['site']=df_map['dataset_id']
+
+
+    for column in df_map.columns:
+        values = df_map[column].astype("string").str.strip().str.lower()
+        non_missing = values.dropna()
+
+        if not non_missing.empty and non_missing.isin(["yes", "no"]).all():
+            df_map[column] = values.map({"yes": True, "no": False})
+
+    
+    # Build a dictionary for df_map, keeping ARC's original form groups.
+    arc = arc_dd.fillna("").set_index("Variable")
+
+    if not arc.index.is_unique:
+        raise ValueError("ARC contains duplicate Variable names")
+
+    # Match generated columns to their original ARC attributes.
+    field_sources = {
+        column: (column, "", False)
+        for column in df_map.columns
+    }
+
+    for attribute, unit in (
+        observations[["attribute", "_unit"]]
+        .drop_duplicates()
+        .itertuples(index=False, name=None)
+    ):
+        column = f"{attribute}_{unit}" if unit else attribute
+
+        if column in df_map.columns:
+            field_sources[column] = (attribute, unit, False)
+
+    for attribute in duration_rows["attribute"].drop_duplicates():
+        column = f"{attribute}_duration"
+
+        if column in df_map.columns:
+            field_sources[column] = (attribute, "", True)
+
+    # Metadata for schema/derived fields without a direct ARC definition.
+
+    extra_metadata = {
+        "dataset_id": (
+            "presentation", "freetext",
+            "Dataset identifier", "study", "STUDY",
+        ),
+        "dataset_disease": (
+            "presentation", "categorical",
+            "Dataset disease", "study", "STUDY",
+        ),
+        "siteid": (
+            "presentation", "freetext",
+            "Site identifier", "study", "STUDY",
+        ),
+        "site": (
+            "presentation", "categorical",
+            "Site", "study", "STUDY",
+        ),
+        "demog_country_iso3": (
+            "presentation", "categorical",
+            "Country ISO3 code", "demog", "DEMOGRAPHICS",
+        ),
+        "country_iso": (
+            "presentation", "categorical",
+            "Country ISO Code", "country", "COUNTRY",
+        ),
+        "demog_age_days": (
+            "presentation", "numeric",
+            "Age (days)", "demog", "DEMOGRAPHICS",
+        ),
+        "outco_binary_outcome": (
+            "outcome", "categorical",
+            "Outcome (binary)", "outco", "OUTCOME",
+        ),
+    }
+
+    type_map = {
+        "number": "numeric",
+        "calc": "numeric",
+        "slider": "numeric",
+        "text": "freetext",
+        "notes": "freetext",
+        "descriptive": "freetext",
+        "date_dmy": "date",
+        "datetime_dmy": "date",
+        "radio": "categorical",
+        "dropdown": "categorical",
+        "user_list": "categorical",
+        "list": "categorical",
+        "yesno": "binary",
+        "truefalse": "binary",
+    }
+
+    dictionary_columns = [
+        "field_name",
+        "form_name",
+        "field_type",
+        "field_label",
+        "parent",
+        "branching_logic",
+    ]
+
+    rows = []
+    sections = {}
+
+    for column in df_map.columns:
+        source, unit, is_duration = field_sources[column]
+
+        if column in extra_metadata:
+            (
+                form,
+                field_type,
+                label,
+                parent,
+                section_label,
+            ) = extra_metadata[column]
+
+        elif source in arc.index:
+            metadata = arc.loc[source]
+
+            form = metadata["Form"]
+            label = metadata["Question"]
+            parent = source.split("_", 1)[0] if "_" in source else ""
+
+            section_label = (
+                metadata["Section"].split(": ", 1)[0]
+                or parent.upper()
+            )
+
+            arc_type = metadata["Type"]
+            validation = metadata["Validation"]
+
+            choice_labels = {
+                option.partition(",")[2].strip().casefold()
+                for option in metadata["Answer Options"].split("|")
+                if "," in option
+            }
+
+            field_type = type_map.get(arc_type)
+
+            if source.endswith("_units"):
+                field_type = "units"
+
+            elif validation in {"number", "integer"}:
+                field_type = "numeric"
+
+            elif validation in {"date_dmy", "datetime_dmy"}:
+                field_type = "date"
+
+            elif (
+                arc_type in {"radio", "dropdown"}
+                and {"yes", "no"}.issubset(choice_labels)
+                and choice_labels.issubset({"yes", "no", "unknown"})
+            ):
+                field_type = "binary"
+
+            if field_type is None:
+                raise ValueError(
+                    f"Add a dictionary type rule for {source}: {arc_type}"
+                )
+
+            if is_duration:
+                field_type = "numeric"
+                label = f"{label} - duration (days)"
+
+            elif unit and unit.casefold() not in label.casefold():
+                label = f"{label} ({unit})"
+
+        else:
+            raise ValueError(
+                f"No ARC or additional metadata found for {column}"
+            )
+
+        
+        rows.append([
+            column, form, field_type, label, parent, "",
+        ])
+
+        # Add the parent section once.
+        if parent:
+            if parent in df_map.columns:
+                raise ValueError(
+                    f"Section name conflicts with a data column: {parent}"
+                )
+
+            if parent in sections and sections[parent][1] != form:
+                raise ValueError(
+                    f"Section {parent} occurs in multiple forms; "
+                    "define its grouping"
+                )
+
+            sections.setdefault(
+                parent,
+                [parent, form, "section", section_label, "", ""],
+            )
+
+        # Ensure binary fields contain booleans or missing values.
+        # This also handles a column containing Yes/No/Unknown.
+        if field_type == "binary":
+            values = (
+                df_map[column]
+                .astype("string")
+                .str.strip()
+                .str.casefold()
+            )
+
+            allowed = {
+                "yes", "no", "true", "false",
+                "unknown", "not known", "",
+            }
+
+            invalid = values.notna() & ~values.isin(allowed)
+
+            if invalid.any():
+                raise ValueError(
+                    f"Unrecognised binary values in {column}"
+                )
+
+            df_map[column] = values.map({
+                "yes": True,
+                "no": False,
+                "true": True,
+                "false": False,
+            }).astype("boolean")
+
+        # Add category-option metadata using observed labels.
+        # This does not create one-hot columns in df_map.
+        if field_type in {"categorical", "units"}:
+            choices = (
+                df_map[column]
+                .dropna()
+                .astype(str)
+                .str.strip()
+            )
+
+            choices = (
+                choices[choices.ne("")]
+                .drop_duplicates()
+                .tolist()
+            )
+
+            # Preserve the three defined options for the derived outcome.
+            if column == "outco_binary_outcome":
+                choices = ["Death", "Discharged", "Censored"]
+
+            for choice in choices:
+                rows.append([
+                    f"{column}___{choice}",
+                    form,
+                    "binary",
+                    choice,
+                    column,
+                    "",
+                ])
+
+    vertex_dictionary = pd.DataFrame(
+        list(sections.values()) + rows,
+        columns=dictionary_columns,
+    )
+
+    if vertex_dictionary["field_name"].duplicated().any():
+        raise ValueError(
+            "Duplicate field names in the VERTEX dictionary"
+        )
+
+    return df_map, vertex_dictionary
+
 
 
 def get_vertex_df_forms_proxy(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
