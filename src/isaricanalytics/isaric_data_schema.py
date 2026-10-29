@@ -28,7 +28,6 @@ from arc.arc_core import get_arc
 
 # -- Internal ISARIC libraries --
 import isaricanalytics.isaric_transformations as tf
-import numpy as np
 
 
 class IsaricDataSchemaTransformationException(Exception):
@@ -339,7 +338,10 @@ def transform_to_vertex(
 
 
 def get_vertex_df_map_proxy(
-    isaric_core_table: pd.DataFrame, isaric_long_table: pd.DataFrame, arc_dd: pd.DataFrame,/
+    isaric_core_table: pd.DataFrame,
+    isaric_long_table: pd.DataFrame,
+    arc_dd: pd.DataFrame,
+    /,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_map`` containing one-row-per-patient data from an inner merge of the ISARIC data schema core and long tables on patient ID.
 
@@ -363,21 +365,27 @@ def get_vertex_df_map_proxy(
         columns=[col for col in isaric_long_table.columns if col.startswith("adtl")]
     )
 
-
     # Retain one copy of each identical observation.
     longtb = longtb.drop_duplicates()
 
     # Count observations per patient and attribute.
-    counts = longtb.groupby(["dataset_id", "subjid", "attribute"],dropna=False,).size()
+    counts = longtb.groupby(
+        ["dataset_id", "subjid", "attribute"],
+        dropna=False,
+    ).size()
 
     # An attribute qualifies only if no patient has multiple observations.
     maximum_count = counts.groupby(level="attribute").max()
     eligible_attributes_dfmap = maximum_count[maximum_count <= 1].index
 
-    #subset the long table to only those attributes that are eligible for inclusion in the df_map (happening exactly once per patint in the observatin period)
-    single_observation_long = longtb.loc[longtb["attribute"].isin(eligible_attributes_dfmap)].copy()
+    # subset the long table to only those attributes that are eligible for
+    # inclusion in the df_map (happening exactly once per patient in the
+    # observation period
+    single_observation_long = longtb.loc[
+        longtb["attribute"].isin(eligible_attributes_dfmap)
+    ].copy()
 
-##
+    ##
 
     observations = single_observation_long.copy()
 
@@ -386,29 +394,34 @@ def get_vertex_df_map_proxy(
         if column not in observations.columns:
             observations[column] = pd.NA
 
-        observations[column] = observations[column].replace( r"^\s*$", pd.NA, regex=True)
+        observations[column] = observations[column].replace(r"^\s*$", pd.NA, regex=True)
 
-    observations["_unit"] = (observations["attribute_unit"].fillna("").astype(str).str.strip())
+    observations["_unit"] = (
+        observations["attribute_unit"].fillna("").astype(str).str.strip()
+    )
 
-    observations["_value"] = observations["value"].combine_first(observations["value_num"])
+    observations["_value"] = observations["value"].combine_first(
+        observations["value_num"]
+    )
 
-    observations["_duration"] = observations["duration"]    
+    observations["_duration"] = observations["duration"]
 
     patient_keys = ["dataset_id", "subjid"]
 
-    wide = observations.pivot(index=patient_keys,columns=["attribute", "_unit"],values="_value",)
-    
+    wide = observations.pivot(
+        index=patient_keys,
+        columns=["attribute", "_unit"],
+        values="_value",
+    )
+
     # Convert attribute/unit pairs into simple column names.
     wide.columns = [
-        f"{attribute}_{unit}" if unit else attribute
-        for attribute, unit in wide.columns
+        f"{attribute}_{unit}" if unit else attribute for attribute, unit in wide.columns
     ]
 
-    wide.columns.name = None    
+    wide.columns.name = None
     # Create independent attribute_duration columns.
-    duration_rows = observations.loc[
-        observations["_duration"].notna()
-    ]
+    duration_rows = observations.loc[observations["_duration"].notna()]
 
     if not duration_rows.empty:
         wide_duration = duration_rows.pivot(
@@ -418,8 +431,7 @@ def get_vertex_df_map_proxy(
         )
 
         wide_duration.columns = [
-            f"{attribute}_duration"
-            for attribute in wide_duration.columns
+            f"{attribute}_duration" for attribute in wide_duration.columns
         ]
 
         wide = pd.concat([wide, wide_duration], axis=1)
@@ -430,9 +442,7 @@ def get_vertex_df_map_proxy(
 
     overlaps = sorted(set(wide.columns).intersection(coretb.columns))
     if overlaps:
-        raise ValueError(
-            f"Generated columns overlap core fields: {overlaps}"
-        )
+        raise ValueError(f"Generated columns overlap core fields: {overlaps}")
 
     wide.columns.name = None
 
@@ -445,23 +455,22 @@ def get_vertex_df_map_proxy(
         validate="one_to_one",
     )
 
-    df_map['country_iso']=df_map['demog_country_iso3']
-        # Convert age in days to approximate years.
-    df_map["demog_age"] = (pd.to_numeric(df_map["demog_age_days"], errors="coerce") / 365.25)
+    df_map["country_iso"] = df_map["demog_country_iso3"]
+    # Convert age in days to approximate years.
+    df_map["demog_age"] = (
+        pd.to_numeric(df_map["demog_age_days"], errors="coerce") / 365.25
+    )
     df_map["demog_age_units"] = "Years"
 
-    df_map['inclu_disease']=df_map['dataset_disease']
+    df_map["inclu_disease"] = df_map["dataset_disease"]
 
     outcome = df_map["outco_outcome"].astype("string").str.strip()
 
-    df_map["outco_binary_outcome"] = outcome.map({
-        "Discharged alive": "Discharged",
-        "Death": "Death",
-        "": "Censored"
-    })
+    df_map["outco_binary_outcome"] = outcome.map(
+        {"Discharged alive": "Discharged", "Death": "Death", "": "Censored"}
+    )
     df_map.loc[outcome.isna(), "outco_binary_outcome"] = "Censored"
-    df_map['site']=df_map['dataset_id']
-
+    df_map["site"] = df_map["dataset_id"]
 
     for column in df_map.columns:
         values = df_map[column].astype("string").str.strip().str.lower()
@@ -470,7 +479,6 @@ def get_vertex_df_map_proxy(
         if not non_missing.empty and non_missing.isin(["yes", "no"]).all():
             df_map[column] = values.map({"yes": True, "no": False})
 
-    
     # Build a dictionary for df_map, keeping ARC's original form groups.
     arc = arc_dd.fillna("").set_index("Variable")
 
@@ -478,10 +486,7 @@ def get_vertex_df_map_proxy(
         raise ValueError("ARC contains duplicate Variable names")
 
     # Match generated columns to their original ARC attributes.
-    field_sources = {
-        column: (column, "", False)
-        for column in df_map.columns
-    }
+    field_sources = {column: (column, "", False) for column in df_map.columns}
 
     for attribute, unit in (
         observations[["attribute", "_unit"]]
@@ -503,36 +508,60 @@ def get_vertex_df_map_proxy(
 
     extra_metadata = {
         "dataset_id": (
-            "presentation", "freetext",
-            "Dataset identifier", "study", "STUDY",
+            "presentation",
+            "freetext",
+            "Dataset identifier",
+            "study",
+            "STUDY",
         ),
         "dataset_disease": (
-            "presentation", "categorical",
-            "Dataset disease", "study", "STUDY",
+            "presentation",
+            "categorical",
+            "Dataset disease",
+            "study",
+            "STUDY",
         ),
         "siteid": (
-            "presentation", "freetext",
-            "Site identifier", "study", "STUDY",
+            "presentation",
+            "freetext",
+            "Site identifier",
+            "study",
+            "STUDY",
         ),
         "site": (
-            "presentation", "categorical",
-            "Site", "study", "STUDY",
+            "presentation",
+            "categorical",
+            "Site",
+            "study",
+            "STUDY",
         ),
         "demog_country_iso3": (
-            "presentation", "categorical",
-            "Country ISO3 code", "demog", "DEMOGRAPHICS",
+            "presentation",
+            "categorical",
+            "Country ISO3 code",
+            "demog",
+            "DEMOGRAPHICS",
         ),
         "country_iso": (
-            "presentation", "categorical",
-            "Country ISO Code", "country", "COUNTRY",
+            "presentation",
+            "categorical",
+            "Country ISO Code",
+            "country",
+            "COUNTRY",
         ),
         "demog_age_days": (
-            "presentation", "numeric",
-            "Age (days)", "demog", "DEMOGRAPHICS",
+            "presentation",
+            "numeric",
+            "Age (days)",
+            "demog",
+            "DEMOGRAPHICS",
         ),
         "outco_binary_outcome": (
-            "outcome", "categorical",
-            "Outcome (binary)", "outco", "OUTCOME",
+            "outcome",
+            "categorical",
+            "Outcome (binary)",
+            "outco",
+            "OUTCOME",
         ),
     }
 
@@ -584,10 +613,7 @@ def get_vertex_df_map_proxy(
             label = metadata["Question"]
             parent = source.split("_", 1)[0] if "_" in source else ""
 
-            section_label = (
-                metadata["Section"].split(": ", 1)[0]
-                or parent.upper()
-            )
+            section_label = metadata["Section"].split(": ", 1)[0] or parent.upper()
 
             arc_type = metadata["Type"]
             validation = metadata["Validation"]
@@ -617,9 +643,7 @@ def get_vertex_df_map_proxy(
                 field_type = "binary"
 
             if field_type is None:
-                raise ValueError(
-                    f"Add a dictionary type rule for {source}: {arc_type}"
-                )
+                raise ValueError(f"Add a dictionary type rule for {source}: {arc_type}")
 
             if is_duration:
                 field_type = "numeric"
@@ -629,26 +653,27 @@ def get_vertex_df_map_proxy(
                 label = f"{label} ({unit})"
 
         else:
-            raise ValueError(
-                f"No ARC or additional metadata found for {column}"
-            )
+            raise ValueError(f"No ARC or additional metadata found for {column}")
 
-        
-        rows.append([
-            column, form, field_type, label, parent, "",
-        ])
+        rows.append(
+            [
+                column,
+                form,
+                field_type,
+                label,
+                parent,
+                "",
+            ]
+        )
 
         # Add the parent section once.
         if parent:
             if parent in df_map.columns:
-                raise ValueError(
-                    f"Section name conflicts with a data column: {parent}"
-                )
+                raise ValueError(f"Section name conflicts with a data column: {parent}")
 
             if parent in sections and sections[parent][1] != form:
                 raise ValueError(
-                    f"Section {parent} occurs in multiple forms; "
-                    "define its grouping"
+                    f"Section {parent} occurs in multiple forms; " "define its grouping"
                 )
 
             sections.setdefault(
@@ -659,61 +684,54 @@ def get_vertex_df_map_proxy(
         # Ensure binary fields contain booleans or missing values.
         # This also handles a column containing Yes/No/Unknown.
         if field_type == "binary":
-            values = (
-                df_map[column]
-                .astype("string")
-                .str.strip()
-                .str.casefold()
-            )
+            values = df_map[column].astype("string").str.strip().str.casefold()
 
             allowed = {
-                "yes", "no", "true", "false",
-                "unknown", "not known", "",
+                "yes",
+                "no",
+                "true",
+                "false",
+                "unknown",
+                "not known",
+                "",
             }
 
             invalid = values.notna() & ~values.isin(allowed)
 
             if invalid.any():
-                raise ValueError(
-                    f"Unrecognised binary values in {column}"
-                )
+                raise ValueError(f"Unrecognised binary values in {column}")
 
-            df_map[column] = values.map({
-                "yes": True,
-                "no": False,
-                "true": True,
-                "false": False,
-            }).astype("boolean")
+            df_map[column] = values.map(
+                {
+                    "yes": True,
+                    "no": False,
+                    "true": True,
+                    "false": False,
+                }
+            ).astype("boolean")
 
         # Add category-option metadata using observed labels.
         # This does not create one-hot columns in df_map.
         if field_type in {"categorical", "units"}:
-            choices = (
-                df_map[column]
-                .dropna()
-                .astype(str)
-                .str.strip()
-            )
+            choices = df_map[column].dropna().astype(str).str.strip()
 
-            choices = (
-                choices[choices.ne("")]
-                .drop_duplicates()
-                .tolist()
-            )
+            choices = choices[choices.ne("")].drop_duplicates().tolist()
 
             # Preserve the three defined options for the derived outcome.
             if column == "outco_binary_outcome":
                 choices = ["Death", "Discharged", "Censored"]
 
             for choice in choices:
-                rows.append([
-                    f"{column}___{choice}",
-                    form,
-                    "binary",
-                    choice,
-                    column,
-                    "",
-                ])
+                rows.append(
+                    [
+                        f"{column}___{choice}",
+                        form,
+                        "binary",
+                        choice,
+                        column,
+                        "",
+                    ]
+                )
 
     vertex_dictionary = pd.DataFrame(
         list(sections.values()) + rows,
@@ -721,12 +739,9 @@ def get_vertex_df_map_proxy(
     )
 
     if vertex_dictionary["field_name"].duplicated().any():
-        raise ValueError(
-            "Duplicate field names in the VERTEX dictionary"
-        )
+        raise ValueError("Duplicate field names in the VERTEX dictionary")
 
     return df_map, vertex_dictionary
-
 
 
 def get_vertex_df_forms_proxy(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
