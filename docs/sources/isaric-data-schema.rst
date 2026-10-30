@@ -145,20 +145,20 @@ With the additional optional argument of ``as_vertex_data=True`` the :py:func:`~
 .. code:: python
 
    >>> import warnings; warnings.filterwarnings('ignore')
-   >>> vertex_static_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', as_vertex_data=True)
+   >>> vertex_data = transform_to_isaric_data_schema('../ARC/docs/examples/example_parser.toml', '../ARC/docs/examples/example_data.csv', as_vertex_data=True)
    [covid-study] parsing example_data.csv: 100%|███████████████████████████████████████████| 5/5 [00:00<00:00, 771.58it/s]
    [covid-study] validating core table: 5it [00:00, 45100.04it/s]
    [covid-study] validating long table: 109it [00:00, 217084.11it/s]
    2026-10-15 15:22:19 [INFO] arc.arc_core: version: v1.6.1
    INFO:arc.arc_core:version: v1.6.1
-   >>> vertex_static_data.keys()
+   >>> vertex_data.keys()
    dict_keys(['df_map', 'df_forms_dict', 'dictionary', 'quality_report'])
 
 The transformation pipeline here works almost identically to non-VERTEX output option, except that there are additional steps to build the VERTEX-style output dataframes. The first and most important of these is named ``"df_map"``, which contains only one-row-per-patient data, organised by the ``subjid`` column, with list-valued observations data in all the other columns.
 
 .. code:: python
 
-   >>> vertex_static_data['df_map']
+   >>> vertex_data['df_map']
      subjid  ...                                          value_num
    0   C001  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 38.1,...
    1   C002  ...  [nan, nan, nan, nan, nan, nan, nan, nan, 39.4,...
@@ -172,10 +172,10 @@ There is also a ``"df_forms_dict"`` that is keyed by patient interaction phase, 
 
 .. code:: python
 
-   >>> vertex_static_data['df_forms_dict'].keys()
+   >>> vertex_data['df_forms_dict'].keys()
    dict_keys([('during_observation',), ('outcome',), ('presentation',)])
    >>>
-   >>> vertex_static_data['df_forms_dict']['presentation']
+   >>> vertex_data['df_forms_dict']['presentation']
    subjid       siteid   dataset_id dataset_disease demog_country_iso3  ... arcver value value_num attribute_unit  duration
    0    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
    1    C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2   Yes       NaN            NaN       NaN
@@ -191,7 +191,7 @@ There is also a ``"df_forms_dict"`` that is keyed by patient interaction phase, 
 
    [69 rows x 20 columns]
    >>>
-   >>> vertex_static_data['df_forms_dict']['during_observation']
+   >>> vertex_data['df_forms_dict']['during_observation']
    subjid       siteid   dataset_id dataset_disease demog_country_iso3  ... arcver value value_num attribute_unit  duration
    0   C001  SITE-GBR-01  COVID-STUDY        COVID-19                GBR  ...  1.2.2    No       NaN            NaN       NaN
    1   C002  SITE-DEU-01  COVID-STUDY        COVID-19                DEU  ...  1.2.2   Yes       NaN            NaN      12.0
@@ -201,7 +201,7 @@ There is also a ``"df_forms_dict"`` that is keyed by patient interaction phase, 
 
    [5 rows x 20 columns]
    >>>
-   >>> vertex_static_data['df_forms_dict']['outcome']
+   >>> vertex_data['df_forms_dict']['outcome']
    subjid       siteid   dataset_id dataset_disease  ...           value value_num attribute_unit duration
    0    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...             NaN      42.3           mg/L      NaN
    1    C001  SITE-GBR-01  COVID-STUDY        COVID-19  ...             NaN       1.2         10^9/L      NaN
@@ -245,7 +245,7 @@ The ARC data dictionary associated with the given ARC version is also returned v
 
 .. code:: python
 
-   >>> vertex_static_data['dictionary']
+   >>> vertex_data['vertex_dictionary']
                  Form             Section  ... Branch                                   Question_english
    0     presentation                 NaN  ...                   Participant Identification Number (PIN)
    1     presentation  INCLUSION CRITERIA  ...         Suspected or confirmed infection, condition, o...
@@ -265,16 +265,16 @@ The ``quality_report`` isn't strictly required by VERTEX, and is thus empty.
 
 .. code:: python
 
-   >>> vertex_static_data['quality_report']
+   >>> vertex_data['quality_report']
    {}
 
 These dataframes can be exported to input CSVs (via the :py:meth:`pandas.DataFrame.to_csv` method) in order to set up a static VERTEX dashboard. For the example presented above, the CSVs can be named as follows:
 
-* ``df_map.csv`` - a CSV export of ``vertex_static_data["df_map"]``
-* ``daily.csv`` - a CSV export of ``vertex_static_data["daily"]``
-* ``presentation.csv`` - a CSV export of ``vertex_static_data["presentation"]``
-* ``observation.csv`` - a CSV export ``vertex_static_data["during_observation"]``
-* ``outcome.csv`` - a CSV export of ``vertex_static_data["outcome"]``
+* ``df_map.csv`` - a CSV export of ``vertex_data["df_map"]``
+* ``daily.csv`` - a CSV export of ``vertex_data["daily"]``
+* ``presentation.csv`` - a CSV export of ``vertex_data["presentation"]``
+* ``observation.csv`` - a CSV export ``vertex_data["during_observation"]``
+* ``outcome.csv`` - a CSV export of ``vertex_data["outcome"]``
 
 Please refer to the :ref:`VERTEX project <isaric-vertex:project-structure>` for more information on how to structure these files for VERTEX dashboard visualisation.
 
@@ -288,6 +288,6 @@ VERTEX outputs can also be obtained if you already have data in ISARIC data sche
 .. code:: python
 
    >>> import warnings; warnings.filterwarnings('ignore')
-   >>> vertex_static_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
+   >>> vertex_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
 
 Note that the ``arc_version`` is purely optional - if this is null the latest version will be fetched from ARC.
