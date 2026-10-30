@@ -18,4 +18,3 @@ coverage:
         # Enforce patch coverage on PRs, but do not fail direct commits on main.
         only_pulls: true
         target: 0%
-
