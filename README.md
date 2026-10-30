@@ -5,7 +5,7 @@
 [![Tests (python versions)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml/badge.svg)](https://github.com/ISARICResearch/IsaricAnalytics/actions/workflows/test.yml)
 [![Docs](https://app.readthedocs.org/projects/isaricanalytics/badge/?version=latest)](https://app.readthedocs.org/projects/isaricanalytics/builds/?version__slug=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23340915.svg)](https://doi.org/10.5281/zenodo.23340915)
+[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23340915.svg)](https://zenodo.org/records/23340915/latest)
 
 
 IsaricAnalytics is a data analysis toolkit to support fast analysis of clinical data during emerging infectious disease outbreaks. It supports medical statistics and traditional machine learning, with analysis pipelines that follow methodological best practices.
