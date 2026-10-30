@@ -513,7 +513,7 @@ data = pd.read_csv("./csv/dual_stack_pyramid.csv")
 
 # Create and display the figure
 fig = fig_dual_stack_pyramid(
-  data=data,
+  data,
   title="Population Pyramid Plot of Synthetic Patient Dataset",
   xlabel="Count",
   ylabel="Age Group",
