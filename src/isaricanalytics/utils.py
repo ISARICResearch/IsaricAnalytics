@@ -12,7 +12,7 @@ __all__ = [
 import re
 import typing
 
-# -- 3rd party libraries --
+# -- External libraries --
 import pandas
 
 # -- Internal libraries --

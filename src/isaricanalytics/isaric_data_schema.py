@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 __all__ = [
-    "get_vertex_df_forms_proxy",
-    "get_vertex_df_map_proxy",
     "get_parser_source_field_map",
     "get_parser_toml_map",
+    "get_vertex_df_forms_proxy",
+    "get_vertex_df_map_proxy",
     "IsaricDataSchemaTransformationException",
     "transform_to_isaric_data_schema",
     "transform_to_vertex",
@@ -20,14 +20,13 @@ import typing
 import warnings as warnings_
 from itertools import chain, product
 
-# -- 3rd party libraries --
+# -- External libraries --
 import adtl
 import pandas as pd
-
-# -- Internal ISARIC libraries --
 from arc.arc_api import ArcApiClient, ArcApiClientError
 from arc.arc_core import get_arc
 
+# -- Internal libraries --
 import isaricanalytics.isaric_transformations as tf
 
 

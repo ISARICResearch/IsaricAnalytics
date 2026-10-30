@@ -12,7 +12,7 @@ __all__ = [
 # -- Standard libraries --
 from enum import Enum
 
-# -- 3rd party libraries --
+# -- External libraries --
 
 # -- Internal libraries --
 

@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("../src")))
 
 from datetime import datetime
 
-# -- 3rd party libraries --
+# -- External libraries --
 import plotly.io as pio
 
 pio.renderers.default = "sphinx_gallery_png"
