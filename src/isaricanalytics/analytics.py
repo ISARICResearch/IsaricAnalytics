@@ -49,7 +49,7 @@ __all__ = [
 import typing
 import warnings
 
-# -- 3rd party libraries --
+# -- External libraries --
 import numpy as np
 import pandas
 import statsmodels.api as sm

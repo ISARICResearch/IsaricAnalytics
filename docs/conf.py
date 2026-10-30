@@ -4,12 +4,12 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.dirname(os.path.abspath(".")))
+sys.path.insert(0, os.path.abspath(os.path.join("../src")))
 
 from datetime import datetime
 
-# -- 3rd party libraries --
+# -- External libraries --
 import plotly.io as pio
 
 pio.renderers.default = "sphinx_gallery_png"
@@ -133,7 +133,7 @@ sphinx_gallery_conf = {
 #     For more on all available autodoc defaults see
 #         https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
-    "exclude-members": "",
+    "exclude-members": "__weakref__",
     "member-order": "alphabetical",
     "private-members": False,
     "special-members": "",
