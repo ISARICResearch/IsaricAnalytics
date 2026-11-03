@@ -145,3 +145,13 @@ allow-direct-references = true
 [tool.ruff.format]
   quote-style = "double"
   indent-style = "space"
+
+[tool.coverage.run]
+  omit = [
+      "tests/*",
+  ]
+
+[tool.coverage.report]
+  omit = [
+    "tests/*",
+  ]

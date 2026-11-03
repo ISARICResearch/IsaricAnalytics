@@ -119,11 +119,12 @@ test: clean
 	@echo "$(PACKAGE_NAME)[$(BRANCH)@$(HEAD)]: Running unit tests + measuring coverage"
 	PYTHONPATH=src uv run --verbose --active -m pytest \
 	                               -p pytest_cov \
+				                   -q -m "$(MARKER)" \
 	                               --cache-clear \
 	                               --capture=no \
 	                               --code-highlight=yes \
 	                               --color=yes \
-	                               --cov=isaricanalytics \
+	                               --cov=src \
 	                               --cov-report=term-missing:skip-covered \
 	                               --cov-report=xml \
 	                               --cov-report=html \
@@ -134,4 +135,4 @@ test: clean
 
 doctest: clean
 	@echo "$(PACKAGE_NAME)[$(BRANCH)@$(HEAD)]: Running Python doctests"
-	PYTHONPATH="isaricanalytics" python3 -m doctest -v isaricanalytics/*.py
+	PYTHONPATH="src" python3 -m doctest -v src/isaricanalytics/*.py

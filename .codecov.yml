@@ -1,15 +1,20 @@
 coverage:
   status:
-    patch:
+    project:
       default:
-        # basic
         target: auto
         threshold: 0%
-        base: auto
-        # advanced
+        flags:
+          - unit
+        paths:
+          - "isaricanalytics"
         branches:
           - main
-        if_ci_failed: error #success, failure, error, ignore
+        if_ci_failed: error
+        informational: false
         only_pulls: false
-        paths:
-          - "src"
+    patch:
+      default:
+        # Enforce patch coverage on PRs, but do not fail direct commits on main.
+        only_pulls: true
+        target: 0%

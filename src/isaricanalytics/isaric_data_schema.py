@@ -169,8 +169,9 @@ def transform_to_isaric_data_schema(
 
             {
                 "df_map": <one-row-per-patient dataframe>,
-                "daily": <patient observations dataframe>,
-                "dictionary": <ARC data dictionary>
+                "df_forms_dict": <dict of patient observations dataframes keyed by interaction phase>,
+                "vertex_dictionary": <VERTEX data dictionary>,
+                "quality_report": <quality report>
             }
 
     Returns
@@ -189,8 +190,9 @@ def transform_to_isaric_data_schema(
 
             {
                 "df_map": <one-row-per-patient dataframe>,
-                "daily": <patient observations dataframe>,
-                "dictionary": <ARC data dictionary>
+                "df_forms_dict": <dict of patient observations dataframes keyed by interaction phase>,
+                "vertex_dictionary": <VERTEX data dictionary>,
+                "quality_report": <quality report>
             }
     Raises
     ------

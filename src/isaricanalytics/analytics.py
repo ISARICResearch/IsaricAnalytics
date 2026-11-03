@@ -189,7 +189,7 @@ def get_variables_by_section_and_type(
     required_variables: typing.Iterable[str] | None = None,
     include_sections: typing.Iterable[str] = ["demog"],
     include_types: typing.Iterable[str] = ["binary", "categorical", "numeric"],
-    exclude_suffixes: typing.Iterable[str] = [
+    exclude_suffix: typing.Iterable[str] = [
         "_units",
         "addi",
         "otherl2",
@@ -246,7 +246,7 @@ def get_variables_by_section_and_type(
     #     lambda x: x.endswith(tuple('___' + x for x in exclude_suffix))) == 0)
     include_ind &= (
         dictionary["field_name"].apply(
-            lambda x: x.endswith(tuple(x for x in exclude_suffixes))
+            lambda x: x.endswith(tuple(x for x in exclude_suffix))
         )
         == 0
     )
@@ -1855,8 +1855,8 @@ def variance_influence_factor_backwards_elimination(
 def remove_single_binary_outcome_predictors(
     data: pandas.DataFrame,
     dictionary: pandas.DataFrame,
-    predictors: typing.Iterable[str],
-    outcome: str,
+    predictors_list: typing.Iterable[str],
+    outcome_str: str,
 ) -> typing.Iterable[str]:
     """:py:class:`typing.Iterable` : Returns a list of retained columns in the data after removing single binary outcome predictor columns.
 
@@ -1865,16 +1865,16 @@ def remove_single_binary_outcome_predictors(
 
     Parameters
     ----------
-    data: pandas.DataFrame
+    data : pandas.DataFrame
         The incoming data.
 
-    dictionary: pandas.DataFrame
+    dictionary : pandas.DataFrame
         The data dictionary.
 
-    predictors: typing.Iterable
+    predictors_list : typing.Iterable
         Iterable of predictor variable column names.
 
-    outcome : str
+    outcome_str : str
         The outcome string.
 
     Returns
@@ -1888,15 +1888,15 @@ def remove_single_binary_outcome_predictors(
     numeric_ind = dictionary["field_type"] == "numeric"
     numeric_columns = dictionary.loc[numeric_ind, "field_name"].tolist()
     numeric_columns = [col for col in numeric_columns if col in _data.columns]
-    numeric_columns = [col for col in numeric_columns if col in predictors]
+    numeric_columns = [col for col in numeric_columns if col in predictors_list]
 
     categorical_ind = dictionary["field_type"].isin(["binary"])
     categorical_columns = dictionary.loc[categorical_ind, "field_name"].tolist()
     categorical_columns = [col for col in categorical_columns if col in data.columns]
-    categorical_columns = [col for col in categorical_columns if col in predictors]
+    categorical_columns = [col for col in categorical_columns if col in predictors_list]
 
     result = (
-        _data.groupby(outcome)[categorical_columns]
+        _data.groupby(outcome_str)[categorical_columns]
         .apply(
             lambda x: x.isin([True]).any() & x.isin([False]).any(), include_groups=False
         )
@@ -2040,8 +2040,8 @@ def regression_summary_table(
 
 def execute_glmm_regression(
     elr_dataframe_df: pandas.DataFrame,
-    elr_outcome: str,
-    elr_predictors: typing.Iterable[str],
+    elr_outcome_str: str,
+    elr_predictors_list: typing.Iterable[str],
     elr_groups: str,
     model_type: str = "linear",
     print_results: bool = True,
@@ -2055,10 +2055,10 @@ def execute_glmm_regression(
     elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
-    elr_outcome : str
+    elr_outcome_str : str
         Name of the response variable.
 
-    elr_predictors : typing.Iterable
+    elr_predictors_list : typing.Iterable
         Iterable of predictor variable names.
 
     elr_groups : str
@@ -2086,14 +2086,14 @@ def execute_glmm_regression(
         The model results.
     """  # noqa : E501
     # Builds the formula
-    elr_formula_str = elr_outcome + " ~ " + " + ".join(elr_predictors)
+    elr_formula_str = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
 
     # Converts predictor categorical variables
     elr_categorical_vars_list = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
     )
     elr_categorical_vars_list = elr_categorical_vars_list.columns.intersection(
-        elr_predictors
+        elr_predictors_list
     )
     for elr_var_str in elr_categorical_vars_list:
         elr_dataframe_df[elr_var_str] = elr_dataframe_df[elr_var_str].astype("category")
@@ -2280,8 +2280,8 @@ def execute_glmm_regression(
 
 def execute_glm_regression(
     elr_dataframe_df: pandas.DataFrame,
-    elr_outcome: str,
-    elr_predictors: typing.Iterable,
+    elr_outcome_str: str,
+    elr_predictors_list: typing.Iterable,
     model_type: str = "linear",
     print_results: bool = True,
     labels: dict[str, str] | None = None,
@@ -2294,10 +2294,10 @@ def execute_glm_regression(
     elr_dataframe_df : pandas.DataFrame
         The incoming data.
 
-    elr_outcome : str
+    elr_outcome_str : str
         Name of the response variable.
 
-    elr_predictors: typing.Iterable
+    elr_predictors_list: typing.Iterable
         Iterable of predictor variable names.
 
     model_type : str, default="linear"
@@ -2331,12 +2331,12 @@ def execute_glm_regression(
         raise ValueError("model_type must be 'linear' or 'logistic'")
 
     # Builds the formula
-    formula = elr_outcome + " ~ " + " + ".join(elr_predictors)
+    formula = elr_outcome_str + " ~ " + " + ".join(elr_predictors_list)
 
     # Converts categorical variables to 'category' type
     categorical_vars = elr_dataframe_df.select_dtypes(
         include=["object", "category"]
-    ).columns.intersection(elr_predictors)
+    ).columns.intersection(elr_predictors_list)
     for var in categorical_vars:
         elr_dataframe_df[var] = elr_dataframe_df[var].astype("category")
 
@@ -2466,7 +2466,7 @@ def execute_glm_regression(
 
 
 def execute_cox_model(
-    data: pandas.DataFrame,
+    df: pandas.DataFrame,
     duration_col: str,
     event_col: str,
     predictors: typing.Iterable[str],
@@ -2476,7 +2476,7 @@ def execute_cox_model(
 
     Parameters
     ----------
-    data : pandas.DataFrame
+    df : pandas.DataFrame
         The incoming data.
 
     duration_col : str
@@ -2497,31 +2497,31 @@ def execute_cox_model(
         The model results.
     """  # noqa : E501
     # Ensure categorical variables are treated appropriately
-    categorical_vars = data.select_dtypes(
+    categorical_vars = df.select_dtypes(
         include=["object", "category"]
     ).columns.intersection(predictors)
     for var in categorical_vars:
-        data[var] = data[var].astype("category")
+        df[var] = df[var].astype("category")
 
     # Convert categorical variables to dummies
-    data = pd.get_dummies(data, columns=categorical_vars, drop_first=True)
+    df = pd.get_dummies(df, columns=categorical_vars, drop_first=True)
 
     # Ensure numerical variables have the correct type
-    data[duration_col] = pd.to_numeric(data[duration_col], errors="coerce")
-    data[event_col] = pd.to_numeric(data[event_col], errors="coerce")
+    df[duration_col] = pd.to_numeric(df[duration_col], errors="coerce")
+    df[event_col] = pd.to_numeric(df[event_col], errors="coerce")
 
     # Update predictors to include one-hot encoded columns
     predictors = [
         c
-        for c in data.columns
+        for c in df.columns
         if c in predictors or any(c.startswith(p + "_") for p in categorical_vars)
     ]
 
     # Remove rows with missing values in essential columns
-    data = data.dropna(subset=[duration_col, event_col] + predictors)
+    df = df.dropna(subset=[duration_col, event_col] + predictors)
 
     # Select relevant columns
-    df_cox = data[[duration_col, event_col] + predictors]
+    df_cox = df[[duration_col, event_col] + predictors]
 
     # Fit the Cox model
     cph = CoxPHFitter()
