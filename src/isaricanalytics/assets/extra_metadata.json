@@ -1,0 +1,58 @@
+{
+    "country_iso": [
+        "presentation",
+        "categorical",
+        "Country ISO Code",
+        "country",
+        "COUNTRY"
+    ],
+    "dataset_disease": [
+        "presentation",
+        "categorical",
+        "Dataset disease",
+        "study",
+        "STUDY"
+    ],
+    "dataset_id": [
+        "presentation",
+        "freetext",
+        "Dataset identifier",
+        "study",
+        "STUDY"
+    ],
+    "demog_age_days": [
+        "presentation",
+        "numeric",
+        "Age (days)",
+        "demog",
+        "DEMOGRAPHICS"
+    ],
+    "demog_country_iso3": [
+        "presentation",
+        "categorical",
+        "Country ISO3 code",
+        "demog",
+        "DEMOGRAPHICS"
+    ],
+    "outco_binary_outcome": [
+        "outcome",
+        "categorical",
+        "Outcome (binary)",
+        "outco",
+        "OUTCOME"
+    ],
+    "site": [
+        "presentation",
+        "categorical",
+        "Site",
+        "study",
+        "STUDY"
+    ],
+    "siteid": [
+        "presentation",
+        "freetext",
+        "Site identifier",
+        "study",
+        "STUDY"
+    ]
+}

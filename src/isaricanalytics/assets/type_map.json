@@ -1,0 +1,16 @@
+{
+    "calc": "numeric",
+    "date_dmy": "date",
+    "datetime_dmy": "date",
+    "descriptive": "freetext",
+    "dropdown": "categorical",
+    "list": "categorical",
+    "notes": "freetext",
+    "number": "numeric",
+    "radio": "categorical",
+    "slider": "numeric",
+    "text": "freetext",
+    "truefalse": "binary",
+    "user_list": "categorical",
+    "yesno": "binary"
+}
