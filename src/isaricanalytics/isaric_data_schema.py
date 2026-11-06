@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 __all__ = [
-    "build_vertex_df_map_proxy",
     "clean_arc_data_dictionary",
     "clean_observations",
     "get_attribute_arc_source_map",
+    "get_attribute_duration_observations",
+    "get_attribute_observations",
+    "get_attribute_unit_observations",
     "get_parser_source_field_map",
     "get_parser_toml_map",
-    "get_single_attribute_observations",
     "get_vertex_data_dictionary",
+    "get_vertex_data",
     "get_vertex_df_forms_proxy",
     "get_vertex_df_map_proxy",
     "get_wide_observations_table",
@@ -268,11 +270,13 @@ def transform_to_isaric_data_schema(
     if not as_vertex_data:
         return ids_tables
 
-    df_map, vertex_dictionary = get_vertex_df_map_proxy(core_table, long_table, arc_dd)
+    df_map, vertex_dictionary, df_forms = get_vertex_data(
+        core_table, long_table, arc_dd
+    )
 
     return {
         "df_map": df_map,
-        "df_forms_dict": get_vertex_df_forms_proxy(long_table),
+        "df_forms_dict": df_forms,
         "dictionary": vertex_dictionary,
         "quality_report": {},
     }
@@ -338,7 +342,7 @@ def transform_to_vertex(
             "time."
         )
 
-    df_map, vertex_dictionary = get_vertex_df_map_proxy(
+    df_map, vertex_dictionary, df_forms = get_vertex_data(
         isaric_core_table,
         isaric_long_table,
         arc_dd,
@@ -346,13 +350,13 @@ def transform_to_vertex(
 
     return {
         "df_map": df_map,
-        "df_forms_dict": get_vertex_df_forms_proxy(isaric_long_table),
+        "df_forms_dict": df_forms,
         "dictionary": vertex_dictionary,
         "quality_report": {},
     }
 
 
-def get_vertex_df_map_proxy(
+def get_vertex_data(
     isaric_core_table: pd.DataFrame,
     isaric_long_table: pd.DataFrame,
     arc_data_dictionary: pd.DataFrame,
@@ -392,39 +396,39 @@ def get_vertex_df_map_proxy(
 
     try:
         # Get observations as single attribute rows, and clean them.
-        observations = clean_observations(get_single_attribute_observations(longtb))
+        observations = clean_observations(get_attribute_observations(longtb))
 
         # Get wide table of observations with attribute/unit pairs converted into
         # columns, and independent attribute/duration columns, and any ambiguous or
         # overlapping column names.
         patient_keys = ["dataset_id", "subjid"]
-        duration_rows = observations.loc[observations["_duration"].notna()]
-        widetb = get_wide_observations_table(
-            coretb, observations, patient_keys, duration_rows
-        )
+        widetb = get_wide_observations_table(coretb, observations, patient_keys)
 
         # Construct initial df_map with all the columns expected by VERTEX.
-        df_map = build_vertex_df_map_proxy(coretb, widetb, patient_keys)
+        df_map = get_vertex_df_map_proxy(coretb, widetb, patient_keys)
 
         # Map attribute/unit and attribute/duration columns in df_map to their
         # ARC source values.
-        attr_source_map = get_attribute_arc_source_map(
-            df_map, observations, duration_rows
-        )
+        attr_source_map = get_attribute_arc_source_map(df_map, observations)
 
         # Clean the ARC dictionary for df_map, preserving ARC's original form
         # groups.
         arc_dd = clean_arc_data_dictionary(arc_dd)
 
-        # Create VERTEX dictionary
+        # Create VERTEX dictionary.
         vertex_dictionary = get_vertex_data_dictionary(df_map, arc_dd, attr_source_map)
+
+        # Create the df_forms dict
+        df_forms = get_vertex_df_forms_proxy(observations, patient_keys)
     except ValueError as e:
         raise IsaricDataSchemaTransformationException(e)
 
-    return df_map, vertex_dictionary
+    return df_map, vertex_dictionary, df_forms
 
 
-def get_vertex_df_forms_proxy(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
+def get_vertex_df_forms_proxy(
+    observations: pd.DataFrame, patient_keys, /
+) -> dict[str, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
 
     Parameters
@@ -434,56 +438,21 @@ def get_vertex_df_forms_proxy(isaric_long_table: pd.DataFrame, /) -> pd.DataFram
 
     Returns
     -------
-    pandas.DataFrame
-        A single dataframe with one or more rows per patient.
+    dict
+        A dict of long table single-attribute observations dataframes,
+        organised by (attribute/unit)_phase and (attribute/duration)_phase.
     """  # noqa : E501
-    longtb = isaric_long_table.drop(
-        columns=[
-            col for col in isaric_long_table.columns if col.lower().startswith("adtl")
-        ]
+    # Get attribute/unit observations and attribute/duration observations
+    # (via separate pivots) grouped by patient interaction phase.
+    attr_unit_observations = get_attribute_unit_observations(
+        observations, patient_keys, by_phase=True
+    )
+    attr_duration_observations = get_attribute_duration_observations(
+        observations, patient_keys, by_phase=True
     )
 
-    # Build the ``df_forms_dict`` proxy using the merged dataframe (``daily``),
-    # and the dataframes obtained by grouping the merged dataframe by patient
-    # interaction phase (``phase`` column).
-    return {
-        phase[0]: phase_data.reset_index(drop=True)
-        for phase, phase_data in longtb.groupby(["phase"])
-    }
-
-
-def get_single_attribute_observations(
-    isaric_long_table: pd.DataFrame, /
-) -> pd.DataFrame:
-    """:py:class:`pandas.DataFrame : Returns a long table with one row per attribute per observation per patient.
-
-    Parameters
-    ----------
-    isaric_long_table : pandas.DataFrame
-        The unprocessed ISARIC long table.
-
-    Returns
-    -------
-    pandas.DataFrame
-        A long table with one row per attribute per observation per patient.
-    """  # noqa : E501
-    # Start by dropping duplicate rows.
-    longtb = isaric_long_table.drop_duplicates()
-
-    # Count observations per patient and attribute.
-    counts = longtb.groupby(
-        ["dataset_id", "subjid", "attribute"],
-        dropna=False,
-    ).size()
-
-    # An attribute qualifies only if no patient has multiple observations.
-    maximum_count = counts.groupby(level="attribute").max()
-    eligible_attributes_dfmap = maximum_count[maximum_count <= 1].index
-
-    # Subset the long table to only those attributes that are eligible for
-    # inclusion in the df_map (happening exactly once per patient in the
-    # observation period.
-    return longtb.loc[longtb["attribute"].isin(eligible_attributes_dfmap)].copy()
+    # Merge the two dicts and return.
+    return {**attr_unit_observations, **attr_duration_observations}
 
 
 def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
@@ -516,11 +485,171 @@ def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
     return observations
 
 
+def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
+    """:py:class:`pandas.DataFrame : Returns a long table with one row per attribute per observation per patient.
+
+    Parameters
+    ----------
+    isaric_long_table : pandas.DataFrame
+        The unprocessed ISARIC long table.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A long table with one row per attribute per observation per patient.
+    """  # noqa : E501
+    # Start by dropping duplicate rows.
+    longtb = isaric_long_table.drop_duplicates()
+
+    # Count observations per patient and attribute.
+    counts = longtb.groupby(
+        ["dataset_id", "subjid", "attribute"],
+        dropna=False,
+    ).size()
+
+    # An attribute qualifies for inclusion only if no patient has multiple
+    # observations.
+    maximum_count = counts.groupby(level="attribute").max()
+    eligible_attributes_dfmap = maximum_count[maximum_count <= 1].index
+
+    # Subset the long table to only those attributes that are eligible for
+    # inclusion in the df_map (happening exactly once per patient in the
+    # observation period.
+    return longtb.loc[longtb["attribute"].isin(eligible_attributes_dfmap)].copy()
+
+
+def get_attribute_unit_observations(
+    observations: pd.DataFrame,
+    patient_keys: list[str],
+    /,
+    *,
+    by_phase: bool = False,
+) -> pd.DataFrame | dict[str, pd.DataFrame]:
+    """:py:class:`pandas.DataFrame` : Returns patient attribute/unit observations data.
+
+    Parameters
+    ----------
+    observations : pandas.DataFrame
+        The cleaned observations data with attribute/unit columns.
+
+    patient_keys : list
+        Patient keys.
+
+    by_phase : bool, default=False
+        Optional indicator of whether to process the observations by patient
+        interaction phase.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Attribute/unit observations data either as a single dataframe
+        undifferentiated by (patient interaction) phase, or as a dict of
+        dataframes keyed by phase.
+    """
+    pivot_columns = [
+        "attribute",
+        "_unit",
+    ]
+    if by_phase:
+        pivot_columns.append("phase")
+
+    attr_unit_observations = observations.pivot(
+        index=patient_keys,
+        columns=pivot_columns,
+        values="_value",
+    )
+    if not by_phase:
+        attr_unit_observations.columns = [
+            f"{attribute}_{unit}" if unit else attribute
+            for attribute, unit in attr_unit_observations.columns
+        ]
+
+        return attr_unit_observations
+
+    attr_unit_observations.columns = pd.MultiIndex.from_tuples(
+        [
+            (f"{attribute}_{unit}" if unit else attribute, phase)
+            for attribute, unit, phase in attr_unit_observations.columns
+        ],
+        names=["attribute_unit", "phase"],
+    )
+
+    return {
+        f"{phase}_unit": phase_attr_unit_observations
+        for phase, phase_attr_unit_observations in attr_unit_observations.T.groupby(
+            level="phase"
+        )
+    }
+
+
+def get_attribute_duration_observations(
+    observations: pd.DataFrame, patient_keys: list[str], /, *, by_phase: bool = False
+) -> pd.DataFrame | dict[str, pd.DataFrame]:
+    """:py:class:`pandas.DataFrame` : Returns patient attribute/observations data.
+
+    Parameters
+    ----------
+    observations : pandas.DataFrame
+        The cleaned observations data with attribute/duration columns.
+
+    patient_keys : list
+        Patient ID keys.
+
+    by_phase : bool, default=False
+        Optional indicator of whether to process the observations by patient
+        interaction phase.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Attribute/duration observations data either as a single dataframe
+        undifferentiated by (patient interaction) phase, or as a dict of
+        dataframes keyed by phase.
+    """
+    pivot_columns = [
+        "attribute",
+    ]
+    if by_phase:
+        pivot_columns.append("phase")
+
+    duration_rows = observations.loc[observations["_duration"].notna()]
+
+    if not duration_rows.empty:
+        attr_duration_observations = duration_rows.pivot(
+            index=patient_keys,
+            columns=pivot_columns,
+            values="_duration",
+        )
+        if not by_phase:
+            attr_duration_observations.columns = [
+                f"{attribute}_duration"
+                for attribute in attr_duration_observations.columns
+            ]
+
+            return attr_duration_observations
+
+        attr_duration_observations.columns = pd.MultiIndex.from_tuples(
+            [
+                (f"{attribute}_duration", phase)
+                for attribute, phase in attr_duration_observations.columns
+            ],
+            names=["attribute_duration", "phase"],
+        )
+
+        return {
+            f"{phase}_duration": phase_attr_duration_observations
+            for phase, phase_attr_duration_observations in attr_duration_observations.T.groupby(  # noqa: E501
+                level="phase"
+            )
+        }
+
+    return pd.DataFrame if not by_phase else {}
+
+
 def get_wide_observations_table(
     isaric_core_table: pd.DataFrame,
     observations: pd.DataFrame,
     patient_keys: list[str],
-    duration_rows: pd.DataFrame,
     /,
 ) -> tuple[pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : A wide observations table that includes attribute/unit and attribute/duration columns.
@@ -537,9 +666,6 @@ def get_wide_observations_table(
     patient_keys : list
         A list of columns to use as patient keys to pivoting.
 
-    duration_rows : pandas.DataFrame
-        Attribute/duration rows.
-
     Raises
     ------
     ValueError
@@ -552,29 +678,15 @@ def get_wide_observations_table(
     """  # noqa : E501
     coretb = isaric_core_table
 
-    # Convert attribute/unit pairs to columns
-    widetb = observations.pivot(
-        index=patient_keys,
-        columns=["attribute", "_unit"],
-        values="_value",
-    )
-    widetb.columns = [
-        f"{attribute}_{unit}" if unit else attribute
-        for attribute, unit in widetb.columns
-    ]
-    widetb.columns.name = None
+    # Create wide table initially with the attribute/unit observations
+    widetb = get_attribute_unit_observations(observations, patient_keys)
 
     # Create attribute/duration columns
-    if not duration_rows.empty:
-        widetb_duration = duration_rows.pivot(
-            index=patient_keys,
-            columns="attribute",
-            values="_duration",
-        )
-        widetb_duration.columns = [
-            f"{attribute}_duration" for attribute in widetb_duration.columns
-        ]
-        widetb = pd.concat([widetb, widetb_duration], axis=1)
+    attr_duration_observations = get_attribute_duration_observations(
+        observations, patient_keys
+    )
+    if not attr_duration_observations.empty:
+        widetb = pd.concat([widetb, attr_duration_observations], axis=1)
 
     # Prevent ambiguous or overlapping column names.
     if not widetb.columns.is_unique:
@@ -589,7 +701,7 @@ def get_wide_observations_table(
     return widetb
 
 
-def build_vertex_df_map_proxy(
+def get_vertex_df_map_proxy(
     isaric_core_table: pd.DataFrame,
     wide_observations_table: pd.DataFrame,
     patient_keys: list[str],
@@ -653,7 +765,6 @@ def build_vertex_df_map_proxy(
 def get_attribute_arc_source_map(
     df_map: pd.DataFrame,
     observations: pd.DataFrame,
-    duration_rows: pd.DataFrame,
     /,
 ) -> dict[str, tuple[typing.Any]]:
     """:py:class:`dict` : Attribute field source map for attribute/unit and attribute/duration columns in df_map.
@@ -666,15 +777,13 @@ def get_attribute_arc_source_map(
     observations : pandas.DataFrame
         The cleaned observations data.
 
-    duration_rows : pandas.DataFrame
-        Duration attribute data.
-
     Returns
     -------
     dict
         A dict mapping attribute/unit and attribute/duration columns in df_map
         to ARC values.
     """  # noqa : E501
+    duration_rows = observations.loc[observations["_duration"].notna()]
     attr_source_map = {column: (column, "", False) for column in df_map.columns}
 
     for attribute, unit in (
