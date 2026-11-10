@@ -7,6 +7,9 @@ __all__ = [
     "get_attribute_duration_observations",
     "get_attribute_observations",
     "get_attribute_unit_observations",
+    "get_date_observations_by_phase",
+    "get_event_observations_by_phase",
+    "get_observations",
     "get_parser_source_field_map",
     "get_parser_toml_map",
     "get_vertex_data_dictionary",
@@ -313,7 +316,7 @@ def transform_to_vertex(
                 "daily": <patient observations dataframe>,
                 "dictionary": <ARC data dictionary>
             }
-    """
+    """  # noqa : E501
     # An ARC version is required to fetch the ARC data dictionary. If no ARC
     # version is provided by the caller, fetch the latest directly from ARC @
     # GitHub - in case of an exception raise it.
@@ -402,12 +405,11 @@ def get_vertex_data(
     ).drop_duplicates()
 
     try:
-        # Get observations as single attribute rows, and clean them.
-        observations = clean_observations(get_attribute_observations(long_))
+        # Get cleaned/preprocessed observations from the long table.
+        observations = get_observations(long_)
 
-        # Get wide table of observations with attribute/unit pairs converted into
-        # columns, and independent attribute/duration columns, and any ambiguous or
-        # overlapping column names.
+        # Construct a "wide" table of observations with the necessary additional
+        # columns representing individual attributes.
         patient_keys = ["dataset_id", "subjid"]
         wide = get_wide_observations_table(core, observations, patient_keys)
 
@@ -418,33 +420,28 @@ def get_vertex_data(
         # ARC source values.
         attr_source_map = get_attribute_arc_source_map(df_map, observations)
 
-        # Clean the ARC dictionary for df_map, preserving ARC's original form
-        # groups.
+        # Clean the ARC data dictionary for df_map, preserving ARC's original
+        # form groups.
         arc_dd = clean_arc_data_dictionary(arc_data_dictionary)
 
-        # Create VERTEX dictionary.
+        # Create VERTEX data dictionary.
         vertex_dd = get_vertex_data_dictionary(df_map, arc_dd, attr_source_map)
 
         # Create the df_forms dict
-        df_forms = get_vertex_df_forms_proxy(observations, patient_keys)
+        df_forms = get_vertex_df_forms_proxy(observations)
     except ValueError as e:
         raise IsaricDataSchemaTransformationException(e)
 
     return {"df_map": df_map, "dictionary": vertex_dd, "df_forms_dict": df_forms}
 
 
-def get_vertex_df_forms_proxy(
-    observations: pd.DataFrame, patient_keys: list[str], /
-) -> dict[str, pd.DataFrame]:
+def get_vertex_df_forms_proxy(observations: pd.DataFrame, /) -> dict[str, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
 
     Parameters
     ----------
-    isaric_long_table : pandas.DataFrame
-        The ISARIC data schema long table.
-
-    patient_keys : list
-        A list of columns defining patient keys.
+    observations : pandas.DataFrame
+        Preprocessed observations data with unpivoted attributes.
 
     Returns
     -------
@@ -452,26 +449,27 @@ def get_vertex_df_forms_proxy(
         A dict of long table single-attribute observations dataframes,
         organised by (attribute/unit)_phase and (attribute/duration)_phase.
     """  # noqa : E501
-    # Get attribute/unit observations and attribute/duration observations
-    # (via separate pivots) grouped by patient interaction phase.
-    attr_unit_observations = get_attribute_unit_observations(
-        observations, patient_keys, by_phase=True
-    )
-    attr_duration_observations = get_attribute_duration_observations(
-        observations, patient_keys, by_phase=True
-    )
+    # Get dicts of date-based and event-based observations organised by phase,
+    # and merge the two dicts.
+    date_observations = get_date_observations_by_phase(observations)
+
+    # A step to deal with observations that have no ``event_id`` based rows.
+    try:
+        event_observations = get_event_observations_by_phase(observations)
+    except ValueError:
+        return date_observations
 
     # Merge the two dicts and return.
-    return {**attr_unit_observations, **attr_duration_observations}
+    return {**date_observations, **event_observations}
 
 
 def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
-    """:py:class:`pandas.DataFrame` : Cleans the observations from the long table.
+    """:py:class:`pandas.DataFrame` : Cleans/preprocesses the observations from the long table.
 
     Parameters
     ----------
     observations : pandas.DataFrame
-        Observations from the ISARIC long table.
+        The unprocessed ISARIC long table.
 
     Returns
     -------
@@ -493,6 +491,23 @@ def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
     observations["_duration"] = observations["duration"]
 
     return observations
+
+
+def get_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
+    """:py:class:`pandas.DataFrame` : Returns a dataframe of cleaned and deduplicated observations from the ISARIC long table.
+
+    Parameters
+    ----------
+    isaric_long_table : pandas.DataFrame
+        The unprocessed ISARIC long table.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Cleaned and deduplicated rows from the long table representing
+        individual observations.
+    """  # noqa : E501
+    return clean_observations(get_attribute_observations(isaric_long_table))
 
 
 def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
@@ -529,131 +544,87 @@ def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFra
 
 
 def get_attribute_unit_observations(
-    observations: pd.DataFrame,
-    patient_keys: list[str],
-    /,
-    *,
-    by_phase: bool = False,
-) -> pd.DataFrame | dict[str, pd.DataFrame]:
+    observations: pd.DataFrame, patient_keys: list[str]
+) -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Returns patient attribute/unit observations data.
 
     Parameters
     ----------
     observations : pandas.DataFrame
-        The cleaned observations data with attribute/unit columns.
+        Preprocessed observations data with unpivoted attributes.
 
     patient_keys : list
         A list of columns defining patient keys.
 
-    by_phase : bool, default=False
-        Optional indicator of whether to process the observations by patient
-        interaction phase.
-
     Returns
     -------
     pandas.DataFrame
-        Attribute/unit observations data either as a single dataframe
-        undifferentiated by (patient interaction) phase, or as a dict of
-        dataframes keyed by phase.
-    """
+        Attribute/unit observations data as a single dataframe.
+    """  # noqa : E501
+    # Define the pivot columns
     pivot_columns = [
         "attribute",
         "_unit",
     ]
-    if by_phase:
-        pivot_columns.append("phase")
 
+    # Perform the pivot, create the unit attribute suffixed columns on
+    # the pivoted dataframe, and return.
     attr_unit_observations = observations.pivot(
         index=patient_keys,
         columns=pivot_columns,
         values="_value",
     )
-    if not by_phase:
-        attr_unit_observations.columns = [
-            f"{attribute}_{unit}" if unit else attribute
-            for attribute, unit in attr_unit_observations.columns
-        ]
 
-        return attr_unit_observations
+    attr_unit_observations.columns = [
+        f"{attribute}_{unit}" if unit else attribute
+        for attribute, unit in attr_unit_observations.columns
+    ]
 
-    attr_unit_observations.columns = pd.MultiIndex.from_tuples(
-        [
-            (f"{attribute}_{unit}" if unit else attribute, phase)
-            for attribute, unit, phase in attr_unit_observations.columns
-        ],
-        names=["attribute_unit", "phase"],
-    )
-
-    return {
-        f"{phase}_unit": phase_attr_unit_observations
-        for phase, phase_attr_unit_observations in attr_unit_observations.T.groupby(
-            level="phase"
-        )
-    }
+    return attr_unit_observations
 
 
 def get_attribute_duration_observations(
-    observations: pd.DataFrame, patient_keys: list[str], /, *, by_phase: bool = False
-) -> pd.DataFrame | dict[str, pd.DataFrame]:
+    observations: pd.DataFrame, patient_keys: list[str]
+) -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Returns patient attribute/observations data.
 
     Parameters
     ----------
     observations : pandas.DataFrame
-        The cleaned observations data with attribute/duration columns.
+        Preprocessed observations data with unpivoted attributes.
 
     patient_keys : list
         A list of columns defining patient ID keys.
 
-    by_phase : bool, default=False
-        Optional indicator of whether to process the observations by patient
-        interaction phase.
-
     Returns
     -------
     pandas.DataFrame
-        Attribute/duration observations data either as a single dataframe
-        undifferentiated by (patient interaction) phase, or as a dict of
-        dataframes keyed by phase.
-    """
+        Attribute/duration observations data as a single dataframe.
+    """  # noqa : E501
+    # Define the pivot column and extract the duration rows.
     pivot_columns = [
         "attribute",
     ]
-    if by_phase:
-        pivot_columns.append("phase")
 
     duration_rows = observations.loc[observations["_duration"].notna()]
 
+    # If there are duration rows then pivot on attribute, create the
+    # duration-suffixed columns in the pivoted dataframe and return it.
     if not duration_rows.empty:
         attr_duration_observations = duration_rows.pivot(
             index=patient_keys,
             columns=pivot_columns,
             values="_duration",
         )
-        if not by_phase:
-            attr_duration_observations.columns = [
-                f"{attribute}_duration"
-                for attribute in attr_duration_observations.columns
-            ]
 
-            return attr_duration_observations
+        attr_duration_observations.columns = [
+            f"{attribute}_duration" for attribute in attr_duration_observations.columns
+        ]
 
-        attr_duration_observations.columns = pd.MultiIndex.from_tuples(
-            [
-                (f"{attribute}_duration", phase)
-                for attribute, phase in attr_duration_observations.columns
-            ],
-            names=["attribute_duration", "phase"],
-        )
+        return attr_duration_observations
 
-        return {
-            f"{phase}_duration": phase_attr_duration_observations
-            for phase, phase_attr_duration_observations in attr_duration_observations.T.groupby(  # noqa: E501
-                level="phase"
-            )
-        }
-
-    return pd.DataFrame if not by_phase else {}
+    # Return an empty dataframe if there are no duration rows.
+    return pd.DataFrame()
 
 
 def get_wide_observations_table(
@@ -670,8 +641,7 @@ def get_wide_observations_table(
         The ISARIC core table.
 
     observations : pandas.DataFrame
-        A deduplicated, single-attribute-per-observation-per-patient, and
-        cleaned observations table.
+        Preprocessed observations data with unpivoted attributes.
 
     patient_keys : list
         A list of columns to use as patient keys to pivoting.
@@ -709,6 +679,94 @@ def get_wide_observations_table(
     wide.columns.name = None
 
     return wide
+
+
+def get_date_observations_by_phase(
+    observations: pd.DataFrame, /
+) -> dict[str, pd.DataFrame]:
+    """:py:class:`dict` : Returns a dict of date-based observations dataframes organised by patient interaction phase.
+
+    Parameters
+    ----------
+    observations : pandas.DataFrame
+        Preprocessed observations data with unpivoted attributes.
+
+    Raises
+    ------
+    ValueError
+        If there are no date-based observations, or no ``"date"`` column in
+        the observations.
+
+    Returns
+    -------
+    dict
+        A dict of date-based observations dataframes organised by patient
+        interaction phase in the form:
+        ::
+
+            {
+                "presentation_date": <date-based observations in the presentation phase>,
+                "during_observation_date": <date-based observations in the presentation phase>,
+                "outcome_date": <date-based observations in the outcome phase>
+            }
+    """  # noqa : E501
+    # Extract the date-based observations, and raise an error if there are none.
+    try:
+        date_observations = observations[observations["date"].notnull()]
+
+        if date_observations.empty:
+            raise ValueError("Expected date-based observations, none found.")
+    except KeyError:
+        raise ValueError("No 'date' column found in observations.")
+
+    return {
+        f"{phase}_date": phase_date_group
+        for phase, phase_date_group in date_observations.groupby("phase")
+    }
+
+
+def get_event_observations_by_phase(
+    observations: pd.DataFrame, /
+) -> dict[str, pd.DataFrame]:
+    """:py:class:`dict` : Returns a dict of event-based observations dataframes organised by patient interaction phase.
+
+    Parameters
+    ----------
+    observations : pandas.DataFrame
+        Preprocessed observations data with unpivoted attributes.
+
+    Raises
+    ------
+    ValueError
+        If there are no event-based observations, i.e. no rows with non-null
+        ``event_id``, or no ``"event_id"`` column in the observations.
+
+    Returns
+    -------
+    dict
+        A dict of event-based observations dataframes organised by patient
+        interaction phase in the form:
+        ::
+
+            {
+                "presentation_event": <event-based observations in the presentation phase>,
+                "during_observation_event": <event-based observations in the presentation phase>,
+                "outcome_event": <event-based observations in the outcome phase>
+            }
+    """  # noqa : E501
+    # Extract the event-based observations, and raise an error if there are none.
+    try:
+        event_observations = observations[observations["event_id"].notnull()]
+
+        if event_observations.empty:
+            raise ValueError("Expected date-based observations, none found.")
+    except KeyError:
+        raise ValueError("No 'event_id' column found in observations.")
+
+    return {
+        f"{phase}_date": phase_event_group
+        for phase, phase_event_group in event_observations.groupby("phase")
+    }
 
 
 def get_vertex_df_map_proxy(
