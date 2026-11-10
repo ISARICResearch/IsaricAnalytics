@@ -276,10 +276,8 @@ def transform_to_isaric_data_schema(
     vertex_data = get_vertex_data(core, long_, arc_dd)
 
     return {
-        "df_map": vertex_data["df_map"],
-        "df_forms_dict": vertex_data["df_forms_dict"],
-        "dictionary": vertex_data["dictionary"],
-        "quality_report": {},
+        **vertex_data,
+        **{"quality_report": {}},
     }
 
 
@@ -353,10 +351,8 @@ def transform_to_vertex(
     )
 
     return {
-        "df_map": vertex_data["df_map"],
-        "df_forms_dict": vertex_data["df_forms_dict"],
-        "dictionary": vertex_data["dictionary"],
-        "quality_report": {},
+        **vertex_data,
+        **{"quality_report": {}},
     }
 
 
