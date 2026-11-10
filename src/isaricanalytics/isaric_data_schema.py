@@ -202,7 +202,7 @@ def transform_to_isaric_data_schema(
 
             {
                 "df_map": <one-row-per-patient dataframe>,
-                "df_forms_dict": <dict of patient observations dataframes keyed by interaction phase>,
+                "df_forms_dict": <dict of patient observations dataframes (unit attributes, duration attributes)  interaction phase>,
                 "vertex_dictionary": <VERTEX data dictionary>,
                 "quality_report": <quality report>
             }
@@ -213,8 +213,8 @@ def transform_to_isaric_data_schema(
     """  # noqa : E501
     # Call ADTL to parse the data and retrieve the core and long-format tables.
     ids_tables = adtl.parse(parser_file, data_file, include_transform=tf.__file__)
-    core_table = ids_tables["core"]
-    long_table = ids_tables["long"]
+    core = ids_tables["core"]
+    long_ = ids_tables["long"]
 
     # An ARC version is required to fetch the ARC data dictionary. If no ARC
     # version is provided by the caller, fetch the latest directly from ARC @
@@ -244,13 +244,13 @@ def transform_to_isaric_data_schema(
 
     # Checking transformed columns in the core and long tables against ARC, and
     # issuing warnings about any non-ARC columns in either.
-    non_arc_core_columns = set(core_table.columns).difference(arc_dd["Variable"])
+    non_arc_core_columns = set(core.columns).difference(arc_dd["Variable"])
     if non_arc_core_columns:
         _warn_on_non_arc_columns(
             non_arc_core_columns, "core", arc_version, stacklevel=2
         )
 
-    non_arc_long_columns = set(long_table.columns).difference(arc_dd["Variable"])
+    non_arc_long_columns = set(long_.columns).difference(arc_dd["Variable"])
     if non_arc_long_columns:
         _warn_on_non_arc_columns(
             non_arc_long_columns, "long", arc_version, stacklevel=2
@@ -270,14 +270,12 @@ def transform_to_isaric_data_schema(
     if not as_vertex_data:
         return ids_tables
 
-    df_map, vertex_dictionary, df_forms = get_vertex_data(
-        core_table, long_table, arc_dd
-    )
+    vertex_data = get_vertex_data(core, long_, arc_dd)
 
     return {
-        "df_map": df_map,
-        "df_forms_dict": df_forms,
-        "dictionary": vertex_dictionary,
+        "df_map": vertex_data["df_map"],
+        "df_forms_dict": vertex_data["df_forms_dict"],
+        "dictionary": vertex_data["dictionary"],
         "quality_report": {},
     }
 
@@ -319,6 +317,9 @@ def transform_to_vertex(
     # An ARC version is required to fetch the ARC data dictionary. If no ARC
     # version is provided by the caller, fetch the latest directly from ARC @
     # GitHub - in case of an exception raise it.
+    core = isaric_core_table
+    long_ = isaric_long_table
+
     if not arc_version:
         try:
             arc_version = ArcApiClient().get_arc_version_list()[0]
@@ -342,16 +343,16 @@ def transform_to_vertex(
             "time."
         )
 
-    df_map, vertex_dictionary, df_forms = get_vertex_data(
-        isaric_core_table,
-        isaric_long_table,
+    vertex_data = get_vertex_data(
+        core,
+        long_,
         arc_dd,
     )
 
     return {
-        "df_map": df_map,
-        "df_forms_dict": df_forms,
-        "dictionary": vertex_dictionary,
+        "df_map": vertex_data["df_map"],
+        "df_forms_dict": vertex_data["df_forms_dict"],
+        "dictionary": vertex_data["dictionary"],
         "quality_report": {},
     }
 
@@ -361,8 +362,8 @@ def get_vertex_data(
     isaric_long_table: pd.DataFrame,
     arc_data_dictionary: pd.DataFrame,
     /,
-) -> tuple[pd.DataFrame]:
-    """:py:class:`pandas.DataFrame` : Returns VERTEX ``df_map`` proxy and data dictionary.
+) -> dict[str, typing.Any]:
+    """:py:class:`dict` : Returns a dict of VERTEX data including ``df_map`` proxy and data dictionary.
 
     Parameters
     ----------
@@ -382,30 +383,36 @@ def get_vertex_data(
 
     Returns
     -------
-    tuple
-        A pair of dataframes, the first being df_map containing
-        one-row-per-patient data, and the second, the VERTEX data dictionary.
+    dict
+        A dict of VERTEX data, including the ``df_map`` proxy, the VERTEX
+        dictionary, and the ``df_forms_dict``:
+        ::
+
+            {
+                "df_map": <>,
+                "dictionary": vertex_dictionary,
+                "df_forms_dict": df_forms
+            }
     """  # noqa : E501
-    arc_dd = arc_data_dictionary
-    coretb = isaric_core_table.drop(
+    core = isaric_core_table.drop(
         columns=[col for col in isaric_core_table.columns if col.startswith("adtl")]
     )
-    longtb = isaric_long_table.drop(
+    long_ = isaric_long_table.drop(
         columns=[col for col in isaric_long_table.columns if col.startswith("adtl")]
     ).drop_duplicates()
 
     try:
         # Get observations as single attribute rows, and clean them.
-        observations = clean_observations(get_attribute_observations(longtb))
+        observations = clean_observations(get_attribute_observations(long_))
 
         # Get wide table of observations with attribute/unit pairs converted into
         # columns, and independent attribute/duration columns, and any ambiguous or
         # overlapping column names.
         patient_keys = ["dataset_id", "subjid"]
-        widetb = get_wide_observations_table(coretb, observations, patient_keys)
+        wide = get_wide_observations_table(core, observations, patient_keys)
 
         # Construct initial df_map with all the columns expected by VERTEX.
-        df_map = get_vertex_df_map_proxy(coretb, widetb, patient_keys)
+        df_map = get_vertex_df_map_proxy(core, wide, patient_keys)
 
         # Map attribute/unit and attribute/duration columns in df_map to their
         # ARC source values.
@@ -413,21 +420,21 @@ def get_vertex_data(
 
         # Clean the ARC dictionary for df_map, preserving ARC's original form
         # groups.
-        arc_dd = clean_arc_data_dictionary(arc_dd)
+        arc_dd = clean_arc_data_dictionary(arc_data_dictionary)
 
         # Create VERTEX dictionary.
-        vertex_dictionary = get_vertex_data_dictionary(df_map, arc_dd, attr_source_map)
+        vertex_dd = get_vertex_data_dictionary(df_map, arc_dd, attr_source_map)
 
         # Create the df_forms dict
         df_forms = get_vertex_df_forms_proxy(observations, patient_keys)
     except ValueError as e:
         raise IsaricDataSchemaTransformationException(e)
 
-    return df_map, vertex_dictionary, df_forms
+    return {"df_map": df_map, "dictionary": vertex_dd, "df_forms_dict": df_forms}
 
 
 def get_vertex_df_forms_proxy(
-    observations: pd.DataFrame, patient_keys, /
+    observations: pd.DataFrame, patient_keys: list[str], /
 ) -> dict[str, pd.DataFrame]:
     """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
 
@@ -435,6 +442,9 @@ def get_vertex_df_forms_proxy(
     ----------
     isaric_long_table : pandas.DataFrame
         The ISARIC data schema long table.
+
+    patient_keys : list
+        A list of columns defining patient keys.
 
     Returns
     -------
@@ -499,10 +509,10 @@ def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFra
         A long table with one row per attribute per observation per patient.
     """  # noqa : E501
     # Start by dropping duplicate rows.
-    longtb = isaric_long_table.drop_duplicates()
+    long_ = isaric_long_table.drop_duplicates()
 
     # Count observations per patient and attribute.
-    counts = longtb.groupby(
+    counts = long_.groupby(
         ["dataset_id", "subjid", "attribute"],
         dropna=False,
     ).size()
@@ -515,7 +525,7 @@ def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFra
     # Subset the long table to only those attributes that are eligible for
     # inclusion in the df_map (happening exactly once per patient in the
     # observation period.
-    return longtb.loc[longtb["attribute"].isin(eligible_attributes_dfmap)].copy()
+    return long_.loc[long_["attribute"].isin(eligible_attributes_dfmap)].copy()
 
 
 def get_attribute_unit_observations(
@@ -533,7 +543,7 @@ def get_attribute_unit_observations(
         The cleaned observations data with attribute/unit columns.
 
     patient_keys : list
-        Patient keys.
+        A list of columns defining patient keys.
 
     by_phase : bool, default=False
         Optional indicator of whether to process the observations by patient
@@ -593,7 +603,7 @@ def get_attribute_duration_observations(
         The cleaned observations data with attribute/duration columns.
 
     patient_keys : list
-        Patient ID keys.
+        A list of columns defining patient ID keys.
 
     by_phase : bool, default=False
         Optional indicator of whether to process the observations by patient
@@ -676,29 +686,29 @@ def get_wide_observations_table(
     pandas.DataFrame
         The wide observations table.
     """  # noqa : E501
-    coretb = isaric_core_table
+    core = isaric_core_table
 
     # Create wide table initially with the attribute/unit observations
-    widetb = get_attribute_unit_observations(observations, patient_keys)
+    wide = get_attribute_unit_observations(observations, patient_keys)
 
     # Create attribute/duration columns
     attr_duration_observations = get_attribute_duration_observations(
         observations, patient_keys
     )
     if not attr_duration_observations.empty:
-        widetb = pd.concat([widetb, attr_duration_observations], axis=1)
+        wide = pd.concat([wide, attr_duration_observations], axis=1)
 
     # Prevent ambiguous or overlapping column names.
-    if not widetb.columns.is_unique:
+    if not wide.columns.is_unique:
         raise ValueError("Generated df_map column names are not unique")
 
-    overlaps = sorted(set(widetb.columns).intersection(coretb.columns))
+    overlaps = sorted(set(wide.columns).intersection(core.columns))
     if overlaps:
         raise ValueError(f"Generated columns overlap core fields: {overlaps}")
 
-    widetb.columns.name = None
+    wide.columns.name = None
 
-    return widetb
+    return wide
 
 
 def get_vertex_df_map_proxy(
@@ -726,13 +736,13 @@ def get_vertex_df_map_proxy(
     pandas.DataFrame
         An initial VERTEX-style df_map with the minimal expected columns.
     """  # noqa : E501
-    coretb = isaric_core_table
-    widetb = wide_observations_table
+    core = isaric_core_table
+    wide = wide_observations_table
 
     # Convert patient identifiers from the index into columns,
     # then attach the observations to every core record.
-    df_map = coretb.merge(
-        widetb.reset_index(),
+    df_map = core.merge(
+        wide.reset_index(),
         on=patient_keys,
         how="left",
         validate="one_to_one",
@@ -825,13 +835,13 @@ def clean_arc_data_dictionary(arc_data_dictionary: pd.DataFrame, /) -> pd.DataFr
     pandas.DataFrame
         The cleaned ARC data dictionary/
     """  # noqa : E501
-    arc = arc_data_dictionary.fillna("").set_index("Variable")
+    arc_dd = arc_data_dictionary.fillna("").set_index("Variable")
 
     # Should this be a warning instead? Duplicate variable rows can be dropped.
-    if not arc.index.is_unique:
+    if not arc_dd.index.is_unique:
         raise ValueError("ARC data dictionary contains duplicate Variable names.")
 
-    return arc
+    return arc_dd
 
 
 def get_vertex_data_dictionary(
@@ -1000,14 +1010,14 @@ def get_vertex_data_dictionary(
                     ]
                 )
 
-    vertex_dictionary = pd.DataFrame(
+    vertex_data_dictionary = pd.DataFrame(
         list(sections.values()) + rows,
         columns=dictionary_columns,
     )
 
     # Is this necessary? If ``field_name`` is ``Variable`` then duplicates are already
     # removed in the initial the step to clean the ARC data dictonary.
-    if vertex_dictionary["field_name"].duplicated().any():
+    if vertex_data_dictionary["field_name"].duplicated().any():
         raise ValueError("Duplicate field names in the VERTEX dictionary")
 
-    return vertex_dictionary
+    return vertex_data_dictionary
