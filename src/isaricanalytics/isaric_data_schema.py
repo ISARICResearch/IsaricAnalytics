@@ -205,7 +205,7 @@ def transform_to_isaric_data_schema(
 
             {
                 "df_map": <one-row-per-patient dataframe>,
-                "df_forms_dict": <dict of patient observations dataframes (unit attributes, duration attributes)  interaction phase>,
+                "df_forms_dict": <dict of patient observations dataframes (by date and by event ID) per phase>,
                 "vertex_dictionary": <VERTEX data dictionary>,
                 "quality_report": <quality report>
             }
@@ -311,8 +311,9 @@ def transform_to_vertex(
 
             {
                 "df_map": <one-row-per-patient dataframe>,
-                "daily": <patient observations dataframe>,
-                "dictionary": <ARC data dictionary>
+                "df_forms_dict": <dict of patient observations dataframes (by date and by event ID) per phase>,
+                "vertex_dictionary": <VERTEX data dictionary>,
+                "quality_report": <quality report>
             }
     """  # noqa : E501
     # An ARC version is required to fetch the ARC data dictionary. If no ARC
@@ -387,10 +388,11 @@ def get_vertex_data(
         dictionary, and the ``df_forms_dict``:
         ::
 
+
             {
-                "df_map": <>,
-                "dictionary": vertex_dictionary,
-                "df_forms_dict": df_forms
+                "df_map": <one-row-per-patient dataframe>,
+                "df_forms_dict": <dict of patient observations dataframes (by date and by event ID) per phase>,
+                "vertex_dictionary": <VERTEX data dictionary>,
             }
     """  # noqa : E501
     core = isaric_core_table.drop(
@@ -443,7 +445,22 @@ def get_vertex_df_forms_proxy(observations: pd.DataFrame, /) -> dict[str, pd.Dat
     -------
     dict
         A dict of long table single-attribute observations dataframes,
-        organised by (attribute/unit)_phase and (attribute/duration)_phase.
+        organised by (attribute/unit)_phase and (attribute/duration)_phase,
+        e.g. assuming the existence of the four core phases ``'presentation'``,
+        ``'during_observation'``, ``'outcome'``, and ``'followup'`` the dict
+        would look like this:
+        ::
+
+            {
+                "presentation_date": <date-based observations in the presentation phase>,
+                "presentation_event": <event-based observations in the presentation phase>,
+                "during_observation_date": <date-based observations in the observation phase>,
+                "during_observation_event": <event-based observations in the observation phase>,
+                "outcome_date": <date-based observations in the outcome phase>,
+                "outcome_event": <event-based observations in the outcome phase>,
+                "followup_date": <date-based observations in the followup phase>,
+                "followup_event": <event-based observations in the followup phase>
+            }
     """  # noqa : E501
     # Get dicts of date-based and event-based observations organised by phase,
     # and merge the two dicts.
@@ -507,7 +524,7 @@ def get_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
 
 
 def get_attribute_observations(isaric_long_table: pd.DataFrame, /) -> pd.DataFrame:
-    """:py:class:`pandas.DataFrame : Returns a long table with one row per attribute per observation per patient.
+    """:py:class:`pandas.DataFrame : Returns a long table with one row per attribute per observation per patient, where there is only one observation per patient.
 
     Parameters
     ----------
