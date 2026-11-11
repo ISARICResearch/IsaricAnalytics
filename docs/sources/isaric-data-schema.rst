@@ -283,7 +283,7 @@ VERTEX outputs can also be obtained directly from the core and long tables via t
 
 .. code:: python
 
-   >>> import warnings; warnings.filterwarnings('ignore')
+   >>> import warnings; warnings.filterwarnings('always')
    >>> vertex_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
    >>> vertex_data.keys()
    dict_keys(['df_map', 'dictionary', 'df_forms_dict', 'quality_report'])
