@@ -433,49 +433,6 @@ def get_vertex_data(
     return {"df_map": df_map, "dictionary": vertex_dd, "df_forms_dict": df_forms}
 
 
-def get_vertex_df_forms_proxy(observations: pd.DataFrame, /) -> dict[str, pd.DataFrame]:
-    """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
-
-    Parameters
-    ----------
-    observations : pandas.DataFrame
-        Preprocessed observations data with unpivoted attributes.
-
-    Returns
-    -------
-    dict
-        A dict of long table single-attribute observations dataframes,
-        organised by (attribute/unit)_phase and (attribute/duration)_phase,
-        e.g. assuming the existence of the four core phases ``'presentation'``,
-        ``'during_observation'``, ``'outcome'``, and ``'followup'`` the dict
-        would look like this:
-        ::
-
-            {
-                "presentation_date": <date-based observations in the presentation phase>,
-                "presentation_event": <event-based observations in the presentation phase>,
-                "during_observation_date": <date-based observations in the observation phase>,
-                "during_observation_event": <event-based observations in the observation phase>,
-                "outcome_date": <date-based observations in the outcome phase>,
-                "outcome_event": <event-based observations in the outcome phase>,
-                "followup_date": <date-based observations in the followup phase>,
-                "followup_event": <event-based observations in the followup phase>
-            }
-    """  # noqa : E501
-    # Get dicts of date-based and event-based observations organised by phase,
-    # and merge the two dicts.
-    date_observations = get_date_observations_by_phase(observations)
-
-    # A step to deal with observations that have no ``event_id`` based rows.
-    try:
-        event_observations = get_event_observations_by_phase(observations)
-    except ValueError:
-        return date_observations
-
-    # Merge the two dicts and return.
-    return {**date_observations, **event_observations}
-
-
 def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
     """:py:class:`pandas.DataFrame` : Cleans/preprocesses the observations from the long table.
 
@@ -489,6 +446,9 @@ def clean_observations(observations: pd.DataFrame, /) -> pd.DataFrame:
     pandas.DataFrame
         The cleaned observations data.
     """  # noqa : E501
+    if "event_id" not in observations:
+        observations["event_id"] = pd.NA
+
     for column in ("attribute_unit", "value", "value_num", "duration"):
         if column not in observations.columns:
             observations[column] = pd.NA
@@ -699,6 +659,8 @@ def get_date_observations_by_phase(
 ) -> dict[str, pd.DataFrame]:
     """:py:class:`dict` : Returns a dict of date-based observations dataframes organised by patient interaction phase.
 
+    Only selects observations for which date is non-null but event ID is null.
+
     Parameters
     ----------
     observations : pandas.DataFrame
@@ -725,7 +687,9 @@ def get_date_observations_by_phase(
     """  # noqa : E501
     # Extract the date-based observations, and raise an error if there are none.
     try:
-        date_observations = observations[observations["date"].notnull()]
+        date_observations = observations[
+            (observations["date"].notnull()) & (observations["event_id"].isnull())
+        ]
 
         if date_observations.empty:
             raise ValueError("Expected date-based observations, none found.")
@@ -742,6 +706,9 @@ def get_event_observations_by_phase(
     observations: pd.DataFrame, /
 ) -> dict[str, pd.DataFrame]:
     """:py:class:`dict` : Returns a dict of event-based observations dataframes organised by patient interaction phase.
+
+    Any observation with a non-null event ID is treated as an event
+    observation.
 
     Parameters
     ----------
@@ -1092,3 +1059,46 @@ def get_vertex_data_dictionary(
         raise ValueError("Duplicate field names in the VERTEX dictionary")
 
     return vertex_data_dictionary
+
+
+def get_vertex_df_forms_proxy(observations: pd.DataFrame, /) -> dict[str, pd.DataFrame]:
+    """:py:class:`pandas.DataFrame` : Returns a proxy for the VERTEX ``df_forms`` dict containing a dataframe of patient interaction data for each patient interaction phase/state.
+
+    Parameters
+    ----------
+    observations : pandas.DataFrame
+        Preprocessed observations data with unpivoted attributes.
+
+    Returns
+    -------
+    dict
+        A dict of long table single-attribute observations dataframes,
+        organised by (attribute/unit)_phase and (attribute/duration)_phase,
+        e.g. assuming the existence of the four core phases ``'presentation'``,
+        ``'during_observation'``, ``'outcome'``, and ``'followup'`` the dict
+        would look like this:
+        ::
+
+            {
+                "presentation_date": <date-based observations in the presentation phase>,
+                "presentation_event": <event-based observations in the presentation phase>,
+                "during_observation_date": <date-based observations in the observation phase>,
+                "during_observation_event": <event-based observations in the observation phase>,
+                "outcome_date": <date-based observations in the outcome phase>,
+                "outcome_event": <event-based observations in the outcome phase>,
+                "followup_date": <date-based observations in the followup phase>,
+                "followup_event": <event-based observations in the followup phase>
+            }
+    """  # noqa : E501
+    # Get dicts of date-based and event-based observations organised by phase,
+    # and merge the two dicts.
+    date_observations = get_date_observations_by_phase(observations)
+
+    # A step to deal with observations that have no ``event_id`` based rows.
+    try:
+        event_observations = get_event_observations_by_phase(observations)
+    except ValueError:
+        return date_observations
+
+    # Merge the two dicts and return.
+    return {**date_observations, **event_observations}
