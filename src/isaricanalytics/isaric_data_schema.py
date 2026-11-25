@@ -18,7 +18,6 @@ __all__ = [
     "get_vertex_df_map_proxy",
     "get_wide_observations_table",
     "transform_to_isaric_data_schema",
-    "transform_to_vertex",
 ]
 
 
@@ -274,82 +273,6 @@ def transform_to_isaric_data_schema(
         return ids_tables
 
     vertex_data = get_vertex_data(core, long_, arc_dd)
-
-    return {
-        **vertex_data,
-        **{"quality_report": {}},
-    }
-
-
-def transform_to_vertex(
-    isaric_core_table: pd.DataFrame,
-    isaric_long_table: pd.DataFrame,
-    /,
-    *,
-    arc_version: str | None = None,
-) -> dict[str, typing.Any]:
-    """:py:class:`dict` : A dict of VERTEX-compatible dataframes for analytics.
-
-    Parameters
-    ----------
-    isaric_core_table : pandas.DataFrame
-        The ISARIC data schema core table.
-
-    isaric_long_table : pandas.DataFrame
-        The ISARIC data schema long table.
-
-    arc_version : str or None, default=None
-        Optional ARC version string used to fetch the ARC data dictionary
-        associated with the ARC version; defaults to ``None`` in which
-        case the latest ARC version is used.
-
-    Returns
-    -------
-    dict
-        VERTEX dataframes in a dict of the form:
-        ::
-
-            {
-                "df_map": <one-row-per-patient dataframe>,
-                "df_forms_dict": <dict of patient observations dataframes (by date and by event ID) per phase>,
-                "vertex_dictionary": <VERTEX data dictionary>,
-                "quality_report": <quality report>
-            }
-    """  # noqa : E501
-    # An ARC version is required to fetch the ARC data dictionary. If no ARC
-    # version is provided by the caller, fetch the latest directly from ARC @
-    # GitHub - in case of an exception raise it.
-    core = isaric_core_table
-    long_ = isaric_long_table
-
-    if not arc_version:
-        try:
-            arc_version = ArcApiClient().get_arc_version_list()[0]
-        except (ArcApiClientError, IndexError) as e:
-            raise IsaricDataSchemaTransformationException(
-                f'Exception fetching ARC version "{arc_version}": '
-                f"{e}.\n\n Please check that you have provided a valid "
-                "ARC version. If you have then there may be a network- "
-                "related error, so please retry after some time."
-            )
-
-    # Fetch the ARC data dictionary associated with the ARC version - in case
-    # of an exception raise it.
-    try:
-        arc_dd = get_arc(arc_version)[0]
-    except (ArcApiClientError, IndexError) as e:
-        raise IsaricDataSchemaTransformationException(
-            "Exception fetching ARC data dictionary for ARC version "
-            f'"{arc_version}": {e}.\n\n Please check that you have provided a '
-            "valid ARC version. If you have, then please retry after some "
-            "time."
-        )
-
-    vertex_data = get_vertex_data(
-        core,
-        long_,
-        arc_dd,
-    )
 
     return {
         **vertex_data,

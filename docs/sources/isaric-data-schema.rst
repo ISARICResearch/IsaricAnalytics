@@ -279,15 +279,16 @@ Please refer to the :ref:`VERTEX project <isaric-vertex:project-structure>` for 
 From ISARIC Data Schema
 +++++++++++++++++++++++
 
-VERTEX outputs can also be obtained directly from the core and long tables via the :py:func:`~isaricanalytics.isaric_data_schema.transform_to_vertex` function, as shown in the snippet below.
+VERTEX outputs can also be obtained directly from the core and long tables via the :py:func:`~isaricanalytics.isaric_data_schema.get_vertex_data` function, as shown in the snippet below.
 
 .. code:: python
 
    >>> import warnings; warnings.filterwarnings('always')
-   >>> vertex_data = transform_to_vertex(ids_tables['core'], ids_tables['long'], arc_version='v1.6.1')
+   >>> from arc.arc_core import get_arc_schema
+   >>> arc_dd = get_arc_schema('v1.6.1')
+   2026-11-25 15:10:19 [INFO] arc.arc_core: version: v1.6.1
+   >>> vertex_data = get_vertex_data(ids_tables['core'], ids_tables['long'], arc_dd)
    >>> vertex_data.keys()
    dict_keys(['df_map', 'dictionary', 'df_forms_dict', 'quality_report'])
 
 This function produces the same data as calling :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema` with the ``as_vertex_data=True`` option.
-
-Note that, as with :py:func:`~isaricanalytics.isaric_data_schema.transform_to_isaric_data_schema`, the ``arc_version`` is purely optional - if this is null the latest release version will be fetched from ARC.
