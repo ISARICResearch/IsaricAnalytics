@@ -1389,8 +1389,92 @@ def initial_data_processing(
     return data, new_dictionary
 
 
+def get_repeating_forms_events(
+    redcap_url: str,
+    redcap_api_key: str,
+) -> pandas.DataFrame:
+    response = requests.post(
+        redcap_url,
+        data={
+            "token": redcap_api_key,
+            "content": "repeatingFormsEvents",
+            "format": "json",
+            "returnFormat": "json",
+        },
+    )
+    response.raise_for_status()
+
+    return pandas.DataFrame(response.json())
+
+
+def get_applicable_dfmap_forms(
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    repeating_settings: pandas.DataFrame,
+    form_event: pandas.DataFrame,
+) -> list[str]:
+    """Return observed, non-repeating forms listed in the data dictionary."""
+
+    required_columns = {
+        "data": (data, {"form_name"}),
+        "dictionary": (dictionary, {"form_name"}),
+        "repeating_settings": (
+            repeating_settings,
+            {"event_name", "form_name"},
+        ),
+        "form_event": (form_event, {"event_name", "form_name"}),
+    }
+    for name, (frame, columns) in required_columns.items():
+        missing = columns - set(frame.columns)
+        if missing:
+            raise ValueError(f"{name} is missing columns: {sorted(missing)}")
+
+    def split_forms(value: object) -> list[str]:
+        if pandas.isna(value):
+            return []
+        return [form.strip() for form in str(value).split(",") if form.strip()]
+
+    dictionary_forms = list(
+        dict.fromkeys(
+            form
+            for value in dictionary["form_name"].dropna()
+            for form in split_forms(value)
+        )
+    )
+
+    record_forms = {
+        form for value in data["form_name"].dropna() for form in split_forms(value)
+    }
+
+    repeating_forms = set()
+    repeating_events = set()
+
+    for _, row in repeating_settings.iterrows():
+        form_name = row["form_name"]
+        event_name = row["event_name"]
+
+        if pandas.notna(form_name) and str(form_name).strip():
+            repeating_forms.add(str(form_name).strip())
+        elif pandas.notna(event_name) and str(event_name).strip():
+            repeating_events.add(str(event_name).strip())
+
+    # A repeating event repeats every form assigned to that event.
+    for _, row in form_event.iterrows():
+        if row["event_name"] in repeating_events:
+            repeating_forms.update(split_forms(row["form_name"]))
+
+    return [
+        form
+        for form in dictionary_forms
+        if form in record_forms and form not in repeating_forms
+    ]
+
+
 def get_df_map(
-    data: pandas.DataFrame, dictionary: pandas.DataFrame
+    data: pandas.DataFrame,
+    dictionary: pandas.DataFrame,
+    repeating_settings: pandas.DataFrame,
+    form_event: pandas.DataFrame,
 ) -> tuple[pandas.DataFrame | dict[str, typing.Any]]:
     """:py:class:`pandas.DataFrame` : Returns a dataframe with single-event rows converted to a format with one row per patient.
 
@@ -1409,7 +1493,8 @@ def get_df_map(
         dictionary, and the quality report.
     """  # noqa : E501
     df_map = data.copy()
-    forms = ["presentation", "daily", "outcome"]
+    # forms = ["presentation", "daily", "outcome"]
+    forms = get_applicable_dfmap_forms(data, dictionary, repeating_settings, form_event)
     columns = dictionary.loc[dictionary["form_name"].isin(forms), "field_name"].tolist()
     columns = [col for col in columns if col in df_map.columns]
     ind = data["form_name"].apply(
@@ -1466,6 +1551,11 @@ def get_df_map(
     dictionary = dictionary.reset_index(drop=True)
     logger.debug(f"Data contains {df_map.shape[0]} patients")
 
+    if "demog_age" not in df_map.columns:
+        df_map["demog_age"] = (
+            pandas.to_numeric(df_map["demog_calcage_days"], errors="coerce") / 365.25
+        )
+
     return df_map, dictionary, quality_report
 
 
@@ -1507,6 +1597,7 @@ def get_redcap_data(
     data_access_groups: typing.Iterable[str] | None = None,
     user_assigned_to_dag: bool | None = False,
     country_mapping: dict | None = None,
+    include_all_forms: bool = False,
 ) -> tuple[pandas.DataFrame | dict[str, pandas.DataFrame] | dict[str, typing.Any]]:
     """:py:class:`tuple` : Returns data from REDCap API and transforms them into analysis-ready dataframes.
 
@@ -1526,6 +1617,11 @@ def get_redcap_data(
 
     country_mapping : dict
         The countries table.
+
+    include_all_forms : bool, default=False
+    Whether to include all forms in the forms dictionary.
+    If False, include only repeatable forms.
+
     """  # noqa : E501
     total_started = time.perf_counter()
     logger.info("REDCap data pipeline start")
@@ -1547,6 +1643,10 @@ def get_redcap_data(
         "REDCap step get_data_dictionary finished in "
         f"{time.perf_counter() - step_started:.1f}s"
     )
+
+    #################
+    repeating_forms = get_repeating_forms_events(redcap_url, redcap_api_key)
+    ###############
 
     step_started = time.perf_counter()
     missing_data_codes = get_missing_data_codes(redcap_url, redcap_api_key)
@@ -1586,7 +1686,9 @@ def get_redcap_data(
     data = data.loc[data["form_name"].notna()].reset_index(drop=True)
 
     step_started = time.perf_counter()
-    df_map, new_dictionary, quality_report = get_df_map(data, new_dictionary)
+    df_map, new_dictionary, quality_report = get_df_map(
+        data, new_dictionary, repeating_forms, form_event
+    )
     logger.info(
         f"REDCap step get_df_map finished in "
         f"{time.perf_counter() - step_started:.1f}s (rows={len(df_map)})"
@@ -1636,4 +1738,12 @@ def get_redcap_data(
     logger.info(
         f"REDCap data pipeline complete in {time.perf_counter() - total_started:.1f}s"
     )
+
+    if not include_all_forms:
+        df_forms_dict = {
+            form: df
+            for form, df in df_forms_dict.items()
+            if form in repeating_forms["form_name"].unique().tolist()
+        }
+
     return df_map, df_forms_dict, new_dictionary, quality_report

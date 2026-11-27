@@ -11,7 +11,7 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]  # auto-fix issues where possible
-        exclude: ^docs/conf.py$ # Exclude Sphinx conf
+        exclude: "docs/conf.py|notebooks/vertex-workflow.ipynb$"
       - id: ruff-format     # runs formatter
 
   # Basic hygiene checks
@@ -22,6 +22,7 @@ repos:
         exclude: "\\.csv$"
       - id: check-yaml               # checks YAML files for syntax errors
       - id: trailing-whitespace      # removes trailing spaces
-      - id: check-added-large-files  # blocks large files from being committed
+      - id: check-added-large-files  # Limit large files to <= 600 Kb
+        args: ['--maxkb=600']
         exclude: |
           ^docs/_static/github-issues.png$
