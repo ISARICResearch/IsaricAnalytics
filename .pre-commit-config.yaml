@@ -11,7 +11,7 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]  # auto-fix issues where possible
-        exclude: ^docs/conf.py$ # Exclude Sphinx conf
+        exclude: "docs/conf.py|notebooks/vertex-workflow.ipynb$"
       - id: ruff-format     # runs formatter
 
   # Basic hygiene checks

@@ -589,12 +589,6 @@ def get_date_observations_by_phase(
     observations : pandas.DataFrame
         Preprocessed observations data with unpivoted attributes.
 
-    Raises
-    ------
-    ValueError
-        If there are no date-based observations, or no ``"date"`` column in
-        the observations.
-
     Returns
     -------
     dict
@@ -610,14 +604,16 @@ def get_date_observations_by_phase(
     """  # noqa : E501
     # Extract the date-based observations, and raise an error if there are none.
     try:
-        date_observations = observations[
-            (observations["date"].notnull()) & (observations["event_id"].isnull())
-        ]
-
-        if date_observations.empty:
-            raise ValueError("Expected date-based observations, none found.")
+        date_observations = observations[observations["date"].notnull()]
     except KeyError:
-        raise ValueError("No 'date' column found in observations.")
+        return {
+            f"{phase}_date": pd.DataFrame() for phase in observations["phase"].unique()
+        }
+    else:
+        try:
+            date_observations = date_observations[observations["event_id"].notnull()]
+        except KeyError:
+            pass
 
     return {
         f"{phase}_date": phase_date_group
@@ -638,12 +634,6 @@ def get_event_observations_by_phase(
     observations : pandas.DataFrame
         Preprocessed observations data with unpivoted attributes.
 
-    Raises
-    ------
-    ValueError
-        If there are no event-based observations, i.e. no rows with non-null
-        ``event_id``, or no ``"event_id"`` column in the observations.
-
     Returns
     -------
     dict
@@ -660,11 +650,10 @@ def get_event_observations_by_phase(
     # Extract the event-based observations, and raise an error if there are none.
     try:
         event_observations = observations[observations["event_id"].notnull()]
-
-        if event_observations.empty:
-            raise ValueError("Expected date-based observations, none found.")
     except KeyError:
-        raise ValueError("No 'event_id' column found in observations.")
+        return {
+            f"{phase}_event": pd.DataFrame() for phase in observations["phase"].unique()
+        }
 
     return {
         f"{phase}_date": phase_event_group
@@ -1016,12 +1005,7 @@ def get_vertex_df_forms_proxy(observations: pd.DataFrame, /) -> dict[str, pd.Dat
     # Get dicts of date-based and event-based observations organised by phase,
     # and merge the two dicts.
     date_observations = get_date_observations_by_phase(observations)
-
-    # A step to deal with observations that have no ``event_id`` based rows.
-    try:
-        event_observations = get_event_observations_by_phase(observations)
-    except ValueError:
-        return date_observations
+    event_observations = get_event_observations_by_phase(observations)
 
     # Merge the two dicts and return.
     return {**date_observations, **event_observations}
